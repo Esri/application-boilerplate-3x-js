@@ -44,10 +44,19 @@ function(
                 //Here' we'll use it to update the application to match the specified color theme.  
                 console.log(this.config);
       
+                this.map = response.map;
+                
+                if(this.map.loaded){
+                    // do something with the map
+                }
+                else{
+                    on(this.map, "load", function(){
+                        // do something with the map
+                    });   
+                }
 
 
-
-            }, function(error){
+            }), lang.hitch(this, function(error){
                 //an error occurred - notify the user. In this example we pull the string from the 
                 //resource.js file located in the nls folder because we've set the application up 
                 //for localization. If you don't need to support mulitple languages you can hardcode the 
