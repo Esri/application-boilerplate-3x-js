@@ -1,4 +1,5 @@
 Application-Boilerplate
 =======================
 
-Starter application that simplifies the process of building templates for the ArcGIS.com template gallery. 
+Initial draft of starter application that simplifies the process of building templates for the ArcGIS.com template gallery. 
+TODO: Add Oauth support and details on how to use the app.
