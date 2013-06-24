@@ -12,8 +12,10 @@ define([
     "esri/urlUtils",
     "esri/request",
     "esri/config",
+    "esri/IdentityManager",
     "esri/tasks/GeometryService",
-    "config/defaults"
+    "config/defaults",
+    "application/OAuthHelper"
 
 ],
 function(
@@ -30,8 +32,10 @@ function(
     urlUtils,
     esriRequest,
     esriConfig,
+    IdentityManager,
     GeometryService,
-    defaults
+    defaults,
+    OAuthHelper
 ) {
     return declare([Evented], {
         config: {},  
@@ -130,8 +134,19 @@ function(
                 this.config.proxyurl =  location.protocol + "//" + location.host + instance +  "/sharing/proxy";
 
                }
+                //setup OAuth if oauth appid exists
+                if(this.config.oauthappid){
+                 OAuthHelper.init({
+                  appId: this.config.oauthappid,
+                  portal: this.config.sharinghost,
+                  expiration: ( 14 * 24 * 60 ), //2 weeks (in minutes)
+                  popup: false
+                 });
+                }
 
-              arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
+
+                
+               arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
         
 
               //Define the proxy url for the app 
