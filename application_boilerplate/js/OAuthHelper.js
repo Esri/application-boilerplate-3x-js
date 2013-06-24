@@ -14,18 +14,14 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
     
     portal: "http://www.arcgis.com",
     
-    popupCallbackPage: window.location.protocol + "//" + 
-                       window.location.host + 
-                       window.location.pathname.replace(/\/[^\/]+$/, "") + 
-                       "/oauth-callback.html",
+   
     
     init: function(parameters) {
       /**
        * parameters = {
        *   appId:       "<String>",
        *   portal:      "<String>", // deafult is "http://www.arcgis.com"
-       *   expiration:   <Number>,  // in minutes
-       *   popup:        <Boolean>
+       *   expiration:   <Number> // in minutes
        * } 
        */
       
@@ -62,39 +58,25 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
        
       };
 
-      /* redirect_uri:   this.popup ? 
-                       this.popupCallbackPage : 
-                        window.location.href.replace(/#.*$/, "")*/
-      //if there are url params append the auth parameters with an &
-      var redirect_uri;
-      if(this.popup){
-        redirect_uri = this.popupCallbackPage;
-      }else{
-        var l = window.location.href;
-        if(l.indexOf("?") > 0){
-          redirect_uri = window.location.href.replace(/#.*$/, "") + "&";
-        }else{
-          redirect_uri = window.location.href.replace(/#.*$/, "");
-        }
 
+      //if there are url params append the auth parameters with an &
+
+      var l = window.location.href;
+      if(l.indexOf("?") > 0){
+        redirect_uri = window.location.href.replace(/#.*$/, "") + "&";
+      }else{
+        redirect_uri = window.location.href.replace(/#.*$/, "");
       }
+
+  
       authParameters.redirect_uri = redirect_uri;
       var authUrl = this.portal.replace(/^http:/i, "https:") + 
                     "/sharing/oauth2/authorize?" + 
                     ioquery.objectToQuery(authParameters);
   
-      if (this.popup) {
-        // Internet Explorer 8 throws error if windowName  
-        // (second argument below) has hyphen
-        window.open(
-          authUrl, 
-          "esrioauth", 
-          "width=480,height=320,location=yes,status=yes,scrollbars=yes"
-        );
-      }
-      else {
-        window.location = authUrl;
-      }
+
+      window.location = authUrl;
+  
       
       return deferred;
     },

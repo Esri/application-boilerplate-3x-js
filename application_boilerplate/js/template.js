@@ -139,8 +139,7 @@ function(
                  OAuthHelper.init({
                   appId: this.config.oauthappid,
                   portal: this.config.sharinghost,
-                  expiration: ( 14 * 24 * 60 ), //2 weeks (in minutes)
-                  popup: false
+                  expiration: ( 14 * 24 * 60 ) //2 weeks (in minutes)
                  });
                 }
 
