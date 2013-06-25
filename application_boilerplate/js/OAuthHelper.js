@@ -61,7 +61,7 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
 
       //if there are url params append the auth parameters with an &
 
-      var l = window.location.href;
+      var redirect_uri, l = window.location.href;
       if(l.indexOf("?") > 0){
         redirect_uri = window.location.href.replace(/#.*$/, "") + "&";
       }else{
