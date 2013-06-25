@@ -42,8 +42,9 @@ function(
         localize: false,
         constructor: function(supportsLocalization) {
  
-            //config will contain application and user defined info for the application such as i18n strings, the web map id and 
-            //application id, any url parameters and any application specific configuration information. 
+            //config will contain application and user defined info for the application such as i18n strings, 
+            //the web map id and application id, any url parameters and any application specific configuration
+            // information. 
             this.config = defaults;
             this.localize = supportsLocalization || false;
             this._init().then(lang.hitch(this, function(results) {
@@ -70,10 +71,12 @@ function(
             urlObject.query = urlObject.query || {};
             //Set the web map, group and appid if they exist but ignore other url params. 
             //Additional url parameters may be defined by the application but they need to be mixed in
-            //to the config object after we retrive the application configuration info. As an example, we'll mix in some 
-            //commonly used url paramters in the _queryUrlParams function after the application configuration has
-            //been applied so that the url parametrs overwrite any configured settings. It's up to the application
-            //developer to update the application to take advantage of these parameters. 
+            //to the config object after we retrive the application configuration info. As an example, 
+            //we'll mix in some commonly used url paramters in the _queryUrlParams function after 
+            //the application configuration has been applied so that the url parametrs overwrite any 
+            //configured settings. It's up to the application developer to update the application to take 
+            //advantage of these parameters. 
+
             if(urlObject.query){
                var params = {};
 
@@ -86,7 +89,11 @@ function(
               }
               if(urlObject.query.group){
                 params.group = urlObject.query.group;
+              }
+              if(urlObject.query.oauthappid){
+                params.oauthappid = urlObject.query.oauthappid;
               }    
+
                declare.safeMixin(this.config, params);
             }
        
@@ -106,6 +113,17 @@ function(
                 //custom url parameters. 
                 
                 this._queryUrlParams();
+
+                //setup OAuth if oauth appid exists
+                if(this.config.oauthappid){
+
+                  OAuthHelper.init({
+                    appId: this.config.oauthappid,
+                    portal: this.config.sharinghost,
+                    expiration: ( 14 * 24 * 60 ) //2 weeks (in minutes)
+                   });
+                }
+            
                 deferred.resolve();
               }));
           
@@ -117,8 +135,9 @@ function(
           },
           _initializeApplication: function(){
 
-              //Check to see if the app is hosted or a portal. In those cases set the sharing url and the proxy. Otherwise use
-              //the sharing url set it to arcgis.com. We know app is hosted (or portal) if it has /apps/ or /home/ in the url. 
+              //Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
+              // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com. 
+              //We know app is hosted (or portal) if it has /apps/ or /home/ in the url. 
 
               var appLocation = location.pathname.indexOf("/apps/");
               if(appLocation === -1){
@@ -133,15 +152,15 @@ function(
                 this.config.sharinghost = location.protocol + "//" + location.host + instance;
                 this.config.proxyurl =  location.protocol + "//" + location.host + instance +  "/sharing/proxy";
 
-               }
-                //setup OAuth if oauth appid exists
+               }else{
+
+                //setup OAuth if oauth appid exists. If we don't call it here before querying for appid
+                //the idenity manager dialog will appear if the appid isn't publicly shared. 
                 if(this.config.oauthappid){
-                 OAuthHelper.init({
-                  appId: this.config.oauthappid,
-                  portal: this.config.sharinghost,
-                  expiration: ( 14 * 24 * 60 ) //2 weeks (in minutes)
-                 });
+                  this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
                 }
+
+               }
 
 
                 
@@ -157,7 +176,15 @@ function(
       
 
           },
+          _setupOAuth: function(id, portal){
 
+                  OAuthHelper.init({
+                    appId: id,
+                    portal: portal,
+                    expiration: ( 14 * 24 * 60 ) //2 weeks (in minutes)
+                   });
+        
+          },
           _getLocalization: function(){
    
               var deferred = new Deferred();
@@ -203,12 +230,20 @@ function(
              return deferred.promise;
           },
           _queryApplicationConfiguration: function(){
-            //If there is an application id query arcgis.com using esri.arcgis.utils.getItem to get the item info. If the item info includes 
-            //itemData.values then the app was configurable so overwrite the default values with the configured values. 
+            //If there is an application id query arcgis.com using esri.arcgis.utils.getItem to get the item info.
+            // If the item info includes itemData.values then the app was configurable so overwrite the
+            // default values with the configured values. 
             var deferred = new Deferred();
             if(this.config.appid){
               arcgisUtils.getItem(this.config.appid).then(lang.hitch(this,function(response){
                declare.safeMixin(this.config,response.itemData.values);
+                //setup OAuth if oauth appid exists. In this siutation the oauthappid is specified in the 
+                //configuration panel. 
+                if(response.itemData.values && response.itemData.oauthappid){
+                    this._setupOAuth(response.itemData.oauthappid,this.config.sharinghost);
+                }
+  
+
                 deferred.resolve();
               })); 
             }else{
