@@ -47,7 +47,7 @@ function(
 
 
 
-            }, function(error){
+            }), lang.hitch(this, function(error){
                 //an error occurred - notify the user. In this example we pull the string from the 
                 //resource.js file located in the nls folder because we've set the application up 
                 //for localization. If you don't need to support mulitple languages you can hardcode the 
