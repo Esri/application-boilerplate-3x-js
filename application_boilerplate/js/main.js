@@ -43,9 +43,17 @@ function(
                 //any custom options you defined for the template. In this example that is the 'theme' property.
                 //Here' we'll use it to update the application to match the specified color theme.  
                 console.log(this.config);
-      
+                
+                this.map = response.map;
 
-
+                if(this.map.loaded){
+                   // do something with the map
+                }
+                else{
+                   on(this.map, "load", function(){
+                        // do something with the map
+                   });   
+                }    
 
             }), lang.hitch(this, function(error){
                 //an error occurred - notify the user. In this example we pull the string from the 
