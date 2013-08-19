@@ -15,8 +15,11 @@ The template consists of the following folders and files:
 
 **/config/:** Stores configuration files used by your application.
 *   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a bing maps key, default color theme and other template specific properties.
+
 **/css/:** Contains the default css file (main.css) for the application. This file contains the css styles that set the margin, padding and initial map height (100%).
+
 **/images/**: Contains images used by the application.
+
 **/js/**: Contains 3 JavaScript files and 1 folder:
 *   **/nls/:** The nls folder contains a file called template.js that contains the strings used by the application. If the application needs to be supported by multiple locales you can create a folder for each locale and inside that folder add a template.js file with the translated strings. See the template.js file in the nls/fr folder for an example of this in French.
 *   **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
