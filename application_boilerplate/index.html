@@ -15,23 +15,20 @@
    <!--The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. --> 
    <div id="mapDiv" dir="ltr"></div>
     <script type="text/javascript">
-            var dojoConfig = {
-                //The location.pathname.replace() logic below may look confusing but all its doing is 
-                // enabling us to load the api from a CDN and load local modules from the correct location.
-                packages:[
-                {
-                    name: "application",
-                    location: (location.pathname.replace(/\/[^/]+$/, '') + '/js').replace(/([^:]\/)\/+/g, "$1")
-                 },{
-                    name: "config",
-                    location: (location.pathname.replace(/\/[^/]+$/, '') + '/config').replace(/([^:]\/)\/+/g, "$1")                
-                 }
-                ]
-            };
+        var dojoConfig = {
+            //The location.pathname.replace() logic below may look confusing but all its doing is 
+            // enabling us to load the api from a CDN and load local modules from the correct location.
+            packages: [{
+                name: "application",
+                location: (location.pathname.replace(/\/[^/]+$/, '') + '/js').replace(/([^:]\/)\/+/g, "$1")
+            }, {
+                name: "config",
+                location: (location.pathname.replace(/\/[^/]+$/, '') + '/config').replace(/([^:]\/)\/+/g, "$1")
+            }]
+        };
     </script>
     <script type="text/javascript" src="//js.arcgis.com/3.6/"></script>
     <script type="text/javascript">
-
         require([
             "dojo/on",
             "application/main",
@@ -42,26 +39,23 @@
             Main,
             Template
         ){
-
             //create the template. This will take care of all the logic required for template applciations 
             //If you need localization set the supportsLocalization value to true to get the localized strings 
             //from the javascript/nls/resource files. 
             //Note that we've included a placeholder nls folder and a resource file with one error string
-            //to show how to setup the strings file. 
+            //to show how to setup the strings file.
+            
             var supportsLocalization = true; //defaults to false
-
+            
             var myTemplate = new Template(supportsLocalization);
-            on(myTemplate, "ready", function(config){
+            
+            on(myTemplate, "ready", function(config) {
                 //The config object contains the following properties: helper services, (optionally) 
                 //i18n, appid, webmap and any custom values defined by the applcation. 
                 //In this example we have one called theme. 
                 Main(config);
-           
             });
- 
- 
         });
-
     </script>   
 </body>
 </html>
