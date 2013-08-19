@@ -6,9 +6,9 @@ The Application Boilerplate is a starter application for building custom templat
 
 ## Getting Started
 Review the following ArcGIS.com help topics for details on Templates: 
-*[About web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/About_web_application_templates/010q000000nt000000/)
-*[Creating web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/Creating_web_application_templates/010q00000072000000/)
-*[Adding configurable parameters to templates](http://resources.arcgis.com/en/help/arcgisonline/#/Adding_configurable_parameters_to_templates/010q000000ns000000/)
+*   [About web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/About_web_application_templates/010q000000nt000000/)
+*   [Creating web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/Creating_web_application_templates/010q00000072000000/)
+*   [Adding configurable parameters to templates](http://resources.arcgis.com/en/help/arcgisonline/#/Adding_configurable_parameters_to_templates/010q000000ns000000/)
 
 ## Folders and files
 The template consists of the following folders and files:
