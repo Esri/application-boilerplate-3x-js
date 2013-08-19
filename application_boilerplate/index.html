@@ -21,10 +21,10 @@
                 packages:[
                 {
                     name: "application",
-                    location: location.pathname.replace(/\/[^/]+$/, '') + '/js'
+                    location: (location.pathname.replace(/\/[^/]+$/, '') + '/js').replace(/([^:]\/)\/+/g, "$1")
                  },{
                     name: "config",
-                    location: location.pathname.replace(/\/[^/]+$/, '') + '/config'                     
+                    location: (location.pathname.replace(/\/[^/]+$/, '') + '/config').replace(/([^:]\/)\/+/g, "$1")                
                  }
                 ]
             };

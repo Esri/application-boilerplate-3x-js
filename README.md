@@ -5,28 +5,33 @@ The Application Boilerplate is a starter application for building custom templat
 ![App](https://raw.github.com/Esri/application-boilerplate-js/master/application_boilerplate/images/thumb.png)
 
 ## Getting Started
-Review the following ArcGIS.com help topics for details on Templates: 
+
+Review the following ArcGIS.com help topics for details on Templates:
+
 *   [About web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/About_web_application_templates/010q000000nt000000/)
 *   [Creating web application templates](http://resources.arcgis.com/en/help/arcgisonline/#/Creating_web_application_templates/010q00000072000000/)
 *   [Adding configurable parameters to templates](http://resources.arcgis.com/en/help/arcgisonline/#/Adding_configurable_parameters_to_templates/010q000000ns000000/)
 
 ## Folders and files
+
 The template consists of the following folders and files:
 
-**/config/:** Stores configuration files used by your application.
-*   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a bing maps key, default color theme and other template specific properties.
+**/config/:** A folder for your application's configuration files. 
 
-**/css/:** Contains the default css file (main.css) for the application. This file contains the css styles that set the margin, padding and initial map height (100%).
+*   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a bing maps key, default color theme and other template specific settings.
+
+**/css/:** Contains the CSS files for the application.
+
+*	**main.css** This file contains the map styles that set the margin, padding and initial height (100%).
 
 **/images/**: Contains images used by the application.
 
 **/js/**: Contains 3 JavaScript files and 1 folder:
+
 *   **/nls/:** The nls folder contains a file called template.js that contains the strings used by the application. If the application needs to be supported by multiple locales you can create a folder for each locale and inside that folder add a template.js file with the translated strings. See the template.js file in the nls/fr folder for an example of this in French.
 *   **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
-*   **oAuthHelper.js:** Allows your template to authenticate to secured or private ArcGIS Online content and items via [oAuth2](http://oauth.net/2/). You will most likely not need to modify this file.
-*   **template.js:** Module that takes care of "template" specific work like retrieving the application configuration settings, getting the url parameters (web map id and appid), handling localization details and retrieving organization specifc info if applicable. Also sets the proxy and geometry service if the url's have been provided in the commonConfig.js file or are available from the org. You will most likely not need to modify this file.
-
-Once executed you'll have access to an object that contains properties that give you access to the following:
+*   **oAuthHelper.js:** Allows your template to [authenticate](https://developers.arcgis.com/en/authentication/) to secured or private ArcGIS Online content and items via [oAuth2](http://oauth.net/2/). You will most likely not need to modify this file.
+*   **template.js:** Module that takes care of "template" specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), handling localization details and retrieving organization specifc info if applicable. You will most likely not need to modify this file. Also sets the proxy and geometry service if the url's have been provided in the defaults.js file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
     *   Template specific properties
     *   appid
     *   webmap
@@ -35,14 +40,15 @@ Once executed you'll have access to an object that contains properties that give
     *   proxy  url
     
 **index.html**: The default html file for the application.
-**configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuraiton panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc.  See the [Adding configurable parameters to templates](http://resources.arcgis.com/en/help/arcgisonline/#/Adding_configurable_parameters_to_templates/010q000000ns000000/) help topic for more details.
+
+**configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuraiton panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://resources.arcgis.com/en/help/arcgisonline/#/Adding_configurable_parameters_to_templates/010q000000ns000000/) help topic for more details.
 
 ## Instructions
 
 1. Download and unzip the .zip file or clone the repo.
 2. Web-enable the directory.
 3. Access the .html page.
-4. See the readme.html page for configuration options.
+4. Start writing your template in /js/main.js!
 
  [New to Github? Get started here.](https://github.com/)
 
