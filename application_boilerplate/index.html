@@ -5,17 +5,15 @@
     <meta charset="utf-8">
     <!--Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional.-->
     <meta http-equiv="X-UA-Compatible" content="IE=7, IE=9, IE=10">
-        <!--Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol-->
-        <link rel="stylesheet" href="//js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
-        <link rel="stylesheet" type="text/css" href="//js.arcgis.com/3.6/js/esri/css/esri.css">
-        <!--Load any application specific styles-->
-        <link rel="stylesheet" type="text/css" href="css/main.css">
+    <!--Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol-->
+    <link rel="stylesheet" href="//js.arcgis.com/3.6/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet" type="text/css" href="//js.arcgis.com/3.6/js/esri/css/esri.css">
+    <!--Load any application specific styles-->
+    <link rel="stylesheet" type="text/css" href="css/main.css">
 </head>
 <body class="claro">
    <!--The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. --> 
    <div id="mapDiv" dir="ltr"></div>
-
-
     <script type="text/javascript">
             var dojoConfig = {
                 //The location.pathname.replace() logic below may look confusing but all its doing is 
@@ -23,10 +21,10 @@
                 packages:[
                 { 
                     name: "application",
-                    location: location.pathname.replace(/\/[^/]+$/, '') + '/js' 
+                    location: location.pathname.replace(/\/[^/]+$/, '') + 'js' 
                  },{
                     name: "config",
-                    location: location.pathname.replace(/\/[^/]+$/, '') + '/config'                     
+                    location: location.pathname.replace(/\/[^/]+$/, '') + 'config'                     
                  }
                 ]
             };
@@ -65,6 +63,5 @@
         });
 
     </script>   
-
 </body>
 </html>

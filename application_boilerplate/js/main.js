@@ -27,7 +27,10 @@ function(
                 this._createWebMap();
             }));
         },
-    
+        _mapLoaded: function(){
+            // Map is ready
+            console.log('map loaded');
+        },
           //create a map based on the input web map id
           _createWebMap: function(){
 
@@ -48,11 +51,13 @@ function(
 
                 if(this.map.loaded){
                    // do something with the map
+                   this._mapLoaded();
                 }
                 else{
-                   on(this.map, "load", function(){
+                   on(this.map, "load", lang.hitch(this, function(){
                         // do something with the map
-                   });   
+                        this._mapLoaded();
+                   }));   
                 }    
 
             }), lang.hitch(this, function(error){
