@@ -2,11 +2,11 @@
 
 The Application Boilerplate is a starter application for building custom templates with the ArcGIS API for JavaScript.
 
-This bare-bones app includes all the code you need to get building an ArcGIS Online template. It will save you time:
+This bare-bones app includes all the code you need to build an ArcGIS Online template. It will save you time when:
 
 *	Making an ArcGIS Online compatable template.
 *	Using your ArcGIS Online webmap to power the template.
-*	Localize your application in different languages.
+*	Localizing your application in different languages.
 *	Capturing URL parameters and using them in your application.
 *	Using settings from your ArcGIS Online organization or configured application.
 *	Enabling your application to sign-in to ArcGIS Online using [oAuth2](http://oauth.net/2/).
@@ -30,7 +30,7 @@ The template consists of the following folders and files:
 
 **/config/:** A folder for your application's configuration files. 
 
-*   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a bing maps key, default color theme and other template specific settings.
+*   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a Bing maps key, default color theme and other template-specific settings.
  
 **/css/:** Contains the CSS files for the application.
 
@@ -42,8 +42,8 @@ The template consists of the following folders and files:
 
 *   **/nls/:** The nls folder contains a file called template.js that contains the strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a template.js file with the translated strings. See the template.js file in the nls/fr folder for an example of this in French.
 *   **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
-*   **oAuthHelper.js:** Allows your template to [authenticate](https://developers.arcgis.com/en/authentication/) to secured or private ArcGIS Online content and items via [oAuth2](http://oauth.net/2/). You will most likely not need to modify this file.
-*   **template.js:** Module that takes care of "template" specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), handling localization details and retrieving organization specifc info if applicable. You will most likely not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the defaults.js file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
+*   **oAuthHelper.js:** Allows your template to [authenticate](https://developers.arcgis.com/en/authentication/) to secured or private ArcGIS Online content and items via [oAuth2](http://oauth.net/2/). You most likely will not need to modify this file.
+*   **template.js:** Module that takes care of "template"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), handling localization details and retrieving organization specifc info if applicable. You will most likely not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the defaults.js file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
     *   Template specific properties
     *   appid
     *   webmap
@@ -57,7 +57,7 @@ The template consists of the following folders and files:
 
 ## Instructions
 
-1. Download and unzip the .zip file or clone the repo.
+1. Download and unzip the .zip file or clone the repository.
 2. Web-enable the directory.
 3. Access the .html page.
 4. Start writing your template!
@@ -67,8 +67,8 @@ The template consists of the following folders and files:
 ## Requirements
 
 * Notepad or HTML editor
-* A little background with Javascript
-* Experience with the [ArcGIS Javascript API](http://www.esri.com/) would help.
+* A little background with JavaScript
+* Experience with the [ArcGIS JavaScript API](http://www.esri.com/) would help.
 
 ## Resources
 
