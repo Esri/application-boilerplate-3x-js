@@ -1,9 +1,8 @@
-define({root:
-({
-    map:{
-        error: "Unable to create map"
-    }
-
-}),
-"fr":1
+define({
+    root: ({
+        map: {
+            error: "Unable to create map"
+        }
+    }),
+    "fr": 1
 });
