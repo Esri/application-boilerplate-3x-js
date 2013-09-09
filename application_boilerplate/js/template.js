@@ -46,7 +46,7 @@ function(
             // information. 
             this.config = defaults;
             this.localize = supportsLocalization || false;
-            this._init().then(lang.hitch(this, function(results) {
+            this._init().then(lang.hitch(this, function() {
                 this.emit("ready", this.config);
             }));
         },
@@ -54,16 +54,6 @@ function(
         //an applciation and to see if the app is running in Portal or an Org
         _init: function() {
             var deferred = new Deferred();
-            //retrieve url parameters. Templates all use url parameters to determine which arcgis.com 
-            //resource to work with. 
-            //Map templates use the webmap param to define the webmap to display
-            //Group templates use the group param to provide the id of the group to display. 
-            //appid is the id of the application based on the template. We use this 
-            //id to retrieve application specific configuration information. The configuration 
-            //information will contain the values the  user selected on the template configuration 
-            //panel.  
-            var urlObject = urlUtils.urlToObject(document.location.href);
-            urlObject.query = urlObject.query || {};
             //Set the web map, group and appid if they exist but ignore other url params. 
             //Additional url parameters may be defined by the application but they need to be mixed in
             //to the config object after we retrive the application configuration info. As an example, 
@@ -71,28 +61,15 @@ function(
             //the application configuration has been applied so that the url parametrs overwrite any 
             //configured settings. It's up to the application developer to update the application to take 
             //advantage of these parameters. 
-            if (urlObject.query) {
-                var params = {};
-                if (urlObject.query.webmap) {
-                    params.webmap = urlObject.query.webmap;
-                }
-                if (urlObject.query.appid) {
-                    params.appid = urlObject.query.appid;
-                }
-                if (urlObject.query.group) {
-                    params.group = urlObject.query.group;
-                }
-                if (urlObject.query.oauthappid) {
-                    params.oauthappid = urlObject.query.oauthappid;
-                }
-                declare.safeMixin(this.config, params);
-            }
+            var paramItems = ['webmap', 'appid', 'group', 'oauthappid'];
+            var mixinParams = this._createUrlParamsObject(paramItems);
+            declare.safeMixin(this.config, mixinParams);
             //Define the sharing url and other default values like the proxy. 
             //The sharing url defines where to search for the web map and application content. The
             //default value is arcgis.com. 
             this._initializeApplication();
             all([this._getLocalization(), this._queryOrganizationInformation()]).then(lang.hitch(this, function() {
-                this._queryApplicationConfiguration().then(lang.hitch(this, function(results) {
+                this._queryApplicationConfiguration().then(lang.hitch(this, function() {
                     //update URL Parameters. Uncomment the following line and 
                     //edit the _queryUrlParams function if your application needs to support
                     //custom url parameters. 
@@ -109,6 +86,27 @@ function(
                 }));
             }));
             return deferred.promise;
+        },
+        _createUrlParamsObject: function(items) {
+            //retrieve url parameters. Templates all use url parameters to determine which arcgis.com 
+            //resource to work with. 
+            //Map templates use the webmap param to define the webmap to display
+            //Group templates use the group param to provide the id of the group to display. 
+            //appid is the id of the application based on the template. We use this 
+            //id to retrieve application specific configuration information. The configuration 
+            //information will contain the values the  user selected on the template configuration 
+            //panel.  
+            var urlObject = urlUtils.urlToObject(document.location.href);
+            urlObject.query = urlObject.query || {};
+            var obj = {};
+            if (urlObject.query && items && items.length) {
+                for (var i = 0; i < items.length; i++) {
+                    if (urlObject.query[items[i]]) {
+                        obj[items[i]] = urlObject.query[items[i]];
+                    }
+                }
+            }
+            return obj;
         },
         _initializeApplication: function() {
             //Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
@@ -221,6 +219,7 @@ function(
                 }
                 deferred.resolve();
             }), function(error) {
+                console.log(error);
                 deferred.resolve();
             });
             return deferred.promise;
@@ -233,21 +232,9 @@ function(
             //application default and configuration info has been applied. Currently these values 
             //(center, basemap, theme) are only here as examples and can be removed if you don't plan on 
             //supporting additional url parameters in your application. 
-            var urlObject = urlUtils.urlToObject(document.location.href);
-            urlObject.query = urlObject.query || {};
-            if (urlObject.query) {
-                var params = {};
-                if (urlObject.query.center) {
-                    params.center = urlObject.query.center;
-                }
-                if (urlObject.query.basemap) {
-                    params.basemap = urlObject.query.basemap;
-                }
-                if (urlObject.query.theme) {
-                    params.theme = urlObject.query.theme;
-                }
-                declare.safeMixin(this.config, params);
-            }
+            var paramItems = ['center', 'basemap', 'theme'];
+            var mixinParams = this._createUrlParamsObject(paramItems);
+            declare.safeMixin(this.config, mixinParams);
         }
     });
 });
