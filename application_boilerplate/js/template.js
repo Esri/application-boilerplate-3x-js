@@ -153,14 +153,14 @@ function(
                     //Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
                     //Note: The map must stay ltr  
                     this.config.i18n.direction = "ltr";
-                    array.some(["ar", "he"], function(l) {
+                    array.some(["ar", "he"], lang.hitch(this, function(l) {
                         if (kernel.locale.indexOf(l) !== -1) {
                             this.config.i18n.direction = "rtl";
                             return true;
                         } else {
                             return false;
                         }
-                    });
+                    }));
                     //add a dir attribute to the html tag. Then you can add special css classes for rtl languages
                     var dirNode = document.getElementsByTagName("html")[0];
                     var classes = dirNode.className;
