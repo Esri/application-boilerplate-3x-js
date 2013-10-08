@@ -172,7 +172,7 @@ function(
                         dirNode.className = lang.trim(classes + rtlClasses);
                     } else {
                         dirNode.setAttribute("dir", "ltr");
-                        domClass.add(dirNode, "esirLtr");
+                        domClass.add(dirNode, "esirLTR");
                     }
                     deferred.resolve(this.config.i18n);
                 }));
