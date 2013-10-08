@@ -13,6 +13,6 @@ html,body {
 	height:100%;
 }
 
-.esriRtl label {
+.esriRTL label {
 /*Example of a rule that will be applied if the app is viewed in a browser wtih a RTL locale like Hebrew or Arabic.*/
 }
