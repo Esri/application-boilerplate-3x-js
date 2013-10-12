@@ -76,11 +76,7 @@ function(
                     this._queryUrlParams();
                     //setup OAuth if oauth appid exists
                     if (this.config.oauthappid) {
-                        OAuthHelper.init({
-                            appId: this.config.oauthappid,
-                            portal: this.config.sharinghost,
-                            expiration: (14 * 24 * 60) //2 weeks (in minutes)
-                        });
+                        this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
                     }
                     deferred.resolve();
                 }));
