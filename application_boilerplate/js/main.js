@@ -3,14 +3,16 @@ define([
     "dojo/_base/declare",
     "dojo/_base/lang",
     "esri/arcgis/utils",
-    "esri/IdentityManager"
+    "esri/IdentityManager",
+    "dojo/on"
 ],
 function(
     ready, 
     declare,  
     lang,
     arcgisUtils,
-    IdentityManager
+    IdentityManager,
+    on
 ) {
     return declare("", null, {
         config: {},
@@ -46,7 +48,7 @@ function(
                     // do something with the map
                     this._mapLoaded();
                 } else {
-                    on(this.map, "load", lang.hitch(this, function() {
+                    on.once(this.map, "load", lang.hitch(this, function() {
                         // do something with the map
                         this._mapLoaded();
                     }));
