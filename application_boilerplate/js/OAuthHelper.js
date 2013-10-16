@@ -81,11 +81,21 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
                     var credential = this.registerToken(oauthResponse);
                     // User checked "Keep me signed in" option
                     if (oauthResponse.persist) {
-                        cookie("arcgis_auth", dojoJson.toJson(oauthResponse), {
-                            expires: new Date(oauthResponse.expires_at),
-                            path: "/",
-                            domain: document.domain
-                        });
+                        if (document.domain === "localhost") {
+                            // Do not include the domain because "localhost" won't work. See http://stackoverflow.com/a/489465
+                            cookie("arcgis_auth", dojoJson.toJson(oauthResponse), {
+                                expires: new Date(oauthResponse.expires_at),
+                                path: "/"
+                            });
+                        }
+                        else {
+                            // Include the domain
+                            cookie("arcgis_auth", dojoJson.toJson(oauthResponse), {
+                                expires: new Date(oauthResponse.expires_at),
+                                path: "/",
+                                domain: document.domain
+                            });
+                        }
                         console.log("[Cookie] Write: ", cookie("arcgis_auth"));
                     }
                     if (this.deferred) {
