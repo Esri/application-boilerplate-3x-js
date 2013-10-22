@@ -187,8 +187,8 @@ function(
                     declare.safeMixin(this.config, response.itemData.values);
                     //setup OAuth if oauth appid exists. In this siutation the oauthappid is specified in the 
                     //configuration panel. 
-                    if (response.itemData.values && response.itemData.oauthappid) {
-                        this._setupOAuth(response.itemData.oauthappid, this.config.sharinghost);
+                    if (response.itemData.values && response.itemData.values.oauthappid) {
+                        this._setupOAuth(response.itemData.values.oauthappid, this.config.sharinghost);
                     }
                     deferred.resolve();
                 }));
