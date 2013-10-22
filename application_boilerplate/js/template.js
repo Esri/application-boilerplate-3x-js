@@ -63,7 +63,7 @@ function(
             //advantage of these parameters. 
             var paramItems = ['webmap', 'appid', 'group', 'oauthappid'];
             var mixinParams = this._createUrlParamsObject(paramItems);
-            declare.safeMixin(this.config, mixinParams);
+            lang.mixin(this.config, mixinParams);
             //Define the sharing url and other default values like the proxy. 
             //The sharing url defines where to search for the web map and application content. The
             //default value is arcgis.com. 
@@ -184,7 +184,7 @@ function(
             var deferred = new Deferred();
             if (this.config.appid) {
                 arcgisUtils.getItem(this.config.appid).then(lang.hitch(this, function(response) {
-                    declare.safeMixin(this.config, response.itemData.values);
+                    lang.mixin(this.config, response.itemData.values);
                     //setup OAuth if oauth appid exists. In this siutation the oauthappid is specified in the 
                     //configuration panel. 
                     if (response.itemData.values && response.itemData.values.oauthappid) {
@@ -208,7 +208,7 @@ function(
                 callbackParamName: "callback"
             }).then(lang.hitch(this, function(response) {
                 this.config.helperServices = {};
-                declare.safeMixin(this.config.helperServices, response.helperServices);
+                lang.mixin(this.config.helperServices, response.helperServices);
                 //Let's set the geometry helper service to be the app default.  
                 if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
                     esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
@@ -230,7 +230,7 @@ function(
             //supporting additional url parameters in your application. 
             var paramItems = ['center', 'basemap', 'theme'];
             var mixinParams = this._createUrlParamsObject(paramItems);
-            declare.safeMixin(this.config, mixinParams);
+            lang.mixin(this.config, mixinParams);
         }
     });
 });
