@@ -1,29 +1,41 @@
-define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "esri/IdentityManager", "esri/geometry/Extent", "dojo/on"], function (
-ready, declare, lang, arcgisUtils, IdentityManager, Extent, on) {
+define([
+    "dojo/ready",
+    "dojo/_base/declare",
+    "dojo/_base/lang",
+    "esri/arcgis/utils",
+    "dojo/on"
+], function (
+    ready,
+    declare,
+    lang,
+    arcgisUtils,
+    on
+) {
     return declare("", null, {
         config: {},
         constructor: function (config) {
-            //config will contain application and user defined info for the template such as i18n strings, the web map id
+            // config will contain application and user defined info for the template such as i18n strings, the web map id
             // and application id
             // any url parameters and any application specific configuration information. 
             this.config = config;
-            
+            // document ready
             ready(lang.hitch(this, function () {
-                console.log(this.config.webmap)
                 arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
                     //let's get the web map item and update the extent if needed. 
                     if (this.config.appid && this.config.application_extent.length > 0) {
                         itemInfo.item.extent = [
-                            [parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])],
-                            [parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])]
+                            [
+                                parseFloat(this.config.application_extent[0][0]),
+                                parseFloat(this.config.application_extent[0][1])
+                            ],
+                            [
+                                parseFloat(this.config.application_extent[1][0]),
+                                parseFloat(this.config.application_extent[1][1])
+                            ]
                         ];
                     }
                     this._createWebMap(itemInfo);
                 }));
-
-
-
-
             }));
         },
         _mapLoaded: function () {
@@ -42,9 +54,9 @@ ready, declare, lang, arcgisUtils, IdentityManager, Extent, on) {
                 //such as the map, operational layers, popup info and more. This object will also contain
                 //any custom options you defined for the template. In this example that is the 'theme' property.
                 //Here' we'll use it to update the application to match the specified color theme.  
-                console.log(this.config);
+                // console.log(this.config);
                 this.map = response.map;
-
+                // make sure map is loaded
                 if (this.map.loaded) {
                     // do something with the map
                     this._mapLoaded();
