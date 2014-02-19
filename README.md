@@ -10,7 +10,7 @@ This bare-bones app includes all the code you need to build an ArcGIS Online tem
 *	Localizing your application in different languages.
 *	Capturing URL parameters and using them in your application.
 *	Using settings from your ArcGIS Online organization or configured application.
-*	Enabling your application to sign-in to ArcGIS Online using [oAuth2](http://oauth.net/2/).
+*	Enabling your application to sign-in to ArcGIS Online using [OAuth 2.0](http://oauth.net/2/).
 
 [View it live](http://esri.github.io/application-boilerplate-js/application_boilerplate/)
 
@@ -43,7 +43,7 @@ The template consists of the following folders and files:
 
 *   **/nls/:** The nls folder contains a file called resources.js that contains the strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
 *   **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
-*   **oAuthHelper.js:** Allows your template to [authenticate](https://developers.arcgis.com/en/authentication/) to secured or private ArcGIS Online content and items via [oAuth2](http://oauth.net/2/). You most likely will not need to modify this file.
+*   **oAuthHelper.js:** Allows your template to [authenticate](https://developers.arcgis.com/en/authentication/) to secured or private ArcGIS Online content and items via [OAuth 2.0](http://oauth.net/2/). You most likely will not need to modify this file.
 *   **template.js:** Module that takes care of "template"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), handling localization details and retrieving organization specifc info if applicable. You will most likely not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the defaults.js file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
     *   Template specific properties
     *   appid
