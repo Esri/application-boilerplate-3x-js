@@ -67,8 +67,8 @@ The template consists of the following folders and files:
 
 ## Requirements
 
-* Notepad or HTML editor
-* A little background with JavaScript
+* Text or HTML editor.
+* A little background with JavaScript.
 * Experience with the [ArcGIS JavaScript API](http://www.esri.com/) would help.
 
 ## Resources
