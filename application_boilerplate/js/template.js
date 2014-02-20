@@ -50,15 +50,15 @@ function(
                 this.emit("ready", this.config);
             }));
         },
-        //Get URL parameters and set applciation defaults needed to query arcgis.com for 
-        //an applciation and to see if the app is running in Portal or an Org
+        //Get URL parameters and set application defaults needed to query arcgis.com for
+        //an application and to see if the app is running in Portal or an Org
         _init: function() {
             var deferred = new Deferred();
             //Set the web map, group and appid if they exist but ignore other url params. 
             //Additional url parameters may be defined by the application but they need to be mixed in
-            //to the config object after we retrive the application configuration info. As an example, 
-            //we'll mix in some commonly used url paramters in the _queryUrlParams function after 
-            //the application configuration has been applied so that the url parametrs overwrite any 
+            //to the config object after we retrieve the application configuration info. As an example,
+            //we'll mix in some commonly used url parameters in the _queryUrlParams function after
+            //the application configuration has been applied so that the url parameters overwrite any
             //configured settings. It's up to the application developer to update the application to take 
             //advantage of these parameters. 
             var paramItems = ['webmap', 'appid', 'group', 'oauthappid'];
@@ -120,7 +120,7 @@ function(
                 this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
             } else {
                 //setup OAuth if oauth appid exists. If we don't call it here before querying for appid
-                //the idenity manager dialog will appear if the appid isn't publicly shared. 
+                //the identity manager dialog will appear if the appid isn't publicly shared.
                 if (this.config.oauthappid) {
                     this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
                 }
@@ -168,7 +168,7 @@ function(
                         dirNode.className = lang.trim(classes + rtlClasses);
                     } else {
                         dirNode.setAttribute("dir", "ltr");
-                        domClass.add(dirNode, "esirLTR");
+                        domClass.add(dirNode, "esriLTR");
                     }
                     deferred.resolve(this.config.i18n);
                 }));
@@ -185,7 +185,7 @@ function(
             if (this.config.appid) {
                 arcgisUtils.getItem(this.config.appid).then(lang.hitch(this, function(response) {
                     lang.mixin(this.config, response.itemData.values);
-                    //get the extent for the applciation item. This can be used to override the default web map extent
+                    //get the extent for the application item. This can be used to override the default web map extent
                     if(response.item && response.item.extent){
                         this.config.application_extent = response.item.extent;
                     }

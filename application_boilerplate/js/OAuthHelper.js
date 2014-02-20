@@ -15,7 +15,7 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
             /**
              * parameters = {
              *   appId:       "<String>",
-             *   portal:      "<String>", // deafult is "http://www.arcgis.com"
+             *   portal:      "<String>", // default is "http://www.arcgis.com"
              *   expiration:   <Number> // in minutes
              * }
              */
