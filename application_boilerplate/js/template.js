@@ -168,7 +168,7 @@ function(
                         dirNode.className = lang.trim(classes + rtlClasses);
                     } else {
                         dirNode.setAttribute("dir", "ltr");
-                        domClass.add(dirNode, "esirLTR");
+                        domClass.add(dirNode, "esriLTR");
                     }
                     deferred.resolve(this.config.i18n);
                 }));
