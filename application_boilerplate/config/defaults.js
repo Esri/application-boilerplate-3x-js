@@ -1,5 +1,5 @@
 define([], function() {
-    //Default configuration settings for the applciation. This is where you'll define things like a bing maps key, 
+    //Default configuration settings for the application. This is where you'll define things like a bing maps key,
     //default web map, default app color theme and more. These values can be overwritten by template configuration settings
     //and url parameters.
     var defaults = {
@@ -8,7 +8,7 @@ define([], function() {
         "oauthappid": null, //"AFTKRmv16wj14N3z",
         //Group templates must support a group url parameter. This will contain the id of the group. 
         //group: "",
-        //Enter the url to the proxy if needed by the applcation. See the 'Using the proxy page' help topic for details
+        //Enter the url to the proxy if needed by the application. See the 'Using the proxy page' help topic for details
         //http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
         "proxyurl": "",
         //Example of a template specific property. If your template had several color schemes
