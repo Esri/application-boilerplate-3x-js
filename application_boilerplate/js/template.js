@@ -226,7 +226,7 @@ define([
                         this.config.units = response.user.units;
                     } else if (response.units) { //org level units 
                         this.config.units = response.units;
-                    } else if ((response.user && response.user.region && response.user.region === "US") || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
+                    } else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")){
                         // use feet/miles only for the US and if nothing is set for a user
                         this.config.units = "english";
                     }
