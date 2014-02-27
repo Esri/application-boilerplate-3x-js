@@ -4,7 +4,7 @@ define([], function() {
     //and url parameters.
     var defaults = {
         "appid": "",
-        "webmap": "de5ae0c2040c49d38e9ea0637454ac73", // "0eece0d5de2140e9a44d8050f943fd18", "de5ae0c2040c49d38e9ea0637454ac73"
+        "webmap": "de5ae0c2040c49d38e9ea0637454ac73",
         "oauthappid": null, //"AFTKRmv16wj14N3z",
         //Group templates must support a group url parameter. This will contain the id of the group. 
         //group: "",
@@ -16,7 +16,27 @@ define([], function() {
         //color theme.  
         "theme": "blue",
         "bingmapskey": "", //Enter the url to your organizations bing maps key if you want to use bing basemaps
-        "sharinghost": location.protocol + "//" + "www.arcgis.com" //Defaults to arcgis.com. Set this value to your portal or organization host name. 
+        //Defaults to arcgis.com. Set this value to your portal or organization host name.
+        "sharinghost": location.protocol + "//" + "www.arcgis.com", 
+        //When true the template will query arcgis.com for default settings for helper services, units etc. If you 
+        //want to use custom settings for units or any of the helper services set queryForOrg to false then enter
+        //default values for any items you need using the helper services and units properties. 
+        "queryForOrg": true, 
+        "units": null, 
+        "helperServices": {  
+           "geometry":{
+            "url": null
+           },
+           "printTask": {
+            "url": null
+           },
+           "elevationSync":{
+             "url": null
+           },
+           "geocode": [{
+            "url": null
+           }]
+        }
     };
     return defaults;
 });

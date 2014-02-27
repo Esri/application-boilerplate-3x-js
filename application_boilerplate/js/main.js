@@ -20,22 +20,9 @@ define([
             this.config = config;
             // document ready
             ready(lang.hitch(this, function () {
-                arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
-                    //let's get the web map item and update the extent if needed. 
-                    if (this.config.appid && this.config.application_extent.length > 0) {
-                        itemInfo.item.extent = [
-                            [
-                                parseFloat(this.config.application_extent[0][0]),
-                                parseFloat(this.config.application_extent[0][1])
-                            ],
-                            [
-                                parseFloat(this.config.application_extent[1][0]),
-                                parseFloat(this.config.application_extent[1][1])
-                            ]
-                        ];
-                    }
-                    this._createWebMap(itemInfo);
-                }));
+                //supply either the webmap id or, if available, the item info 
+                var itemInfo = this.config.itemInfo || this.config.webmap;
+                this._createWebMap(itemInfo);
             }));
         },
         _mapLoaded: function () {
@@ -56,6 +43,7 @@ define([
                 //Here' we'll use it to update the application to match the specified color theme.  
                 // console.log(this.config);
                 this.map = response.map;
+     
                 // make sure map is loaded
                 if (this.map.loaded) {
                     // do something with the map
