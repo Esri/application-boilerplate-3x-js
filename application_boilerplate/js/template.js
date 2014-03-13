@@ -322,8 +322,7 @@ define([
                 //application default and configuration info has been applied. Currently these values 
                 //(center, basemap, theme) are only here as examples and can be removed if you don't plan on 
                 //supporting additional url parameters in your application. 
-                var paramItems = ['center', 'basemap', 'theme'];
-                var mixinParams = this._createUrlParamsObject(paramItems);
+                var mixinParams = this._createUrlParamsObject(this.config.urlItems);
                 lang.mixin(this.config, mixinParams);
             }
         });

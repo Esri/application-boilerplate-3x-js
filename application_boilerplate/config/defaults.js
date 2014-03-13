@@ -15,24 +15,30 @@ define({
     "theme": "blue",
     "bingmapskey": "", //Enter the url to your organizations bing maps key if you want to use bing basemaps
     //Defaults to arcgis.com. Set this value to your portal or organization host name.
-    "sharinghost": location.protocol + "//" + "www.arcgis.com", 
+    "sharinghost": location.protocol + "//" + "www.arcgis.com",
     //When true the template will query arcgis.com for default settings for helper services, units etc. If you 
     //want to use custom settings for units or any of the helper services set queryForOrg to false then enter
     //default values for any items you need using the helper services and units properties. 
-    "queryForOrg": true, 
-    "units": null, 
-    "helperServices": {  
-       "geometry":{
-        "url": null
-       },
-       "printTask": {
-        "url": null
-       },
-       "elevationSync":{
-         "url": null
-       },
-       "geocode": [{
-        "url": null
+    "queryForOrg": true,
+    "units": null,
+    //This option demonstrates how to handle additional custom url parameters. For example 
+    //if you want users to be able to specify lat/lon coordinates that define the map's center or 
+    //specify an alternate basemap via a url parameter. 
+    "urlItems": [
+        "theme" // example param. ?theme=<my theme>
+    ],
+    "helperServices": {
+        "geometry": {
+            "url": null
+        },
+        "printTask": {
+            "url": null
+        },
+        "elevationSync": {
+            "url": null
+        },
+        "geocode": [{
+            "url": null
        }]
     }
 });
