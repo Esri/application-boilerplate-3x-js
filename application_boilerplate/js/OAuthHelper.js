@@ -1,17 +1,15 @@
-define(
-[
-  "dojo/_base/lang",
-  "dojo/_base/json",
-  "dojo/_base/url",
-  "dojo/cookie",
-  "dojo/Deferred",
-  "dojo/io-query",
-  "esri/IdentityManager"
-], 
-function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
+define([
+    "dojo/_base/lang",
+    "dojo/json",
+    "dojo/cookie",
+    "dojo/Deferred",
+    "dojo/io-query",
+    "esri/IdentityManager",
+    "dojo/hash"
+], function (lang, JSON, cookie, Deferred, ioQuery, IdentityManager, hash) {
     var OAuthHelper = {
         portal: "http://www.arcgis.com",
-        init: function(parameters) {
+        init: function (parameters) {
             /**
              * parameters = {
              *   appId:       "<String>",
@@ -32,10 +30,10 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
             // flow instead of the legacy generateToken flow.
             this.overrideIdentityManager();
         },
-        isSignedIn: function() {
-            return !!idManager.findCredential(this.portalUrl);
+        isSignedIn: function () {
+            return !!IdentityManager.findCredential(this.portalUrl);
         },
-        signIn: function() {
+        signIn: function () {
             var deferred = (this.deferred = new Deferred());
             var authParameters = {
                 client_id: this.appId,
@@ -50,11 +48,11 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
                 redirect_uri = window.location.href.replace(/#.*$/, "");
             }
             authParameters.redirect_uri = redirect_uri;
-            var authUrl = this.portal.replace(/^http:/i, "https:") + "/sharing/oauth2/authorize?" + ioquery.objectToQuery(authParameters);
+            var authUrl = this.portal.replace(/^http:/i, "https:") + "/sharing/oauth2/authorize?" + ioQuery.objectToQuery(authParameters);
             window.location = authUrl;
             return deferred;
         },
-        signOut: function() {
+        signOut: function () {
             // Delete the cookie
             cookie("arcgis_auth", null, {
                 expires: -1,
@@ -63,7 +61,7 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
             });
             window.location.reload();
         },
-        checkOAuthResponse: function(url, clearHash) {
+        checkOAuthResponse: function (url, clearHash) {
             // This method will be called from popup callback page as well
             var oauthResponse = this.parseFragment(url);
             if (oauthResponse) {
@@ -83,14 +81,13 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
                     if (oauthResponse.persist) {
                         if (document.domain === "localhost") {
                             // Do not include the domain because "localhost" won't work. See http://stackoverflow.com/a/489465
-                            cookie("arcgis_auth", dojoJson.toJson(oauthResponse), {
-                               // expires: new Date(oauthResponse.expires_at),
+                            cookie("arcgis_auth", JSON.stringify(oauthResponse), {
+                                // expires: new Date(oauthResponse.expires_at),
                                 path: "/"
                             });
-                        }
-                        else {
+                        } else {
                             // Include the domain
-                            cookie("arcgis_auth", dojoJson.toJson(oauthResponse), {
+                            cookie("arcgis_auth", JSON.stringify(oauthResponse), {
                                 //expires: new Date(oauthResponse.expires_at),
                                 path: "/",
                                 domain: document.domain
@@ -104,31 +101,31 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
                 }
             }
         },
-        checkCookie: function() {
+        checkCookie: function () {
             var ckie = cookie("arcgis_auth");
             if (ckie) {
                 console.log("[Cookie] Read: ", ckie);
-                var oauthResponse = dojoJson.fromJson(ckie);
+                var oauthResponse = JSON.parse(ckie);
                 this.registerToken(oauthResponse);
             }
         },
-        registerToken: function(oauthResponse) {
+        registerToken: function (oauthResponse) {
             // Register the access token with Identity Manager, so that
             // it can be added to all ArcGIS Online REST API requests
-            idManager.registerToken({
+            IdentityManager.registerToken({
                 server: this.portalUrl,
                 userId: oauthResponse.username,
                 token: oauthResponse.access_token,
                 expires: oauthResponse.expires_at,
                 ssl: oauthResponse.ssl
             });
-            var credential = idManager.findCredential(this.portalUrl, oauthResponse.username);
+            var credential = IdentityManager.findCredential(this.portalUrl, oauthResponse.username);
             console.log("Token registered with Identity Manager: ", credential);
             return credential;
         },
-        parseFragment: function(url) {
-            var urlObj = new Url(url),
-                fragment = urlObj.fragment ? ioquery.queryToObject(urlObj.fragment) : null;
+        parseFragment: function (url) {
+            var h = hash();
+            var fragment = h ? ioQuery.queryToObject(h) : null;
             if (fragment) {
                 if (fragment.access_token) {
                     console.log("[OAuth Response]: ", fragment);
@@ -143,10 +140,10 @@ function(lang, dojoJson, Url, cookie, Deferred, ioquery, idManager) {
                 return fragment;
             }
         },
-        overrideIdentityManager: function() {
-            var signInMethod = idManager.signIn,
+        overrideIdentityManager: function () {
+            var signInMethod = IdentityManager.signIn,
                 helper = this;
-            idManager.signIn = function(resUrl, serverInfo, options) {
+            IdentityManager.signIn = function (resUrl, serverInfo, options) {
                 return (serverInfo.server.indexOf(".arcgis.com") !== -1) ?
                 // OAuth flow
                 helper.signIn() :

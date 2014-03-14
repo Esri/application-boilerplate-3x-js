@@ -43,7 +43,7 @@ define([
                 //Here' we'll use it to update the application to match the specified color theme.  
                 // console.log(this.config);
                 this.map = response.map;
-     
+
                 // make sure map is loaded
                 if (this.map.loaded) {
                     // do something with the map
