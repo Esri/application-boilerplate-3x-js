@@ -54,6 +54,11 @@
                 //In this example we have one called theme. 
                 Main(config);
             });
+                
+            on(myTemplate, "error", function(error) {
+                console.log(error);
+            });
+                
         });
     </script>   
 </body>

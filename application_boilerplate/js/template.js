@@ -43,6 +43,7 @@ define([
         localize: false,
         orgConfig: {},
         appConfig: {},
+        customUrlConfig: {},
         constructor: function (supportsLocalization) {
             //config will contain application and user defined info for the application such as i18n strings, 
             //the web map id and application id, any url parameters and any application specific configuration
@@ -51,6 +52,8 @@ define([
             this.localize = supportsLocalization || false;
             this._init().then(lang.hitch(this, function () {
                 this.emit("ready", this.config);
+            }), lang.hitch(this, function (error) {
+                this.emit("error", error);
             }));
         },
         //Get URL parameters and set application defaults needed to query arcgis.com for
@@ -66,36 +69,33 @@ define([
             //advantage of these parameters. 
             var paramItems = ["webmap", "appid", "group", "oauthappid"];
             var mixinParams = this._createUrlParamsObject(paramItems);
+            // config defaults <- standard url params
             lang.mixin(this.config, mixinParams);
             //Define the sharing url and other default values like the proxy. 
             //The sharing url defines where to search for the web map and application content. The
             //default value is arcgis.com. 
             this._initializeApplication();
             this._getLocalization()
-                .then(lang.hitch(this, this._queryApplicationConfiguration))
-                .then(lang.hitch(this, this._queryDisplayItem))
-                .then(lang.hitch(this, this._queryOrganizationInformation))
-                .then(lang.hitch(this, function () {
-                    //Now that we have the org and app settings do the mixins. First overwrite the defaults 
-                    //with the application settings then apply org settings if required
-                    lang.mixin(this.config, this.appConfig);
-                    if (this.config.queryForOrg !== false) {
-                        lang.mixin(this.config, this.orgConfig);
-                    }
+                .always(lang.hitch(this, this._queryApplicationConfiguration))
+                .always(lang.hitch(this, this._queryDisplayItem))
+                .always(lang.hitch(this, this._queryOrganizationInformation))
+                .always(lang.hitch(this, function () {
+                    // Get any custom url params
+                    this._queryUrlParams();
+                    // mix in all the settings we got!
+                    // defaults <- organization <- application id config <- custom url params
+                    lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig);
                     //Set the geometry helper service to be the app default.  
                     if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
                         esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
                     }
-                    //Now update the config with any custom url params
-                    this._queryUrlParams();
-
                     //setup OAuth if oauth appid exists
                     if (this.config.oauthappid) {
                         this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
                     }
                     deferred.resolve();
                 }));
-
+            // return promise
             return deferred.promise;
         },
         _createUrlParamsObject: function (items) {
@@ -224,10 +224,14 @@ define([
                     this.config.itemInfo = itemInfo;
                     deferred.resolve();
                 }), function (error) {
+                    if (!error) {
+                        error = new Error('ApplicationBoilerplate:: Error retrieving display item.');
+                    }
                     deferred.reject(error);
                 });
             } else {
-                deferred.resolve();
+                var error = new Error('ApplicationBoilerplate:: webmap or group undefined.');
+                deferred.reject(error);
             }
             return deferred.promise;
         },
@@ -241,7 +245,6 @@ define([
                     if (response.item && response.itemData && response.itemData.values) {
                         //get app config values - we'll merge them with config later. 
                         this.appConfig = response.itemData.values;
-
                         //Get the web map from the app values. But if there's a web url
                         //parameter don't overwrite with the app value. 
                         var webmapParam = this._createUrlParamsObject(["webmap"]);
@@ -255,6 +258,9 @@ define([
                     }
                     deferred.resolve();
                 }), function (error) {
+                    if (!error) {
+                        error = new Error('ApplicationBoilerplate:: Error retrieving application configuration.');
+                    }
                     deferred.reject(error);
                 });
             } else {
@@ -264,41 +270,47 @@ define([
         },
         _queryOrganizationInformation: function () {
             var deferred = new Deferred();
-            //Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you 
-            //are a member of an org you'll want to set the sharinghost to be http://<your org name>.arcgis.com. We query 
-            //the organization by making a self request to the org url which returns details specific to that organization. 
-            //Examples of the type of information returned are custom roles, units settings, helper services and more. 
-            esriRequest({
-                url: this.config.sharinghost + "/sharing/rest/portals/self",
-                content: {
-                    "f": "json"
-                },
-                callbackParamName: "callback"
-            }).then(lang.hitch(this, function (response) {
-                //get units defined by the org or the org user
-                this.orgConfig.units = "metric";
-                if (response.user && response.user.units) { //user defined units
-                    this.orgConfig.units = response.user.units;
-                } else if (response.units) { //org level units 
-                    this.orgConfig.units = response.units;
-                } else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
-                    // use feet/miles only for the US and if nothing is set for a user
-                    this.orgConfig.units = "english";
-                }
-                //Get the helper servcies (routing, print, locator etc)
-                this.orgConfig.helperServices = {};
-                lang.mixin(this.orgConfig.helperServices, response.helperServices);
-                //are any custom roles defined in the organization? 
-                if (response.user && esriLang.isDefined(response.user.roleId)) {
-                    if (response.user.privileges) {
-                        this.orgConfig.userPrivileges = response.user.privileges;
+            if (this.config.queryForOrg) {
+                //Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you 
+                //are a member of an org you'll want to set the sharinghost to be http://<your org name>.arcgis.com. We query 
+                //the organization by making a self request to the org url which returns details specific to that organization. 
+                //Examples of the type of information returned are custom roles, units settings, helper services and more.
+                // If this fails, the application will continue to function
+                esriRequest({
+                    url: this.config.sharinghost + "/sharing/rest/portals/self",
+                    content: {
+                        "f": "json"
+                    },
+                    callbackParamName: "callback"
+                }).then(lang.hitch(this, function (response) {
+                    //get units defined by the org or the org user
+                    this.orgConfig.units = "metric";
+                    if (response.user && response.user.units) { //user defined units
+                        this.orgConfig.units = response.user.units;
+                    } else if (response.units) { //org level units 
+                        this.orgConfig.units = response.units;
+                    } else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
+                        // use feet/miles only for the US and if nothing is set for a user
+                        this.orgConfig.units = "english";
                     }
-                }
+                    //Get the helper servcies (routing, print, locator etc)
+                    this.orgConfig.helperServices = response.helperServices;
+                    //are any custom roles defined in the organization? 
+                    if (response.user && esriLang.isDefined(response.user.roleId)) {
+                        if (response.user.privileges) {
+                            this.orgConfig.userPrivileges = response.user.privileges;
+                        }
+                    }
+                    deferred.resolve();
+                }), function (error) {
+                    if (!error) {
+                        error = new Error('ApplicationBoilerplate:: Error retreiving organization information.');
+                    }
+                    deferred.reject(error);
+                });
+            } else {
                 deferred.resolve();
-            }), function (error) {
-                console.log(error);
-                deferred.resolve();
-            });
+            }
             return deferred.promise;
         },
         _queryUrlParams: function () {
@@ -309,8 +321,7 @@ define([
             //application default and configuration info has been applied. Currently these values 
             //(center, basemap, theme) are only here as examples and can be removed if you don't plan on 
             //supporting additional url parameters in your application. 
-            var mixinParams = this._createUrlParamsObject(this.config.urlItems);
-            lang.mixin(this.config, mixinParams);
+            this.customUrlConfig = this._createUrlParamsObject(this.config.urlItems);
         }
     });
 });
