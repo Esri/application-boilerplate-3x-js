@@ -6,7 +6,15 @@ define([
     "dojo/io-query",
     "esri/IdentityManager",
     "dojo/hash"
-], function (lang, JSON, cookie, Deferred, ioQuery, IdentityManager, hash) {
+], function (
+    lang,
+    JSON,
+    cookie,
+    Deferred,
+    ioQuery,
+    IdentityManager,
+    hash
+) {
     var OAuthHelper = {
         portal: "http://www.arcgis.com",
         init: function (parameters) {
@@ -21,7 +29,7 @@ define([
             this.portalUrl = this.portal + "/sharing/rest";
             // Read OAuth response from the page url fragment if available,
             // and register with identity manager
-            this.checkOAuthResponse(window.location.href, true);
+            this.checkOAuthResponse(true);
             // Read token from cookie if available, and register
             // with identity manager
             this.checkCookie();
@@ -61,9 +69,9 @@ define([
             });
             window.location.reload();
         },
-        checkOAuthResponse: function (url, clearHash) {
+        checkOAuthResponse: function (clearHash) {
             // This method will be called from popup callback page as well
-            var oauthResponse = this.parseFragment(url);
+            var oauthResponse = this.parseFragment();
             if (oauthResponse) {
                 if (clearHash) { // redirection flow
                     // Remove OAuth bits from the URL fragment
@@ -123,7 +131,7 @@ define([
             console.log("Token registered with Identity Manager: ", credential);
             return credential;
         },
-        parseFragment: function (url) {
+        parseFragment: function () {
             var h = hash();
             var fragment = h ? ioQuery.queryToObject(h) : null;
             if (fragment) {
@@ -143,7 +151,8 @@ define([
         overrideIdentityManager: function () {
             var signInMethod = IdentityManager.signIn,
                 helper = this;
-            IdentityManager.signIn = function (resUrl, serverInfo, options) {
+            IdentityManager.signIn = function () {
+                var serverInfo = arguments[1];
                 return (serverInfo.server.indexOf(".arcgis.com") !== -1) ?
                 // OAuth flow
                 helper.signIn() :

@@ -20,6 +20,11 @@ define({
     //want to use custom settings for units or any of the helper services set queryForOrg to false then enter
     //default values for any items you need using the helper services and units properties. 
     "queryForOrg": true,
+    //If you need localization set the supportsLocalization value to true to get the localized strings 
+    //from the javascript/nls/resource files. 
+    //Note that we've included a placeholder nls folder and a resource file with one error string
+    //to show how to setup the strings file.
+    "localize": true,
     "units": null,
     //This option demonstrates how to handle additional custom url parameters. For example 
     //if you want users to be able to specify lat/lon coordinates that define the map's center or 

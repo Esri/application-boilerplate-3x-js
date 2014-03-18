@@ -3,9 +3,17 @@
 <head>
     <title>ArcGIS Application Boilerplate</title>
     <meta charset="utf-8">
+    <!--Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional.-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- Responsive -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- End Responsive -->
     <!--Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol-->
-    <link rel="stylesheet" href="//js.arcgis.com/3.8/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet"  href="//js.arcgis.com/3.8/js/esri/css/esri.css">
+    <link rel="stylesheet" href="//js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
+    <link rel="stylesheet"  href="//js.arcgis.com/3.9/js/esri/css/esri.css">
     <!--Load any application specific styles-->
     <link rel="stylesheet" href="css/main.css">
 </head>
@@ -26,7 +34,7 @@
             }]
         };
     </script>
-    <script type="text/javascript" src="//js.arcgis.com/3.8/"></script>
+    <script type="text/javascript" src="//js.arcgis.com/3.9/"></script>
     <script type="text/javascript">
         require([
             "dojo/on",
@@ -39,26 +47,16 @@
             Template
         ){
             //create the template. This will take care of all the logic required for template applications 
-            //If you need localization set the supportsLocalization value to true to get the localized strings 
-            //from the javascript/nls/resource files. 
-            //Note that we've included a placeholder nls folder and a resource file with one error string
-            //to show how to setup the strings file.
-            
-            var supportsLocalization = true; //defaults to true
-            
-            var myTemplate = new Template(supportsLocalization);
-            
-            on(myTemplate, "ready", function(config) {
+            var myTemplate = new Template();
+            // start template
+            myTemplate.startup().then(function(config) {
                 //The config object contains the following properties: helper services, (optionally) 
                 //i18n, appid, webmap and any custom values defined by the application. 
                 //In this example we have one called theme. 
                 Main(config);
+            }, function(error) {
+                alert(error.message);
             });
-                
-            on(myTemplate, "error", function(error) {
-                console.log(error);
-            });
-                
         });
     </script>   
 </body>

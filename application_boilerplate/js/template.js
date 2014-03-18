@@ -1,13 +1,10 @@
 define([
-    "dojo/Evented",
-    "dojo/parser",
     "dojo/_base/declare",
     "dojo/_base/kernel",
     "dojo/_base/array",
     "dojo/_base/lang",
     "dojo/dom-class",
     "dojo/Deferred",
-    "dojo/promise/all",
     "esri/arcgis/utils",
     "esri/urlUtils",
     "esri/request",
@@ -17,17 +14,13 @@ define([
     "esri/tasks/GeometryService",
     "config/defaults",
     "application/OAuthHelper"
-
 ], function (
-    Evented,
-    parser,
     declare,
     kernel,
     array,
     lang,
     domClass,
     Deferred,
-    all,
     arcgisUtils,
     urlUtils,
     esriRequest,
@@ -38,27 +31,20 @@ define([
     defaults,
     OAuthHelper
 ) {
-    return declare([Evented], {
+    return declare([], {
         config: {},
-        localize: false,
         orgConfig: {},
         appConfig: {},
         customUrlConfig: {},
-        constructor: function (supportsLocalization) {
+        constructor: function () {
             //config will contain application and user defined info for the application such as i18n strings, 
             //the web map id and application id, any url parameters and any application specific configuration
-            // information. 
+            // information.
             this.config = defaults;
-            this.localize = supportsLocalization || false;
-            this._init().then(lang.hitch(this, function () {
-                this.emit("ready", this.config);
-            }), lang.hitch(this, function (error) {
-                this.emit("error", error);
-            }));
         },
         //Get URL parameters and set application defaults needed to query arcgis.com for
         //an application and to see if the app is running in Portal or an Org
-        _init: function () {
+        startup: function () {
             var deferred = new Deferred();
             //Set the web map, group and appid if they exist but ignore other url params. 
             //Additional url parameters may be defined by the application but they need to be mixed in
@@ -70,16 +56,17 @@ define([
             var paramItems = ["webmap", "appid", "group", "oauthappid"];
             var mixinParams = this._createUrlParamsObject(paramItems);
             // config defaults <- standard url params
+            // we need the webmap, appid, group and oauthappid to query for the data
             lang.mixin(this.config, mixinParams);
             //Define the sharing url and other default values like the proxy. 
             //The sharing url defines where to search for the web map and application content. The
             //default value is arcgis.com. 
             this._initializeApplication();
             this._getLocalization()
-                .always(lang.hitch(this, this._queryApplicationConfiguration))
-                .always(lang.hitch(this, this._queryDisplayItem))
-                .always(lang.hitch(this, this._queryOrganizationInformation))
-                .always(lang.hitch(this, function () {
+                .then(lang.hitch(this, this._queryApplicationConfiguration), deferred.reject)
+                .then(lang.hitch(this, this._queryDisplayItem), deferred.reject)
+                .then(lang.hitch(this, this._queryOrganizationInformation), deferred.reject)
+                .then(lang.hitch(this, function () {
                     // Get any custom url params
                     this._queryUrlParams();
                     // mix in all the settings we got!
@@ -93,8 +80,8 @@ define([
                     if (this.config.oauthappid) {
                         this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
                     }
-                    deferred.resolve();
-                }));
+                    deferred.resolve(this.config);
+                }), deferred.reject);
             // return promise
             return deferred.promise;
         },
@@ -147,10 +134,10 @@ define([
                 esriConfig.defaults.io.alwaysUseProxy = false;
             }
             //check sign-in status 
-            IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing").then(lang.hitch(this, function (credential) {
+            IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing").then(lang.hitch(this, function () {
                     return;
                 },
-                function (error) {
+                function () {
                     return;
                 }));
         },
@@ -163,7 +150,7 @@ define([
         },
         _getLocalization: function () {
             var deferred = new Deferred();
-            if (this.localize) {
+            if (this.config.localize) {
                 require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
                     //Get the localization strings for the template and store in an i18n variable. Also determine if the 
                     //application is in a right-to-left language like Arabic or Hebrew. 
@@ -192,7 +179,7 @@ define([
                         dirNode.setAttribute("dir", "ltr");
                         domClass.add(dirNode, "esriLTR");
                     }
-                    deferred.resolve(this.config.i18n);
+                    deferred.resolve();
                 }));
             } else {
                 deferred.resolve();
@@ -225,12 +212,12 @@ define([
                     deferred.resolve();
                 }), function (error) {
                     if (!error) {
-                        error = new Error('ApplicationBoilerplate:: Error retrieving display item.');
+                        error = new Error("ApplicationBoilerplate:: Error retrieving display item.");
                     }
                     deferred.reject(error);
                 });
             } else {
-                var error = new Error('ApplicationBoilerplate:: webmap or group undefined.');
+                var error = new Error("ApplicationBoilerplate:: webmap or group undefined.");
                 deferred.reject(error);
             }
             return deferred.promise;
@@ -259,7 +246,7 @@ define([
                     deferred.resolve();
                 }), function (error) {
                     if (!error) {
-                        error = new Error('ApplicationBoilerplate:: Error retrieving application configuration.');
+                        error = new Error("ApplicationBoilerplate:: Error retrieving application configuration.");
                     }
                     deferred.reject(error);
                 });
@@ -304,7 +291,7 @@ define([
                     deferred.resolve();
                 }), function (error) {
                     if (!error) {
-                        error = new Error('ApplicationBoilerplate:: Error retreiving organization information.');
+                        error = new Error("ApplicationBoilerplate:: Error retreiving organization information.");
                     }
                     deferred.reject(error);
                 });
