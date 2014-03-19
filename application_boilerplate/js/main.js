@@ -3,12 +3,16 @@ define([
     "dojo/_base/declare",
     "dojo/_base/lang",
     "esri/arcgis/utils",
+    "dojo/dom",
+    "dojo/dom-class",
     "dojo/on"
 ], function (
     ready,
     declare,
     lang,
     arcgisUtils,
+    dom,
+    domClass,
     on
 ) {
     return declare(null, {
@@ -31,18 +35,28 @@ define([
             }
         },
         reportError: function (error) {
+            // remove loading class from body
+            domClass.remove(document.body, "app-loading");
+            domClass.add(document.body, "app-error");
             // an error occurred - notify the user. In this example we pull the string from the 
             // resource.js file located in the nls folder because we've set the application up 
             // for localization. If you don't need to support multiple languages you can hardcode the
             // strings here and comment out the call in index.html to get the localization strings. 
-            if (this.config && this.config.i18n) {
-                alert(this.config.i18n.map.error + ": " + error.message);
-            } else {
-                alert("Unable to create map: " + error.message);
+            // set message
+            var node = dom.byId("loading_message");
+            if (node) {
+                if (this.config && this.config.i18n) {
+                    node.innerHTML = this.config.i18n.map.error + ": " + error.message;
+                } else {
+                    node.innerHTML = "Unable to create map: " + error.message;
+                }
             }
         },
+        // Map is ready
         _mapLoaded: function () {
-            // Map is ready
+            // remove loading class from body
+            domClass.remove(document.body, "app-loading");
+            // your code here!
         },
         // create a map based on the input web map id
         _createWebMap: function (itemInfo) {
