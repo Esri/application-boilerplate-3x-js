@@ -74,7 +74,9 @@ define([
             // Define the sharing url and other default values like the proxy. 
             // The sharing url defines where to search for the web map and application content. The
             // default value is arcgis.com. 
-            this._initializeApplication()
+            this._initializeApplication();
+            // Is users logged in?
+            this._checkSignIn()
                 .then(lang.hitch(this, this._getLocalization), deferred.reject)
                 .then(lang.hitch(this, this._queryApplicationConfiguration), deferred.reject)
                 .then(lang.hitch(this, this._queryDisplayItem), deferred.reject)
@@ -120,8 +122,6 @@ define([
             return obj;
         },
         _initializeApplication: function () {
-            var deferred = new Deferred();
-            var signedIn;
             // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
             // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com. 
             // We know app is hosted (or portal) if it has /apps/ or /home/ in the url. 
@@ -148,8 +148,11 @@ define([
                 esriConfig.defaults.io.proxyUrl = this.config.proxyurl;
                 esriConfig.defaults.io.alwaysUseProxy = false;
             }
+        },
+        _checkSignIn: function(){
+            var deferred = new Deferred();
             // check sign-in status
-            signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
+            var signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
             // resolve regardless of signed in or not.
             signedIn.promise.always(function () {
                 deferred.resolve();
