@@ -6,6 +6,7 @@ define([
     "dojo/_base/lang",
     "dojo/dom-class",
     "dojo/Deferred",
+    "dojo/promise/all",
     "esri/arcgis/utils",
     "esri/urlUtils",
     "esri/request",
@@ -23,6 +24,7 @@ define([
     lang,
     domClass,
     Deferred,
+    all,
     arcgisUtils,
     urlUtils,
     esriRequest,
@@ -75,13 +77,22 @@ define([
             // The sharing url defines where to search for the web map and application content. The
             // default value is arcgis.com. 
             this._initializeApplication();
-            // Is users logged in?
-            this._checkSignIn()
-                .then(lang.hitch(this, this._getLocalization), deferred.reject)
-                .then(lang.hitch(this, this._queryApplicationConfiguration), deferred.reject)
-                .then(lang.hitch(this, this._queryDisplayItem), deferred.reject)
-                .then(lang.hitch(this, this._queryOrganizationInformation), deferred.reject)
-                .then(lang.hitch(this, function () {
+            // execute these async
+            all({
+                // check if signed in
+                auth: this._checkSignIn(),
+                // get localization
+                i18n: this._getLocalization(),
+                // get application data
+                app: this._queryApplicationConfiguration()
+            }).then(lang.hitch(this, function () {
+                // then execute these async
+                all({
+                    // get item data
+                    item: this._queryDisplayItem(),
+                    // get org data
+                    org: this._queryOrganizationInformation()
+                }).then(lang.hitch(this, function () {
                     // Get any custom url params
                     this._queryUrlParams();
                     // mix in all the settings we got!
@@ -97,6 +108,7 @@ define([
                     }
                     deferred.resolve(this.config);
                 }), deferred.reject);
+            }), deferred.reject);
             // return promise
             return deferred.promise;
         },
@@ -149,13 +161,13 @@ define([
                 esriConfig.defaults.io.alwaysUseProxy = false;
             }
         },
-        _checkSignIn: function(){
+        _checkSignIn: function () {
             var deferred = new Deferred();
             // check sign-in status
             var signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
             // resolve regardless of signed in or not.
             signedIn.promise.always(function () {
-                deferred.resolve();
+                deferred.resolve(true);
             });
             return deferred.promise;
         },
@@ -197,10 +209,10 @@ define([
                         dirNode.setAttribute("dir", "ltr");
                         domClass.add(dirNode, "esriLTR");
                     }
-                    deferred.resolve();
+                    deferred.resolve(true);
                 }));
             } else {
-                deferred.resolve();
+                deferred.resolve(true);
             }
             return deferred.promise;
         },
@@ -227,7 +239,7 @@ define([
                     }
                     // Set the itemInfo config option. This can be used when calling createMap instead of the webmap or group id 
                     this.config.itemInfo = itemInfo;
-                    deferred.resolve();
+                    deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
                         error = new Error("ApplicationBoilerplate:: Error retrieving display item.");
@@ -261,7 +273,7 @@ define([
                     if (response.item && response.item.extent) {
                         this.config.application_extent = response.item.extent;
                     }
-                    deferred.resolve();
+                    deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
                         error = new Error("ApplicationBoilerplate:: Error retrieving application configuration.");
@@ -269,7 +281,7 @@ define([
                     deferred.reject(error);
                 });
             } else {
-                deferred.resolve();
+                deferred.resolve(true);
             }
             return deferred.promise;
         },
@@ -306,7 +318,7 @@ define([
                             this.orgConfig.userPrivileges = response.user.privileges;
                         }
                     }
-                    deferred.resolve();
+                    deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
                         error = new Error("ApplicationBoilerplate:: Error retreiving organization information.");
@@ -314,7 +326,7 @@ define([
                     deferred.reject(error);
                 });
             } else {
-                deferred.resolve();
+                deferred.resolve(true);
             }
             return deferred.promise;
         },
