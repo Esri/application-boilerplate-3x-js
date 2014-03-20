@@ -16,7 +16,7 @@ define([
     hash
 ) {
     var OAuthHelper = {
-        portal: "http://www.arcgis.com",
+        portal: location.protocol + "//www.arcgis.com",
         init: function (parameters) {
             /**
              * parameters = {
