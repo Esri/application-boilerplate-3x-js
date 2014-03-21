@@ -262,6 +262,8 @@ define([
                     if (response.item && response.itemData && response.itemData.values) {
                         // get app config values - we'll merge them with config later. 
                         this.appConfig = response.itemData.values;
+                        // save response
+                        this.appConfig.appResponse = response;
                         // Get the web map from the app values. But if there's a web url
                         // parameter don't overwrite with the app value. 
                         var webmapParam = this._createUrlParamsObject(["webmap"]);
