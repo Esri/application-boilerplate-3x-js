@@ -314,6 +314,11 @@ define([
                     },
                     callbackParamName: "callback"
                 }).then(lang.hitch(this, function (response) {
+                    
+                    //get the bing key if the organization has one 
+                    if(response.bingKey){
+                        this.orgConfig.bingmapskey = response.bingKey;
+                    }
                     // get units defined by the org or the org user
                     this.orgConfig.units = "metric";
                     if (response.user && response.user.units) { //user defined units
