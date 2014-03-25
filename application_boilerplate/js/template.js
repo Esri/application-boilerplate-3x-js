@@ -63,7 +63,7 @@ define([
         // Get URL parameters and set application defaults needed to query arcgis.com for
         // an application and to see if the app is running in Portal or an Org
         _init: function () {
-            var deferred, paramItems, mixinParams;
+            var deferred, paramItems;
 
             deferred = new Deferred();
             // Set the web map, group and appid if they exist but ignore other url params.
