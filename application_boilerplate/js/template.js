@@ -43,6 +43,7 @@ define([
         appConfig: {},
         urlConfig: {},
         customUrlConfig: {},
+        commonConfig: {},
         constructor: function () {
             // config will contain application and user defined info for the application such as i18n strings,
             // the web map id and application id, any url parameters and any application specific configuration
@@ -89,7 +90,9 @@ define([
                 // get localization
                 i18n: this._getLocalization(),
                 // get application data
-                app: this._queryApplicationConfiguration()
+                app: this._queryApplicationConfiguration(),
+                // common config file
+                common: this._getCommonConfig()
             }).then(lang.hitch(this, function () {
                 // then execute these async
                 all({
@@ -101,8 +104,8 @@ define([
                     // Get any custom url params
                     this._queryUrlParams();
                     // mix in all the settings we got!
-                    // defaults <- organization <- application id config <- custom url params
-                    lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
+                    // defaults <- common config <- organization <- application id config <- custom url params <- standard url params
+                    lang.mixin(this.config, this.commonConfig, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
                     // Set the geometry helper service to be the app default.
                     if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
                         esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
@@ -115,6 +118,19 @@ define([
                 }), deferred.reject);
             }), deferred.reject);
             // return promise
+            return deferred.promise;
+        },
+        _getCommonConfig: function(){
+            var deferred;
+            deferred = new Deferred();
+            if (this.config.commonConfig) {
+                require(["common/commonConfig"], lang.hitch(this, function (response) {
+                    this.commonConfig = response;
+                    deferred.resolve(true);
+                }));
+            } else {
+                deferred.resolve(true);
+            }
             return deferred.promise;
         },
         _createUrlParamsObject: function (items) {
