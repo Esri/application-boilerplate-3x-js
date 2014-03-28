@@ -124,7 +124,7 @@ define([
             var deferred;
             deferred = new Deferred();
             if (this.config.commonConfig) {
-                require(["common/commonConfig"], lang.hitch(this, function (response) {
+                require(["arcgis_templates/commonConfig"], lang.hitch(this, function (response) {
                     this.commonConfig = response;
                     deferred.resolve(true);
                 }));
