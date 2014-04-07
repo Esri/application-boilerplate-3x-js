@@ -334,7 +334,7 @@ define([
                     
                     //get the bing key if the organization has one 
                     if(response.bingKey){
-                        this.orgConfig.bingmapskey = response.bingKey;
+                        this.orgConfig.bingKey = response.bingKey;
                     }
                     // get units defined by the org or the org user
                     this.orgConfig.units = "metric";

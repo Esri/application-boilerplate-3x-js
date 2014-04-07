@@ -14,7 +14,7 @@ define({
     //you could define the default here and setup configuration settings to allow users to choose a different
     //color theme.
     "theme": "blue",
-    "bingmapskey": "", //Enter the url to your organizations bing maps key if you want to use bing basemaps
+    "bingKey": "", //Enter the url to your organizations bing maps key if you want to use bing basemaps
     //Defaults to arcgis.com. Set this value to your portal or organization host name.
     "sharinghost": location.protocol + "//" + "www.arcgis.com",
     //When true the template will query arcgis.com for default settings for helper services, units etc. If you

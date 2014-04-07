@@ -67,7 +67,7 @@ define([
                     // Optionally define additional map config here for example you can
                     // turn the slider off, display info windows, disable wraparound 180, slider position and more.
                 },
-                bingMapsKey: this.config.bingmapskey
+                bingMapsKey: this.config.bingKey
             }).then(lang.hitch(this, function (response) {
                 // Once the map is created we get access to the response which provides important info
                 // such as the map, operational layers, popup info and more. This object will also contain
