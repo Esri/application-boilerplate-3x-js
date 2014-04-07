@@ -1,7 +1,9 @@
 {
     "configurationSettings": [{
-        "category": "<b>Choose template theme</b>",
+        "category": "<b>Configure template</b>",
         "fields": [{
+            "type": "webmap"
+        },{
             "placeHolder": "Defaults to map owner",
             "label": "Owner Text:",
             "fieldName": "owner",
