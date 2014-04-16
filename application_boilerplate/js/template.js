@@ -120,7 +120,7 @@ define([
             // return promise
             return deferred.promise;
         },
-        _getCommonConfig: function(){
+        _getCommonConfig: function () {
             var deferred;
             deferred = new Deferred();
             if (this.config.commonConfig) {
@@ -271,12 +271,12 @@ define([
                     deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
-                        error = new Error("ApplicationBoilerplate:: Error retrieving display item.");
+                        error = new Error("Error retrieving display item.");
                     }
                     deferred.reject(error);
                 });
             } else {
-                error = new Error("ApplicationBoilerplate:: webmap or group undefined.");
+                error = new Error("webmap or group undefined.");
                 deferred.reject(error);
             }
             return deferred.promise;
@@ -307,7 +307,7 @@ define([
                     deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
-                        error = new Error("ApplicationBoilerplate:: Error retrieving application configuration.");
+                        error = new Error("Error retrieving application configuration.");
                     }
                     deferred.reject(error);
                 });
@@ -341,7 +341,7 @@ define([
                         // use feet/miles only for the US and if nothing is set for a user
                         this.orgConfig.units = "english";
                     }
-                    // Get the helper servcies (routing, print, locator etc)
+                    // Get the helper services (routing, print, locator etc)
                     this.orgConfig.helperServices = response.helperServices;
                     // are any custom roles defined in the organization?
                     if (response.user && esriLang.isDefined(response.user.roleId)) {
@@ -352,7 +352,7 @@ define([
                     deferred.resolve(true);
                 }), function (error) {
                     if (!error) {
-                        error = new Error("ApplicationBoilerplate:: Error retrieving organization information.");
+                        error = new Error("Error retrieving organization information.");
                     }
                     deferred.reject(error);
                 });
