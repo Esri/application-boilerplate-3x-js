@@ -296,8 +296,10 @@ define([
                         // Get the web map from the app values. But if there's a web url
                         // parameter don't overwrite with the app value.
                         var webmapParam = this._createUrlParamsObject(["webmap"]);
-                        if (!esriLang.isDefined(webmapParam.webmap) && response.itemData.values.webmap && this.config.webmap) {
-                            this.config.webmap = response.itemData.values.webmap;
+                        if (!esriLang.isDefined(webmapParam.webmap)){
+                            if (response.itemData.values.webmap !== "") {
+                                this.config.webmap = response.itemData.values.webmap;
+                            }
                         }
                     }
                     // get the extent for the application item. This can be used to override the default web map extent
