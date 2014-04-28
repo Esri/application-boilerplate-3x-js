@@ -213,3 +213,12 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+
+
+#############
+# Tools, notes, outputs
+__*.*
+__*
+
+# Snap backups
+*.7z
