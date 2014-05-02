@@ -1,5 +1,20 @@
 /*global define,document */
 /*jslint sloppy:true,nomen:true */
+/*
+ | Copyright 2014 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 define([
     "dojo/ready",
     "dojo/_base/declare",
@@ -7,7 +22,8 @@ define([
     "esri/arcgis/utils",
     "dojo/dom",
     "dojo/dom-class",
-    "dojo/on"
+    "dojo/on",
+	"application/Drawer"
 ], function (
     ready,
     declare,
@@ -15,7 +31,8 @@ define([
     arcgisUtils,
     dom,
     domClass,
-    on
+    on,
+ 	Drawer
 ) {
     return declare(null, {
         config: {},
@@ -25,6 +42,16 @@ define([
             // any url parameters and any application specific configuration information.
             if (config) {
                 this.config = config;
+                this._drawer = new Drawer({
+                    showDrawerSize: 850, // Pixel size when the drawer is automatically opened
+                    borderContainer: "border_container", // border container node id
+                    contentPaneCenter: "cp_center", // center content pane node id
+                    contentPaneSide: "cp_left", // side content pane id
+                    toggleButton: "toggle_button", // button node to toggle drawer id
+                    direction: this.config.i18n.direction // i18n direction "ltr" or "rtl"
+                });
+                // startup drawer
+                this._drawer.startup();
                 // document ready
                 ready(lang.hitch(this, function () {
                     //supply either the webmap id or, if available, the item info
@@ -35,6 +62,7 @@ define([
                 var error = new Error("Main:: Config is not defined");
                 this.reportError(error);
             }
+			
         },
         reportError: function (error) {
             // remove loading class from body

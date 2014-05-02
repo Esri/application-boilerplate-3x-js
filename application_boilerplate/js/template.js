@@ -1,5 +1,20 @@
 /*global define,document,location,require */
 /*jslint sloppy:true,nomen:true,plusplus:true */
+/*
+ | Copyright 2014 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 define([
     "dojo/Evented",
     "dojo/_base/declare",
@@ -296,8 +311,10 @@ define([
                         // Get the web map from the app values. But if there's a web url
                         // parameter don't overwrite with the app value.
                         var webmapParam = this._createUrlParamsObject(["webmap"]);
-                        if (!esriLang.isDefined(webmapParam.webmap) && response.itemData.values.webmap && this.config.webmap) {
-                            this.config.webmap = response.itemData.values.webmap;
+                        if (!esriLang.isDefined(webmapParam.webmap)) {
+                            if (response.itemData.values.webmap !== "") {
+                                this.config.webmap = response.itemData.values.webmap;
+                            }
                         }
                     }
                     // get the extent for the application item. This can be used to override the default web map extent

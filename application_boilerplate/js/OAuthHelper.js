@@ -1,3 +1,20 @@
+﻿/*global define,console */
+/*jslint browser:true,sloppy:true,unparam:true,regexp:true */
+/*
+ | Copyright 2014 Esri
+ |
+ | Licensed under the Apache License, Version 2.0 (the "License");
+ | you may not use this file except in compliance with the License.
+ | You may obtain a copy of the License at
+ |
+ |    http://www.apache.org/licenses/LICENSE-2.0
+ |
+ | Unless required by applicable law or agreed to in writing, software
+ | distributed under the License is distributed on an "AS IS" BASIS,
+ | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ | See the License for the specific language governing permissions and
+ | limitations under the License.
+ */
 define([
     "dojo/_base/lang",
     "dojo/json",
@@ -42,21 +59,24 @@ define([
             return !!IdentityManager.findCredential(this.portalUrl);
         },
         signIn: function () {
-            var deferred = (this.deferred = new Deferred());
-            var authParameters = {
+            var deferred, authParameters, redirect_uri, l, authUrl;
+
+            this.deferred = new Deferred();
+            deferred = this.deferred;
+            authParameters = {
                 client_id: this.appId,
                 response_type: "token",
                 expiration: this.expiration // in minutes. Default is 30.
             };
             //if there are url params append the auth parameters with an &
-            var redirect_uri, l = window.location.href;
+            l = window.location.href;
             if (l.indexOf("?") > 0) {
                 redirect_uri = window.location.href.replace(/#.*$/, "") + "&";
             } else {
                 redirect_uri = window.location.href.replace(/#.*$/, "");
             }
             authParameters.redirect_uri = redirect_uri;
-            var authUrl = this.portal.replace(/^http:/i, "https:") + "/sharing/oauth2/authorize?" + ioQuery.objectToQuery(authParameters);
+            authUrl = this.portal.replace(/^http:/i, "https:") + "/sharing/oauth2/authorize?" + ioQuery.objectToQuery(authParameters);
             window.location = authUrl;
             return deferred;
         },
@@ -70,21 +90,23 @@ define([
             window.location.reload();
         },
         checkOAuthResponse: function (clearHash) {
+            var oauthResponse, error, credential;
+
             // This method will be called from popup callback page as well
-            var oauthResponse = this.parseFragment();
+            oauthResponse = this.parseFragment();
             if (oauthResponse) {
                 if (clearHash) { // redirection flow
                     // Remove OAuth bits from the URL fragment
                     window.location.hash = "";
                 }
                 if (oauthResponse.error) {
-                    var error = new Error(oauthResponse.error);
+                    error = new Error(oauthResponse.error);
                     error.details = [oauthResponse.error_description];
                     if (this.deferred) {
                         this.deferred.reject(error);
                     }
                 } else {
-                    var credential = this.registerToken(oauthResponse);
+                    credential = this.registerToken(oauthResponse);
                     // User checked "Keep me signed in" option
                     if (oauthResponse.persist) {
                         if (document.domain === "localhost") {
@@ -110,10 +132,12 @@ define([
             }
         },
         checkCookie: function () {
-            var ckie = cookie("arcgis_auth");
+            var ckie, oauthResponse;
+
+            ckie = cookie("arcgis_auth");
             if (ckie) {
                 console.log("[Cookie] Read: ", ckie);
-                var oauthResponse = JSON.parse(ckie);
+                oauthResponse = JSON.parse(ckie);
                 this.registerToken(oauthResponse);
             }
         },
@@ -132,8 +156,10 @@ define([
             return credential;
         },
         parseFragment: function () {
-            var h = hash();
-            var fragment = h ? ioQuery.queryToObject(h) : null;
+            var h, fragment;
+
+            h = hash();
+            fragment = h ? ioQuery.queryToObject(h) : null;
             if (fragment) {
                 if (fragment.access_token) {
                     console.log("[OAuth Response]: ", fragment);
@@ -149,15 +175,16 @@ define([
             }
         },
         overrideIdentityManager: function () {
-            var signInMethod = IdentityManager.signIn,
-                helper = this;
-            IdentityManager.signIn = function () {
-                var serverInfo = arguments[1];
+            var signInMethod, helper;
+
+            signInMethod = IdentityManager.signIn;
+            helper = this;
+            IdentityManager.signIn = function (url, serverInfo) {
                 return (serverInfo.server.indexOf(".arcgis.com") !== -1) ?
-                // OAuth flow
-                helper.signIn() :
-                // generateToken flow
-                signInMethod.apply(this, arguments);
+                        // OAuth flow
+                        helper.signIn() :
+                        // generateToken flow
+                        signInMethod.apply(this, arguments);
             };
         }
     };
