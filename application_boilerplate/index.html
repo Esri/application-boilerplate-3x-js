@@ -51,7 +51,19 @@
             Main
         ){
             // create the template. This will take care of all the logic required for template applications
-            var myTemplate = new Template();
+            var myTemplate = new Template({
+                /*
+                webmap: true,
+                groupInfo: false,
+                groupItems: false,
+                groupParams: {
+                    sortField: "modified",
+                    sortOrder: "desc",
+                    num: 9,
+                    start: 0
+                }
+                */
+            });
             // create my main application. Start placing your logic in the main.js file.
             var myApp = new Main();
             // start template

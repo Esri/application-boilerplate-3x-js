@@ -30,6 +30,7 @@ define([
     "esri/config",
     "esri/lang",
     "esri/IdentityManager",
+    "esri/arcgis/Portal",
     "esri/tasks/GeometryService",
     "config/defaults",
     "application/OAuthHelper"
@@ -48,6 +49,7 @@ define([
     esriConfig,
     esriLang,
     IdentityManager,
+    esriPortal,
     GeometryService,
     defaults,
     OAuthHelper
@@ -59,10 +61,15 @@ define([
         urlConfig: {},
         customUrlConfig: {},
         commonConfig: {},
-        constructor: function () {
-            // config will contain application and user defined info for the application such as i18n strings,
-            // the web map id and application id, any url parameters and any application specific configuration
-            // information.
+        constructor: function (options) {
+            // template settings
+            var defaultOptions = {
+                webmap: true,
+                groupItems: false,
+                groupInfo: false
+            };
+            this.options = lang.mixin(defaultOptions, options);
+            // config will contain application and user defined info for the application such as i18n strings the web map id and application id, any url parameters and any application specific configuration information.
             this.config = defaults;
         },
         startup: function () {
@@ -80,7 +87,6 @@ define([
         // an application and to see if the app is running in Portal or an Org
         _init: function () {
             var deferred, paramItems;
-
             deferred = new Deferred();
             // Set the web map, group and appid if they exist but ignore other url params.
             // Additional url parameters may be defined by the application but they need to be mixed in
@@ -107,12 +113,18 @@ define([
                 // get application data
                 app: this._queryApplicationConfiguration(),
                 // common config file
-                common: this._getCommonConfig()
+                common: this._getCommonConfig(),
+                // do we need to create portal?
+                portal: this._createPortal()
             }).then(lang.hitch(this, function () {
                 // then execute these async
                 all({
-                    // get item data
+                    // webmap item
                     item: this._queryDisplayItem(),
+                    // group information
+                    groupInfo: this._queryGroupInfo(),
+                    // group items
+                    groupItems: this.queryGroupItems(),
                     // get org data
                     org: this._queryOrganizationInformation()
                 }).then(lang.hitch(this, function () {
@@ -135,22 +147,34 @@ define([
             // return promise
             return deferred.promise;
         },
+        _createPortal: function () {
+            var deferred = new Deferred();
+            if (this.options.groupInfo || this.options.groupItems) {
+                this.portal = new esriPortal.Portal(this.config.sharinghost);
+                this.portal.on("load", function () {
+                    deferred.resolve();
+                });
+            } else {
+                deferred.resolve();
+            }
+            return deferred.promise;
+        },
         _getCommonConfig: function () {
             var deferred;
             deferred = new Deferred();
             if (this.config.commonConfig) {
                 require(["arcgis_templates/commonConfig"], lang.hitch(this, function (response) {
                     this.commonConfig = response;
-                    deferred.resolve(true);
+                    deferred.resolve(response);
                 }));
             } else {
-                deferred.resolve(true);
+                deferred.resolve();
             }
             return deferred.promise;
         },
         _createUrlParamsObject: function (items) {
-            var urlObject, obj = {}, i;
-
+            var urlObject, obj = {},
+                i;
             // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
             // resource to work with.
             // Map templates use the webmap param to define the webmap to display
@@ -172,7 +196,6 @@ define([
         },
         _initializeApplication: function () {
             var appLocation, instance;
-
             // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
             // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
             // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
@@ -202,13 +225,12 @@ define([
         },
         _checkSignIn: function () {
             var deferred, signedIn;
-
             deferred = new Deferred();
             // check sign-in status
             signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
             // resolve regardless of signed in or not.
             signedIn.promise.always(function () {
-                deferred.resolve(true);
+                deferred.resolve();
             });
             return deferred.promise;
         },
@@ -221,7 +243,6 @@ define([
         },
         _getLocalization: function () {
             var deferred, dirNode, classes, rtlClasses;
-
             deferred = new Deferred();
             if (this.config.localize) {
                 require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
@@ -251,48 +272,111 @@ define([
                         dirNode.setAttribute("dir", "ltr");
                         domClass.add(dirNode, "esriLTR");
                     }
-                    deferred.resolve(true);
+                    deferred.resolve(appBundle);
                 }));
             } else {
-                deferred.resolve(true);
+                deferred.resolve();
+            }
+            return deferred.promise;
+        },
+        queryGroupItems: function (options) {
+            var deferred = new Deferred(), error;
+            // If we want to get the group info
+            if (this.options.groupItems) {
+                if(this.config.group){
+                    // group params
+                    var defaultParams = {
+                        q: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
+                        sortField: "modified",
+                        sortOrder: "desc",
+                        num: 9,
+                        start: 0,
+                        f: "json"
+                    };
+                    // mixin params
+                    var params = lang.mixin(defaultParams, this.options.groupParams, options);
+                    // get items from the group
+                    this.portal.queryItems(params).then(lang.hitch(this, function (response) {
+                        this.config.groupItems = response;
+                        deferred.resolve(response);
+                    }), function (error) {
+                        deferred.reject(error);
+                    });
+                } else {
+                    error = new Error("Group undefined.");
+                    deferred.reject(error);
+                }
+            } else {
+                // just resolve
+                deferred.resolve();
+            }
+            return deferred.promise;
+        },
+        _queryGroupInfo: function () {
+            var deferred = new Deferred(), error;
+            // If we want to get the group info
+            if (this.options.groupInfo) {
+                if(this.config.group){
+                    // group params
+                    var params = {
+                        q: "id:\"" + this.config.group + "\"",
+                        f: "json"
+                    };
+                    this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
+                        this.config.groupInfo = response;
+                        deferred.resolve(response);
+                    }), function (error) {
+                        deferred.reject(error);
+                    });
+                } else {
+                    error = new Error("Group undefined.");
+                    deferred.reject(error);
+                }
+            } else {
+                // just resolve
+                deferred.resolve();
             }
             return deferred.promise;
         },
         _queryDisplayItem: function () {
-            var deferred, itemId, error;
-
-            // Get details about the specified web map or group. If the group or web map is not shared publicly users will
+            var deferred, error;
+            // Get details about the specified web map. If the web map is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             deferred = new Deferred();
-            if (this.config.webmap || this.config.group) {
-                itemId = this.config.webmap || this.config.group;
-                arcgisUtils.getItem(itemId).then(lang.hitch(this, function (itemInfo) {
-                    // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-                    // existing web map extent with the application item extent when set.
-                    if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
-                        itemInfo.item.extent = [
-                            [
-                                parseFloat(this.config.application_extent[0][0]),
-                                parseFloat(this.config.application_extent[0][1])
-                            ],
-                            [
-                                parseFloat(this.config.application_extent[1][0]),
-                                parseFloat(this.config.application_extent[1][1])
-                            ]
-                        ];
-                    }
-                    // Set the itemInfo config option. This can be used when calling createMap instead of the webmap or group id
-                    this.config.itemInfo = itemInfo;
-                    deferred.resolve(true);
-                }), function (error) {
-                    if (!error) {
-                        error = new Error("Error retrieving display item.");
-                    }
+            // If we want to get the webmap
+            if (this.options.webmap) {
+                if (this.config.webmap) {
+                    arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
+                        // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+                        // existing web map extent with the application item extent when set.
+                        if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
+                            itemInfo.item.extent = [
+                                [
+                                    parseFloat(this.config.application_extent[0][0]),
+                                    parseFloat(this.config.application_extent[0][1])
+                                ],
+                                [
+                                    parseFloat(this.config.application_extent[1][0]),
+                                    parseFloat(this.config.application_extent[1][1])
+                                ]
+                            ];
+                        }
+                        // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
+                        this.config.itemInfo = itemInfo;
+                        deferred.resolve(itemInfo);
+                    }), function (error) {
+                        if (!error) {
+                            error = new Error("Error retrieving display item.");
+                        }
+                        deferred.reject(error);
+                    });
+                } else {
+                    error = new Error("Webmap undefined.");
                     deferred.reject(error);
-                });
+                }
             } else {
-                error = new Error("webmap or group undefined.");
-                deferred.reject(error);
+                // we're done. we dont need to get the webmap
+                deferred.resolve();
             }
             return deferred.promise;
         },
@@ -321,7 +405,7 @@ define([
                     if (response.item && response.item.extent) {
                         this.config.application_extent = response.item.extent;
                     }
-                    deferred.resolve(true);
+                    deferred.resolve(response);
                 }), function (error) {
                     if (!error) {
                         error = new Error("Error retrieving application configuration.");
@@ -329,7 +413,7 @@ define([
                     deferred.reject(error);
                 });
             } else {
-                deferred.resolve(true);
+                deferred.resolve();
             }
             return deferred.promise;
         },
@@ -366,7 +450,7 @@ define([
                             this.orgConfig.userPrivileges = response.user.privileges;
                         }
                     }
-                    deferred.resolve(true);
+                    deferred.resolve(response);
                 }), function (error) {
                     if (!error) {
                         error = new Error("Error retrieving organization information.");
@@ -374,7 +458,7 @@ define([
                     deferred.reject(error);
                 });
             } else {
-                deferred.resolve(true);
+                deferred.resolve();
             }
             return deferred.promise;
         },
