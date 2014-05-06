@@ -119,9 +119,12 @@ define([
             }).then(lang.hitch(this, function () {
                 // then execute these async
                 all({
-                    item: this._queryDisplayItem(this.config.webmap),
-                    groupInfo: this._queryGroupInfo(this.config.group),
-                    groupItems: this._queryGroupItems(this.config.group),
+                    // webmap item
+                    item: this._queryDisplayItem(),
+                    // group information
+                    groupInfo: this._queryGroupInfo(),
+                    // group items
+                    groupItems: this.queryGroupItems(),
                     // get org data
                     org: this._queryOrganizationInformation()
                 }).then(lang.hitch(this, function () {
@@ -276,62 +279,74 @@ define([
             }
             return deferred.promise;
         },
-        _queryGroupItems: function (itemId) {
-            var deferred = new Deferred();
+        queryGroupItems: function (options) {
+            var deferred = new Deferred(), error;
             // If we want to get the group info
             if (this.options.groupItems) {
-                // group params
-                var params = {
-                    q: "group:\"" + itemId + "\" AND -type:\"Code Attachment\"",
-                    sortField: "modified",
-                    sortOrder: "desc",
-                    num: 9,
-                    start: 0,
-                    f: "json"
-                };
-                // get items from the group
-                this.portal.queryItems(params).then(lang.hitch(this, function (response) {
-                    this.config.groupItems = response;
-                    deferred.resolve(response);
-                }), function (error) {
+                if(this.config.group){
+                    // group params
+                    var defaultParams = {
+                        q: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
+                        sortField: "modified",
+                        sortOrder: "desc",
+                        num: 9,
+                        start: 0,
+                        f: "json"
+                    };
+                    // mixin params
+                    var params = lang.mixin(defaultParams, this.options.groupParams, options);
+                    // get items from the group
+                    this.portal.queryItems(params).then(lang.hitch(this, function (response) {
+                        this.config.groupItems = response;
+                        deferred.resolve(response);
+                    }), function (error) {
+                        deferred.reject(error);
+                    });
+                } else {
+                    error = new Error("Group undefined.");
                     deferred.reject(error);
-                });
+                }
             } else {
                 // just resolve
                 deferred.resolve();
             }
             return deferred.promise;
         },
-        _queryGroupInfo: function (itemId) {
-            var deferred = new Deferred();
+        _queryGroupInfo: function () {
+            var deferred = new Deferred(), error;
             // If we want to get the group info
             if (this.options.groupInfo) {
-                // group params
-                var params = {
-                    q: "id:\"" + itemId + "\"",
-                    f: "json"
-                };
-                this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
-                    this.config.groupInfo = response;
-                    deferred.resolve(response);
-                }), function (error) {
+                if(this.config.group){
+                    // group params
+                    var params = {
+                        q: "id:\"" + this.config.group + "\"",
+                        f: "json"
+                    };
+                    this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
+                        this.config.groupInfo = response;
+                        deferred.resolve(response);
+                    }), function (error) {
+                        deferred.reject(error);
+                    });
+                } else {
+                    error = new Error("Group undefined.");
                     deferred.reject(error);
-                });
+                }
             } else {
                 // just resolve
                 deferred.resolve();
             }
             return deferred.promise;
         },
-        _queryDisplayItem: function (itemId) {
+        _queryDisplayItem: function () {
             var deferred, error;
             // Get details about the specified web map. If the web map is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             deferred = new Deferred();
             // If we want to get the webmap
             if (this.options.webmap) {
-                if (itemId) {
-                    arcgisUtils.getItem(itemId).then(lang.hitch(this, function (itemInfo) {
+                if (this.config.webmap) {
+                    arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
                         // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
                         // existing web map extent with the application item extent when set.
                         if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
