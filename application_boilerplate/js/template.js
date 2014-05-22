@@ -1,4 +1,4 @@
-/*global define,document,location,require */
+﻿/*global define,document,location,require */
 /*jslint sloppy:true,nomen:true,plusplus:true */
 /*
  | Copyright 2014 Esri
@@ -280,12 +280,12 @@ define([
             return deferred.promise;
         },
         queryGroupItems: function (options) {
-            var deferred = new Deferred(), error;
+            var deferred = new Deferred(), error, defaultParams, params;
             // If we want to get the group info
             if (this.options.groupItems) {
-                if(this.config.group){
+                if (this.config.group) {
                     // group params
-                    var defaultParams = {
+                    defaultParams = {
                         q: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
                         sortField: "modified",
                         sortOrder: "desc",
@@ -294,7 +294,7 @@ define([
                         f: "json"
                     };
                     // mixin params
-                    var params = lang.mixin(defaultParams, this.options.groupParams, options);
+                    params = lang.mixin(defaultParams, this.options.groupParams, options);
                     // get items from the group
                     this.portal.queryItems(params).then(lang.hitch(this, function (response) {
                         this.config.groupItems = response;
@@ -313,12 +313,12 @@ define([
             return deferred.promise;
         },
         _queryGroupInfo: function () {
-            var deferred = new Deferred(), error;
+            var deferred = new Deferred(), error, params;
             // If we want to get the group info
             if (this.options.groupInfo) {
-                if(this.config.group){
+                if (this.config.group) {
                     // group params
-                    var params = {
+                    params = {
                         q: "id:\"" + this.config.group + "\"",
                         f: "json"
                     };
