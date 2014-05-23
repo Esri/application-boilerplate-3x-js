@@ -1,4 +1,4 @@
-﻿/*global define,document,location,require */
+/*global define,document,location,require */
 /*jslint sloppy:true,nomen:true,plusplus:true */
 /*
  | Copyright 2014 Esri
@@ -64,9 +64,7 @@ define([
         constructor: function (options) {
             // template settings
             var defaultOptions = {
-                webmap: true,
-                groupItems: false,
-                groupInfo: false
+                queryForWebmap: true
             };
             this.options = lang.mixin(defaultOptions, options);
             // config will contain application and user defined info for the application such as i18n strings the web map id and application id, any url parameters and any application specific configuration information.
@@ -149,7 +147,7 @@ define([
         },
         _createPortal: function () {
             var deferred = new Deferred();
-            if (this.options.groupInfo || this.options.groupItems) {
+            if (this.options.queryForGroupInfo || this.options.queryForGroupItems) {
                 this.portal = new esriPortal.Portal(this.config.sharinghost);
                 this.portal.on("load", function () {
                     deferred.resolve();
@@ -162,7 +160,7 @@ define([
         _getCommonConfig: function () {
             var deferred;
             deferred = new Deferred();
-            if (this.config.commonConfig) {
+            if (this.options.queryForCommonConfig) {
                 require(["arcgis_templates/commonConfig"], lang.hitch(this, function (response) {
                     this.commonConfig = response;
                     deferred.resolve(response);
@@ -244,7 +242,7 @@ define([
         _getLocalization: function () {
             var deferred, dirNode, classes, rtlClasses;
             deferred = new Deferred();
-            if (this.config.localize) {
+            if (this.options.queryForLocale) {
                 require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
                     // Get the localization strings for the template and store in an i18n variable. Also determine if the
                     // application is in a right-to-left language like Arabic or Hebrew.
@@ -282,7 +280,7 @@ define([
         queryGroupItems: function (options) {
             var deferred = new Deferred(), error, defaultParams, params;
             // If we want to get the group info
-            if (this.options.groupItems) {
+            if (this.options.queryForGroupItems) {
                 if (this.config.group) {
                     // group params
                     defaultParams = {
@@ -315,7 +313,7 @@ define([
         _queryGroupInfo: function () {
             var deferred = new Deferred(), error, params;
             // If we want to get the group info
-            if (this.options.groupInfo) {
+            if (this.options.queryForGroupInfo) {
                 if (this.config.group) {
                     // group params
                     params = {
@@ -344,7 +342,7 @@ define([
             // be prompted to log-in by the Identity Manager.
             deferred = new Deferred();
             // If we want to get the webmap
-            if (this.options.webmap) {
+            if (this.options.queryForWebmap) {
                 if (this.config.webmap) {
                     arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
                         // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
@@ -419,7 +417,7 @@ define([
         },
         _queryOrganizationInformation: function () {
             var deferred = new Deferred();
-            if (this.config.queryForOrg) {
+            if (this.options.queryForOrg) {
                 // Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you
                 // are a member of an org you'll want to set the sharinghost to be http://<your org name>.arcgis.com. We query
                 // the organization by making a self request to the org url which returns details specific to that organization.
