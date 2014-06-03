@@ -16,11 +16,11 @@
  | limitations under the License.
  */
 define({
-    // todo
+    // When true, the template will query arcgis.com for the webmap item.
     "queryForWebmap": true,
-    // todo
+    // When true, the template will query arcgis.com for the group's information.
     "queryForGroupInfo": false,
-    // todo
+    // When true, the template will query arcgis.com for the items contained within the group
     "queryForGroupItems": false,
     //When true the template will query arcgis.com for default settings for helper services, units etc. If you
     //want to use custom settings for units or any of the helper services set queryForOrg to false then enter
@@ -31,9 +31,9 @@ define({
     //Note that we've included a placeholder nls folder and a resource file with one error string
     //to show how to setup the strings file.
     "queryForLocale": true,
-    // todo
+    // When true, this will query and mixin a common config file from the path specified in the index.html dojo packages
     "queryForCommonConfig": false,
-    // todo
+    // These are the options specified for querying items within the group. Modify these to get more items. You can also call the public template.queryGroupItems() method with these options as a parameter.
     "groupParams": {
         "sortField": "modified",
         "sortOrder": "desc",
