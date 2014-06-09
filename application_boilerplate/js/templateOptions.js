@@ -39,5 +39,11 @@ define({
         "sortOrder": "desc",
         "num": 9,
         "start": 0
-    }
+    },
+    //This option demonstrates how to handle additional custom url parameters. For example
+    //if you want users to be able to specify lat/lon coordinates that define the map's center or
+    //specify an alternate basemap via a url parameter.
+    "urlItems": [
+        "theme" // example param. ?theme=<my theme>
+    ]
 });

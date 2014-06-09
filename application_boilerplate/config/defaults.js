@@ -34,12 +34,6 @@ define({
     //Defaults to arcgis.com. Set this value to your portal or organization host name.
     "sharinghost": location.protocol + "//" + "www.arcgis.com",
     "units": null,
-    //This option demonstrates how to handle additional custom url parameters. For example
-    //if you want users to be able to specify lat/lon coordinates that define the map's center or
-    //specify an alternate basemap via a url parameter.
-    "urlItems": [
-        "theme" // example param. ?theme=<my theme>
-    ],
     "helperServices": {
         "geometry": {
             "url": null

@@ -51,6 +51,7 @@ The template consists of the following folders and files:
     *   helperServices: geometry, print, locator service urls
     *   i18n: Strings and isRightToLeft property that can be used to determine if the application is being viewed from a language where text is read left-to-right like Hebrew or Arabic.
     *   proxy  url
+*   **templateOptions.js:** Options file for configuring your template to query for specific resources and items. You can edit this file and your template can enable or disable querying for things such as localization files, ArcGIS group information, group items, custom url parameters, etc.
     
 **index.html**: The default html file for the application.
 

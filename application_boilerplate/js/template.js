@@ -468,7 +468,7 @@ define([
             // application default and configuration info has been applied. Currently these values
             // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
             // supporting additional url parameters in your application.
-            this.customUrlConfig = this._createUrlParamsObject(this.config.urlItems);
+            this.customUrlConfig = this._createUrlParamsObject(this.templateConfig.urlItems);
         }
     });
 });
