@@ -15,45 +15,8 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define([
-    "dojo/Evented",
-    "dojo/_base/declare",
-    "dojo/_base/kernel",
-    "dojo/_base/array",
-    "dojo/_base/lang",
-    "dojo/dom-class",
-    "dojo/Deferred",
-    "dojo/promise/all",
-    "esri/arcgis/utils",
-    "esri/urlUtils",
-    "esri/request",
-    "esri/config",
-    "esri/lang",
-    "esri/IdentityManager",
-    "esri/arcgis/Portal",
-    "esri/tasks/GeometryService",
-    "config/defaults",
-    "application/OAuthHelper"
-], function (
-    Evented,
-    declare,
-    kernel,
-    array,
-    lang,
-    domClass,
-    Deferred,
-    all,
-    arcgisUtils,
-    urlUtils,
-    esriRequest,
-    esriConfig,
-    esriLang,
-    IdentityManager,
-    esriPortal,
-    GeometryService,
-    defaults,
-    OAuthHelper
-) {
+define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/array", "dojo/_base/lang", "dojo/dom-class", "dojo/Deferred", "dojo/promise/all", "esri/arcgis/utils", "esri/urlUtils", "esri/request", "esri/config", "esri/lang", "esri/IdentityManager", "esri/arcgis/Portal", "esri/arcgis/OAuthInfo", "esri/tasks/GeometryService", "config/defaults"], function (
+Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, urlUtils, esriRequest, esriConfig, esriLang, IdentityManager, esriPortal, ArcGISOAuthInfo, GeometryService, defaults) {
     return declare([Evented], {
         config: {},
         orgConfig: {},
@@ -135,10 +98,7 @@ define([
                     if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
                         esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
                     }
-                    // setup OAuth if oauth appid exists_initializeApplication
-                    if (this.config.oauthappid) {
-                        this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
-                    }
+
                     deferred.resolve(this.config);
                 }), deferred.reject);
             }), deferred.reject);
@@ -207,12 +167,6 @@ define([
                 instance = location.pathname.substr(0, appLocation); //get the portal instance name
                 this.config.sharinghost = location.protocol + "//" + location.host + instance;
                 this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
-            } else {
-                // setup OAuth if oauth appid exists. If we don't call it here before querying for appid
-                // the identity manager dialog will appear if the appid isn't publicly shared.
-                if (this.config.oauthappid) {
-                    this._setupOAuth(this.config.oauthappid, this.config.sharinghost);
-                }
             }
             arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
             // Define the proxy url for the app
@@ -224,6 +178,19 @@ define([
         _checkSignIn: function () {
             var deferred, signedIn;
             deferred = new Deferred();
+
+
+            //If there's an oauth appid specified register it
+            if (this.config.oauthappid) {
+                var oAuthInfo = new ArcGISOAuthInfo({
+                    appId: this.config.oauthappid,
+                    portalUrl: this.config.sharinghost,
+                    popup: true
+                });
+                IdentityManager.registerOAuthInfos([oAuthInfo]);
+            }
+
+
             // check sign-in status
             signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
             // resolve regardless of signed in or not.
@@ -232,13 +199,7 @@ define([
             });
             return deferred.promise;
         },
-        _setupOAuth: function (id, portal) {
-            OAuthHelper.init({
-                appId: id,
-                portal: portal,
-                expiration: (14 * 24 * 60) //2 weeks (in minutes)
-            });
-        },
+
         _getLocalization: function () {
             var deferred, dirNode, classes, rtlClasses;
             deferred = new Deferred();
@@ -278,7 +239,8 @@ define([
             return deferred.promise;
         },
         queryGroupItems: function (options) {
-            var deferred = new Deferred(), error, defaultParams, params;
+            var deferred = new Deferred(),
+                error, defaultParams, params;
             // If we want to get the group info
             if (this.templateConfig.queryForGroupItems) {
                 if (this.config.group) {
@@ -311,7 +273,8 @@ define([
             return deferred.promise;
         },
         _queryGroupInfo: function () {
-            var deferred = new Deferred(), error, params;
+            var deferred = new Deferred(),
+                error, params;
             // If we want to get the group info
             if (this.templateConfig.queryForGroupInfo) {
                 if (this.config.group) {
@@ -350,13 +313,9 @@ define([
                         if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
                             itemInfo.item.extent = [
                                 [
-                                    parseFloat(this.config.application_extent[0][0]),
-                                    parseFloat(this.config.application_extent[0][1])
-                                ],
+                                parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])],
                                 [
-                                    parseFloat(this.config.application_extent[1][0]),
-                                    parseFloat(this.config.application_extent[1][1])
-                                ]
+                                parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])]
                             ];
                         }
                         // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
