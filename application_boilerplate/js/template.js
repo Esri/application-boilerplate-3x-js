@@ -389,6 +389,8 @@ Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, url
                     },
                     callbackParamName: "callback"
                 }).then(lang.hitch(this, function (response) {
+                    // save organization information
+                    this.config.orgInfo = response;
                     // get units defined by the org or the org user
                     this.orgConfig.units = "metric";
                     if (response.user && response.user.units) { //user defined units
