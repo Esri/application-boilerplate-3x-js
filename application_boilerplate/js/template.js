@@ -16,7 +16,7 @@
  | limitations under the License.
  */
 define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/array", "dojo/_base/lang", "dojo/dom-class", "dojo/Deferred", "dojo/promise/all", "esri/arcgis/utils", "esri/urlUtils", "esri/request", "esri/config", "esri/lang", "esri/IdentityManager", "esri/arcgis/Portal", "esri/arcgis/OAuthInfo", "esri/tasks/GeometryService", "config/defaults"], function (
-Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, urlUtils, esriRequest, esriConfig, esriLang, IdentityManager, esriPortal, ArcGISOAuthInfo, GeometryService, defaults) {
+    Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, urlUtils, esriRequest, esriConfig, esriLang, IdentityManager, esriPortal, ArcGISOAuthInfo, GeometryService, defaults) {
     return declare([Evented], {
         config: {},
         orgConfig: {},
@@ -73,7 +73,7 @@ Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, url
                 i18n: this._getLocalization(),
                 // get application data
                 app: this._queryApplicationConfiguration(),
-                // common config file
+                // Receives common config file from templates hosted on AGOL.
                 common: this._getCommonConfig(),
                 // do we need to create portal?
                 portal: this._createPortal()
@@ -178,8 +178,6 @@ Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, url
         _checkSignIn: function () {
             var deferred, signedIn;
             deferred = new Deferred();
-
-
             //If there's an oauth appid specified register it
             if (this.config.oauthappid) {
                 var oAuthInfo = new ArcGISOAuthInfo({
@@ -189,8 +187,6 @@ Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, url
                 });
                 IdentityManager.registerOAuthInfos([oAuthInfo]);
             }
-
-
             // check sign-in status
             signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
             // resolve regardless of signed in or not.
