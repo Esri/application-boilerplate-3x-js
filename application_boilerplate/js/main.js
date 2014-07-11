@@ -16,7 +16,7 @@
  | limitations under the License.
  */
 define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on"], function (
-ready, declare, lang, arcgisUtils, dom, domClass, on) {
+    ready, declare, lang, arcgisUtils, dom, domClass, on) {
     return declare(null, {
         config: {},
         startup: function (config) {
