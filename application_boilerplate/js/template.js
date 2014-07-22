@@ -141,7 +141,16 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             // id to retrieve application specific configuration information. The configuration
             // information will contain the values the  user selected on the template configuration
             // panel.
-            urlObject = urlUtils.urlToObject(document.location.href);
+            var url = document.location.href;
+            
+            /* Remove hash from URL. TODO: REMOVE AT 3.11 */
+            var idx = url.indexOf("#"); 
+            if (idx > 0) {
+                url = url.substring(0, idx);
+            }
+            /* END Remove hash from URL. */
+            
+            urlObject = urlUtils.urlToObject(url);
             urlObject.query = urlObject.query || {};
             if (urlObject.query && items && items.length) {
                 for (i = 0; i < items.length; i++) {
