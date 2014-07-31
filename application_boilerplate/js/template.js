@@ -16,7 +16,25 @@
  | limitations under the License.
  */
 define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/array", "dojo/_base/lang", "dojo/dom-class", "dojo/Deferred", "dojo/promise/all", "esri/arcgis/utils", "esri/urlUtils", "esri/request", "esri/config", "esri/lang", "esri/IdentityManager", "esri/arcgis/Portal", "esri/arcgis/OAuthInfo", "esri/tasks/GeometryService", "config/defaults"], function (
-    Evented, declare, kernel, array, lang, domClass, Deferred, all, arcgisUtils, urlUtils, esriRequest, esriConfig, esriLang, IdentityManager, esriPortal, ArcGISOAuthInfo, GeometryService, defaults) {
+    Evented,
+    declare,
+    kernel,
+    array,
+    lang,
+    domClass,
+    Deferred,
+    all,
+    arcgisUtils,
+    urlUtils,
+    esriRequest,
+    esriConfig,
+    esriLang,
+    IdentityManager,
+    esriPortal,
+    ArcGISOAuthInfo,
+    GeometryService,
+    defaults
+) {
     return declare([Evented], {
         config: {},
         orgConfig: {},
@@ -132,7 +150,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         },
         _createUrlParamsObject: function (items) {
             var urlObject, obj = {},
-                i;
+                i, url, idx;
             // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
             // resource to work with.
             // Map templates use the webmap param to define the webmap to display
@@ -141,15 +159,15 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             // id to retrieve application specific configuration information. The configuration
             // information will contain the values the  user selected on the template configuration
             // panel.
-            var url = document.location.href;
-            
+            url = document.location.href;
+
             /* Remove hash from URL. TODO: REMOVE AT 3.11 */
-            var idx = url.indexOf("#"); 
+            idx = url.indexOf("#");
             if (idx > 0) {
                 url = url.substring(0, idx);
             }
             /* END Remove hash from URL. */
-            
+
             urlObject = urlUtils.urlToObject(url);
             urlObject.query = urlObject.query || {};
             if (urlObject.query && items && items.length) {
@@ -185,11 +203,11 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             }
         },
         _checkSignIn: function () {
-            var deferred, signedIn;
+            var deferred, signedIn, oAuthInfo;
             deferred = new Deferred();
             //If there's an oauth appid specified register it
             if (this.config.oauthappid) {
-                var oAuthInfo = new ArcGISOAuthInfo({
+                oAuthInfo = new ArcGISOAuthInfo({
                     appId: this.config.oauthappid,
                     portalUrl: this.config.sharinghost,
                     popup: true
@@ -244,8 +262,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             return deferred.promise;
         },
         queryGroupItems: function (options) {
-            var deferred = new Deferred(),
-                error, defaultParams, params;
+            var deferred = new Deferred(), error, defaultParams, params;
             // If we want to get the group info
             if (this.templateConfig.queryForGroupItems) {
                 if (this.config.group) {
@@ -278,8 +295,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             return deferred.promise;
         },
         _queryGroupInfo: function () {
-            var deferred = new Deferred(),
-                error, params;
+            var deferred = new Deferred(), error, params;
             // If we want to get the group info
             if (this.templateConfig.queryForGroupInfo) {
                 if (this.config.group) {
@@ -318,9 +334,11 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                         if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
                             itemInfo.item.extent = [
                                 [
-                                parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])],
+                                    parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+                                ],
                                 [
-                                parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])]
+                                    parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+                                ]
                             ];
                         }
                         // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
