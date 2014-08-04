@@ -371,6 +371,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                         // get app config values - we'll merge them with config later.
                         this.appConfig = response.itemData.values;
                         // save response
+                        this.appResponse = response;
                         this.config.appResponse = response;
                         // Get the web map from the app values. But if there's a web url
                         // parameter don't overwrite with the app value.
