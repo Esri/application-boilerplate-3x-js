@@ -372,7 +372,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                         this.appConfig = response.itemData.values;
                         // save response
                         this.appResponse = response;
-                        this.config.appResponse = response;
                         // Get the web map from the app values. But if there's a web url
                         // parameter don't overwrite with the app value.
                         var webmapParam = this._createUrlParamsObject(["webmap"]);
