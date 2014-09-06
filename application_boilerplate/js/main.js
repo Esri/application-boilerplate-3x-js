@@ -15,8 +15,7 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on"], function (
-    ready,
+define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "dojo/domReady!"], function (
     declare,
     lang,
     arcgisUtils,
@@ -32,12 +31,9 @@ define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/util
             // any url parameters and any application specific configuration information.
             if (config) {
                 this.config = config;
-                // document ready
-                ready(lang.hitch(this, function () {
-                    //supply either the webmap id or, if available, the item info
-                    var itemInfo = this.config.itemInfo || this.config.webmap;
-                    this._createWebMap(itemInfo);
-                }));
+                //supply either the webmap id or, if available, the item info
+                var itemInfo = this.config.itemInfo || this.config.webmap;
+                this._createWebMap(itemInfo);
             } else {
                 var error = new Error("Main:: Config is not defined");
                 this.reportError(error);
@@ -61,11 +57,11 @@ define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/util
                 }
             }
         },
-        // Map is ready
-        _mapLoaded: function () {
-            // remove loading class from body
-            domClass.remove(document.body, "app-loading");
-            // your code here!
+        // Sample function
+        _helloWorld: function () {
+            console.log("Hello World!");
+            console.log("My Map:", this.map);
+            console.log("My Config:", this.config);
         },
         // create a map based on the input web map id
         _createWebMap: function (itemInfo) {
@@ -82,16 +78,12 @@ define(["dojo/ready", "dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/util
                 // Here' we'll use it to update the application to match the specified color theme.
                 // console.log(this.config);
                 this.map = response.map;
-                // make sure map is loaded
-                if (this.map.loaded) {
-                    // do something with the map
-                    this._mapLoaded();
-                } else {
-                    on.once(this.map, "load", lang.hitch(this, function () {
-                        // do something with the map
-                        this._mapLoaded();
-                    }));
-                }
+                // remove loading class from body
+                domClass.remove(document.body, "app-loading");
+                // Start writing my code
+                this._helloWorld();
+                // map has been created. You can start using it.
+                // If you need map to be loaded, listen for it's load event.
             }), this.reportError);
         }
     });
