@@ -150,7 +150,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         },
         _createUrlParamsObject: function (items) {
             var urlObject, obj = {},
-                i, url, idx;
+                i, url;
             // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
             // resource to work with.
             // Map templates use the webmap param to define the webmap to display
@@ -160,14 +160,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             // information will contain the values the  user selected on the template configuration
             // panel.
             url = document.location.href;
-
-            /* Remove hash from URL. TODO: REMOVE AT 3.11 */
-            idx = url.indexOf("#");
-            if (idx > 0) {
-                url = url.substring(0, idx);
-            }
-            /* END Remove hash from URL. */
-
             urlObject = urlUtils.urlToObject(url);
             urlObject.query = urlObject.query || {};
             if (urlObject.query && items && items.length) {
@@ -321,39 +313,39 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             return deferred.promise;
         },
         _queryDisplayItem: function () {
-            var deferred, error;
+            var deferred;
             // Get details about the specified web map. If the web map is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             deferred = new Deferred();
             // If we want to get the webmap
             if (this.templateConfig.queryForWebmap) {
-                if (this.config.webmap) {
-                    arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
-                        // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-                        // existing web map extent with the application item extent when set.
-                        if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
-                            itemInfo.item.extent = [
-                                [
-                                    parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
-                                ],
-                                [
-                                    parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
-                                ]
-                            ];
-                        }
-                        // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-                        this.config.itemInfo = itemInfo;
-                        deferred.resolve(itemInfo);
-                    }), function (error) {
-                        if (!error) {
-                            error = new Error("Error retrieving display item.");
-                        }
-                        deferred.reject(error);
-                    });
-                } else {
-                    error = new Error("Webmap undefined.");
-                    deferred.reject(error);
+                // if webmap does not exist
+                if(!this.config.webmap){
+                    // use default webmap for boilerplate
+                    this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";   
                 }
+                arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
+                    // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+                    // existing web map extent with the application item extent when set.
+                    if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
+                        itemInfo.item.extent = [
+                            [
+                                parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+                            ],
+                            [
+                                parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+                            ]
+                        ];
+                    }
+                    // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
+                    this.config.itemInfo = itemInfo;
+                    deferred.resolve(itemInfo);
+                }), function (error) {
+                    if (!error) {
+                        error = new Error("Error retrieving display item.");
+                    }
+                    deferred.reject(error);
+                });
             } else {
                 // we're done. we dont need to get the webmap
                 deferred.resolve();
