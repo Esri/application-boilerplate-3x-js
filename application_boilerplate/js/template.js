@@ -15,7 +15,7 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/array", "dojo/_base/lang", "dojo/dom-class", "dojo/Deferred", "dojo/promise/all", "esri/arcgis/utils", "esri/urlUtils", "esri/request", "esri/config", "esri/lang", "esri/IdentityManager", "esri/arcgis/Portal", "esri/arcgis/OAuthInfo", "esri/tasks/GeometryService", "config/defaults"], function (
+define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/array", "dojo/_base/lang", "dojo/dom-class", "dojo/Deferred", "dojo/promise/all", "esri/arcgis/utils", "esri/urlUtils", "esri/request", "esri/config", "esri/lang", "esri/IdentityManager", "esri/arcgis/Portal", "esri/arcgis/OAuthInfo", "esri/tasks/GeometryService", "config/defaults", "dojo/string"], function (
     Evented,
     declare,
     kernel,
@@ -33,7 +33,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     esriPortal,
     ArcGISOAuthInfo,
     GeometryService,
-    defaults
+    defaults,
+    string
 ) {
     return declare([Evented], {
         config: {},
@@ -260,7 +261,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                 if (this.config.group) {
                     // group params
                     defaultParams = {
-                        q: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
+                        q: "group:\"${groupid}\" AND -type:\"Code Attachment\"",
                         sortField: "modified",
                         sortOrder: "desc",
                         num: 9,
@@ -269,6 +270,12 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                     };
                     // mixin params
                     params = lang.mixin(defaultParams, this.templateConfig.groupParams, options);
+                    // place group ID
+                    if(params.q){
+                        params.q = string.substitute(params.q, {
+                            groupid: this.config.group
+                        });  
+                    }
                     // get items from the group
                     this.portal.queryItems(params).then(lang.hitch(this, function (response) {
                         this.config.groupItems = response;
