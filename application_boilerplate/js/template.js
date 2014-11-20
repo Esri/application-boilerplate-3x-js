@@ -151,7 +151,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         },
         _createUrlParamsObject: function (items) {
             var urlObject, obj = {},
-                i, url;
+                i, url, item, matchTag = /<(?:.|\s)*?>/g;
             // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
             // resource to work with.
             // Map templates use the webmap param to define the webmap to display
@@ -165,9 +165,14 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             urlObject.query = urlObject.query || {};
             if (urlObject.query && items && items.length) {
                 for (i = 0; i < items.length; i++) {
-                    if (urlObject.query[items[i]]) {
-                        obj[items[i]] = urlObject.query[items[i]];
+                    item = urlObject.query[items[i]];
+                    if (item) {
+                        //strip html tags 
+                        item = item.replace(matchTag, "");
+                        obj[items[i]] = item;
                     }
+ 
+
                 }
             }
             return obj;
