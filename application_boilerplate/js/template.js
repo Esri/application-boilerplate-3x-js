@@ -163,6 +163,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             url = document.location.href;
             urlObject = urlUtils.urlToObject(url);
             urlObject.query = urlObject.query || {};
+            // remove any HTML tags from query item
+            urlObject = esriLang.stripTags(urlObject);
             if (urlObject.query && items && items.length) {
                 for (i = 0; i < items.length; i++) {
                     if (urlObject.query[items[i]]) {
