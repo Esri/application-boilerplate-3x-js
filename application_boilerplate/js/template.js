@@ -97,6 +97,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
                 // do we need to create portal?
                 portal: this._createPortal()
             }).then(lang.hitch(this, function () {
+                // mix in commonconfig and appconfig before fetching groupInfo and groupItems so that GroupID Configured from Application configuration panel is honoured.
+                lang.mixin(this.config, this.commonConfig, this.appConfig);
                 // then execute these async
                 all({
                     // webmap item
