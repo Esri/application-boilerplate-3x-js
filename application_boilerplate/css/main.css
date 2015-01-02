@@ -1,53 +1,53 @@
 html,
 body {
-    padding: 0;
-    margin: 0;
-    height: 100%;
-    width: 100%;
-    font-family: Arial, Helvetica, sans-serif;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  font-family: Arial, Helvetica, sans-serif;
 }
 #mapDiv {
-    padding: 0;
-    margin: 0;
-    width: 100%;
-    height: 100%;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
 }
 .esriRTL label {
-    /*Example of a rule that will be applied if the app is viewed in a browser with a RTL locale like Hebrew or Arabic.*/
+  /*Example of a rule that will be applied if the app is viewed in a browser with a RTL locale like Hebrew or Arabic.*/
 }
 .loading-indicator {
-    /* Loading status */
-    display: none;
-    height: 100%;
-    width: 100%;
-    z-index: 500;
-    position: absolute;
-    top: 0;
-    left: 0;
-    overflow: hidden;
-    background: #fff;
+  /* Loading status */
+  display: none;
+  height: 100%;
+  width: 100%;
+  z-index: 500;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  background: #fff;
 }
 .app-loading .loading-indicator,
 .app-error .loading-indicator {
-    /* Show this class when loading or error */
-    display: block;
+  /* Show this class when loading or error */
+  display: block;
 }
 .app-loading .loading-indicator {
-    /* Loading image */
-    background-position: center center;
-    background-image: url(../images/ajax-loader.gif);
-    background-repeat: no-repeat;
+  /* Loading image */
+  background-position: center center;
+  background-image: url(../images/ajax-loader.gif);
+  background-repeat: no-repeat;
 }
 .app-error .loading-message {
-    /* Error status */
-    background-position: top center;
-    background-image: url(../images/error.png);
-    background-repeat: no-repeat;
-    padding-top: 60px;
-    width: 100%;
-    position: absolute;
-    z-index: 2;
-    top: 40%;
-    left: 0;
-    text-align: center;
+  /* Error status */
+  background-position: top center;
+  background-image: url(../images/error.png);
+  background-repeat: no-repeat;
+  padding-top: 60px;
+  width: 100%;
+  position: absolute;
+  z-index: 2;
+  top: 40%;
+  left: 0;
+  text-align: center;
 }

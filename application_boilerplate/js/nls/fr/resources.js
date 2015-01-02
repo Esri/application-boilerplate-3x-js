@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 /*
  | Copyright 2014 Esri
  |
@@ -15,7 +15,7 @@
  | limitations under the License.
  */
 define(({
-    map: {
-        error: "Impossible de créer la carte"
-    }
+  map: {
+    error: "Impossible de créer la carte"
+  }
 }));

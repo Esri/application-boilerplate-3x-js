@@ -1,4 +1,4 @@
-﻿/*global define */
+/*global define */
 /*
  | Copyright 2014 Esri
  |
@@ -15,10 +15,10 @@
  | limitations under the License.
  */
 define({
-    root: ({
-        map: {
-            error: "Unable to create map"
-        }
-    }),
-    "fr": 1
+  root: ({
+    map: {
+      error: "Unable to create map"
+    }
+  }),
+  "fr": 1
 });
