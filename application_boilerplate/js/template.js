@@ -53,8 +53,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       this.config = defaults;
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       this.urlObject = this._createUrlParamsObject();
-      // store in config if needed for later use
-      this.config.urlObject = this.urlObject;
     },
     startup: function () {
       var deferred = this._init();
