@@ -42,7 +42,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     appConfig: {},
     urlConfig: {},
     customUrlConfig: {},
-    commonConfig: {},
     constructor: function (templateConfig) {
       // template settings
       var defaultTemplateConfig = {
@@ -94,13 +93,11 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         i18n: this._getLocalization(),
         // get application data
         app: this._queryApplicationConfiguration(),
-        // Receives common config file from templates hosted on AGOL.
-        common: this._getCommonConfig(),
         // do we need to create portal?
         portal: this._createPortal()
       }).then(lang.hitch(this, function () {
-        // mix in commonconfig and appconfig before fetching groupInfo and groupItems so that GroupID Configured from Application configuration panel is honoured.
-        lang.mixin(this.config, this.commonConfig, this.appConfig);
+        // mix in appconfig before fetching groupInfo and groupItems so that GroupID Configured from Application configuration panel is honoured.
+        lang.mixin(this.config, this.appConfig);
         // then execute these async
         all({
           // webmap item
@@ -115,8 +112,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // Get any custom url params
           this._queryUrlParams();
           // mix in all the settings we got!
-          // defaults <- common config <- organization <- application id config <- custom url params <- standard url params
-          lang.mixin(this.config, this.commonConfig, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
+          // defaults <- organization <- application id config <- custom url params <- standard url params
+          lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
           // Set the geometry helper service to be the app default.
           if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
             esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
@@ -134,19 +131,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         this.portal.on("load", function () {
           deferred.resolve();
         });
-      } else {
-        deferred.resolve();
-      }
-      return deferred.promise;
-    },
-    _getCommonConfig: function () {
-      var deferred;
-      deferred = new Deferred();
-      if (this.templateConfig.queryForCommonConfig) {
-        require(["arcgis_templates/commonConfig"], lang.hitch(this, function (response) {
-          this.commonConfig = response;
-          deferred.resolve(response);
-        }));
       } else {
         deferred.resolve();
       }
