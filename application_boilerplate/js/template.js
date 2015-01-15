@@ -175,7 +175,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     },
     _initializeApplication: function () {
       // If this app is hosted on an Esri environment.
-      if (this.config.esriEnvironment) {
+      if (this.templateConfig.esriEnvironment) {
         var appLocation, instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
         // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
