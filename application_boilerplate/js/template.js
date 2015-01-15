@@ -1,3 +1,8 @@
+/*
+  Version 1.1
+  1/14/2015
+*/
+
 /*global define,document,location,require */
 /*jslint sloppy:true,nomen:true,plusplus:true */
 /*
