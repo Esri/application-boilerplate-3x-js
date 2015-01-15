@@ -174,20 +174,23 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       return urlObject;
     },
     _initializeApplication: function () {
-      var appLocation, instance;
-      // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
-      // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
-      // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
-      appLocation = location.pathname.indexOf("/apps/");
-      if (appLocation === -1) {
-        appLocation = location.pathname.indexOf("/home/");
-      }
-      // app is hosted and no sharing url is defined so let's figure it out.
-      if (appLocation !== -1) {
-        // hosted or portal
-        instance = location.pathname.substr(0, appLocation); //get the portal instance name
-        this.config.sharinghost = location.protocol + "//" + location.host + instance;
-        this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+      // If this app is hosted on an Esri environment.
+      if (this.config.esriEnvironment) {
+        var appLocation, instance;
+        // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
+        // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
+        // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
+        appLocation = location.pathname.indexOf("/apps/");
+        if (appLocation === -1) {
+          appLocation = location.pathname.indexOf("/home/");
+        }
+        // app is hosted and no sharing url is defined so let's figure it out.
+        if (appLocation !== -1) {
+          // hosted or portal
+          instance = location.pathname.substr(0, appLocation); //get the portal instance name
+          this.config.sharinghost = location.protocol + "//" + location.host + instance;
+          this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+        }
       }
       arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
       // Define the proxy url for the app
