@@ -47,6 +47,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     appConfig: {},
     urlConfig: {},
     customUrlConfig: {},
+    commonUrlItems: ["webmap", "appid", "group", "oauthappid"],
     constructor: function (templateConfig) {
       // template settings
       var defaultTemplateConfig = {
@@ -81,7 +82,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      this.urlConfig = this._getUrlParamValues(["webmap", "appid", "group", "oauthappid"]);
+      this.urlConfig = this._getUrlParamValues(this.commonUrlItems);
       // This demonstrates how to handle additional custom url parameters. For example
       // if you want users to be able to specify lat/lon coordinates that define the map's center or
       // specify an alternate basemap via a url parameter.
@@ -383,8 +384,17 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       if (this.config.appid) {
         arcgisUtils.getItem(this.config.appid).then(lang.hitch(this, function (response) {
           if (response.item && response.itemData && response.itemData.values) {
+            // remove empty values for mixin. This will remove webmap and group properties that are empty so that they do not overwrite other values.
+            var appValues = response.itemData.values;
+            for (var itm in appValues) {
+              if (appValues.hasOwnProperty(itm)) {
+                if (appValues[itm] === "") {
+                  delete appValues[itm];
+                }
+              }
+            }
             // get app config values - we'll merge them with config later.
-            this.appConfig = response.itemData.values;
+            this.appConfig = appValues;
             // save response
             this.appResponse = response;
           }
