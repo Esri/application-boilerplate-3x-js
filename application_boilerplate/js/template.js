@@ -72,20 +72,27 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
     _init: function () {
-      var deferred, paramItems;
+      var deferred;
       deferred = new Deferred();
       // Set the web map, group and appid if they exist but ignore other url params.
       // Additional url parameters may be defined by the application but they need to be mixed in
       // to the config object after we retrieve the application configuration info. As an example,
-      // we'll mix in some commonly used url parameters in the _queryUrlParams function after
+      // we'll mix in some commonly used url parameters after
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      paramItems = ["webmap", "appid", "group", "oauthappid"];
-      this.urlConfig = this._getUrlParamValues(paramItems);
+      this.urlConfig = this._getUrlParamValues(["webmap", "appid", "group", "oauthappid"]);
+      // This demonstrates how to handle additional custom url parameters. For example
+      // if you want users to be able to specify lat/lon coordinates that define the map's center or
+      // specify an alternate basemap via a url parameter.
+      // If these options are also configurable these updates need to be added after any
+      // application default and configuration info has been applied. Currently these values
+      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
+      // supporting additional url parameters in your application.
+      this.customUrlConfig = this._getUrlParamValues(this.templateConfig.urlItems);
       // config defaults <- standard url params
       // we need the webmap, appid, group and oauthappid to query for the data
-      lang.mixin(this.config, this.urlConfig);
+      this._mixinAll();
       // Define the sharing url and other default values like the proxy.
       // The sharing url defines where to search for the web map and application content. The
       // default value is arcgis.com.
@@ -99,10 +106,12 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         // get application data
         app: this._queryApplicationConfiguration(),
         // do we need to create portal?
-        portal: this._createPortal()
+        portal: this._createPortal(),
+        // get org data
+        org: this._queryOrganizationInformation()
       }).then(lang.hitch(this, function () {
-        // mix in appconfig before fetching groupInfo and groupItems so that GroupID Configured from Application configuration panel is honoured.
-        lang.mixin(this.config, this.appConfig);
+        // mixin all new settings from org and app
+        this._mixinAll();
         // then execute these async
         all({
           // webmap item
@@ -111,14 +120,9 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           groupInfo: this._queryGroupInfo(),
           // group items
           groupItems: this.queryGroupItems(),
-          // get org data
-          org: this._queryOrganizationInformation()
         }).then(lang.hitch(this, function () {
-          // Get any custom url params
-          this._queryUrlParams();
-          // mix in all the settings we got!
-          // defaults <- organization <- application id config <- custom url params <- standard url params
-          lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
+          // mixin all new settings from item, group info and group items.
+          this._mixinAll();
           // Set the geometry helper service to be the app default.
           if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
             esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
@@ -128,6 +132,11 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }), deferred.reject);
       // return promise
       return deferred.promise;
+    },
+    _mixinAll: function () {
+      // mix in all the settings we got!
+      // defaults <- organization <- application id config <- custom url params <- standard url params
+      lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
     },
     _createPortal: function () {
       var deferred = new Deferred();
@@ -155,7 +164,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return obj;
     },
-    _createUrlParamsObject: function (items) {
+    _createUrlParamsObject: function () {
       var urlObject,
         url;
       // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
@@ -377,14 +386,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             this.appConfig = response.itemData.values;
             // save response
             this.appResponse = response;
-            // Get the web map from the app values. But if there's a web url
-            // parameter don't overwrite with the app value.
-            var webmapParam = this._getUrlParamValues(["webmap"]);
-            if (!esriLang.isDefined(webmapParam.webmap)) {
-              if (response.itemData.values.webmap !== "") {
-                this.config.webmap = response.itemData.values.webmap;
-              }
-            }
           }
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
@@ -448,16 +449,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         deferred.resolve();
       }
       return deferred.promise;
-    },
-    _queryUrlParams: function () {
-      // This function demonstrates how to handle additional custom url parameters. For example
-      // if you want users to be able to specify lat/lon coordinates that define the map's center or
-      // specify an alternate basemap via a url parameter.
-      // If these options are also configurable these updates need to be added after any
-      // application default and configuration info has been applied. Currently these values
-      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
-      // supporting additional url parameters in your application.
-      this.customUrlConfig = this._getUrlParamValues(this.templateConfig.urlItems);
     }
   });
 });
