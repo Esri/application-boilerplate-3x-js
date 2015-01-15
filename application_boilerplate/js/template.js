@@ -1,6 +1,6 @@
 /*
-  Version 1.1
-  1/14/2015
+  Version 1.2
+  1/15/2015
 */
 
 /*global define,document,location,require */
@@ -97,39 +97,40 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       // The sharing url defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
-      // execute these async
-      all({
-        // check if signed in
-        auth: this._checkSignIn(),
-        // get localization
-        i18n: this._getLocalization(),
-        // get application data
-        app: this._queryApplicationConfiguration(),
-        // do we need to create portal?
-        portal: this._createPortal(),
-        // get org data
-        org: this._queryOrganizationInformation()
-      }).then(lang.hitch(this, function () {
-        // mixin all new settings from org and app
-        this._mixinAll();
-        // then execute these async
+      // check if signed in. Once we know if we're signed in, we can get appConfig, orgConfig and create a portal if needed.
+      this._checkSignIn().always(lang.hitch(this, function () {
+        // execute these tasks async
         all({
-          // webmap item
-          item: this._queryDisplayItem(),
-          // group information
-          groupInfo: this._queryGroupInfo(),
-          // group items
-          groupItems: this.queryGroupItems(),
+          // get localization
+          i18n: this._getLocalization(),
+          // get application data
+          app: this._queryApplicationConfiguration(),
+          // creates a portal for the app if necessary (groups use them)
+          portal: this._createPortal(),
+          // get org data
+          org: this._queryOrganizationInformation()
         }).then(lang.hitch(this, function () {
-          // mixin all new settings from item, group info and group items.
+          // mixin all new settings from org and app
           this._mixinAll();
-          // Set the geometry helper service to be the app default.
-          if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
-            esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
-          }
-          deferred.resolve(this.config);
+          // then execute these async
+          all({
+            // webmap item
+            item: this._queryDisplayItem(),
+            // group information
+            groupInfo: this._queryGroupInfo(),
+            // group items
+            groupItems: this.queryGroupItems(),
+          }).then(lang.hitch(this, function () {
+            // mixin all new settings from item, group info and group items.
+            this._mixinAll();
+            // Set the geometry helper service to be the app default.
+            if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
+              esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
+            }
+            deferred.resolve(this.config);
+          }), deferred.reject);
         }), deferred.reject);
-      }), deferred.reject);
+      }));
       // return promise
       return deferred.promise;
     },
