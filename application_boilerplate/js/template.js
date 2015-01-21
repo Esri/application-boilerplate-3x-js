@@ -60,15 +60,15 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       this.urlObject = this._createUrlParamsObject();
     },
     startup: function () {
-      var deferred = this._init();
-      deferred.then(lang.hitch(this, function (config) {
+      var promise = this._init();
+      promise.then(lang.hitch(this, function (config) {
         // optional ready event to listen to
         this.emit("ready", config);
       }), lang.hitch(this, function (error) {
         // optional error event to listen to
         this.emit("error", error);
       }));
-      return deferred;
+      return promise;
     },
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
@@ -230,7 +230,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       });
       return deferred.promise;
     },
-
     _getLocalization: function () {
       var deferred, dirNode, classes, rtlClasses;
       deferred = new Deferred();
@@ -391,7 +390,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           }
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
-            this.config.application_extent = response.item.extent;
+            this.appConfig.application_extent = response.item.extent;
           }
           deferred.resolve(response);
         }), function (error) {
@@ -421,7 +420,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           callbackParamName: "callback"
         }).then(lang.hitch(this, function (response) {
           // save organization information
-          this.config.orgInfo = response;
+          this.orgConfig.orgInfo = response;
           // get units defined by the org or the org user
           this.orgConfig.units = "metric";
           if (response.user && response.user.units) { //user defined units
