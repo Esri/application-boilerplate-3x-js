@@ -1,6 +1,6 @@
 /*
   Version 1.3
-  1/15/2015
+  1/21/2015
 */
 
 /*global define,document,location,require */
