@@ -46,6 +46,10 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     orgConfig: {},
     appConfig: {},
     urlConfig: {},
+    i18nConfig: {},
+    groupItemConfig: {},
+    groupInfoConfig: {},
+    displayItemConfig: {},
     customUrlConfig: {},
     commonUrlItems: ["webmap", "appid", "group", "oauthappid"],
     constructor: function (templateConfig) {
@@ -124,10 +128,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           }).then(lang.hitch(this, function () {
             // mixin all new settings from item, group info and group items.
             this._mixinAll();
-            // Set the geometry helper service to be the app default.
-            if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
-              esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
-            }
+            // We have all we need, let's set up a few things
+            this._completeApplication();
             deferred.resolve(this.config);
           }), deferred.reject);
         }), deferred.reject);
@@ -135,10 +137,30 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       // return promise
       return deferred.promise;
     },
+    _completeApplication: function () {
+      // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+      // existing web map extent with the application item extent when set.
+      if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0 && this.config.itemInfo && this.config.itemInfo.item && this.config.itemInfo.item.extent) {
+        this.config.itemInfo.item.extent = [
+              [
+                  parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+              ],
+              [
+                  parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+              ]
+          ];
+      }
+      // Set the geometry helper service to be the app default.
+      if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
+        esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
+      }
+    },
     _mixinAll: function () {
-      // mix in all the settings we got!
-      // defaults <- organization <- application id config <- custom url params <- standard url params
-      lang.mixin(this.config, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
+      /*
+      mix in all the settings we got!
+      {} <- i18n <- organization <- application <- group info <- group items <- webmap <- custom url params <- standard url params.
+      */
+      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.displayItemConfig, this.customUrlConfig, this.urlConfig);
     },
     _createPortal: function () {
       var deferred = new Deferred();
@@ -237,13 +259,13 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
           // Get the localization strings for the template and store in an i18n variable. Also determine if the
           // application is in a right-to-left language like Arabic or Hebrew.
-          this.config.i18n = appBundle || {};
+          this.i18nConfig.i18n = appBundle || {};
           // Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
           // Note: The map must stay ltr
-          this.config.i18n.direction = "ltr";
+          this.i18nConfig.i18n.direction = "ltr";
           array.some(["ar", "he"], lang.hitch(this, function (l) {
             if (kernel.locale.indexOf(l) !== -1) {
-              this.config.i18n.direction = "rtl";
+              this.i18nConfig.i18n.direction = "rtl";
               return true;
             }
             return false;
@@ -251,7 +273,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
           dirNode = document.getElementsByTagName("html")[0];
           classes = dirNode.className;
-          if (this.config.i18n.direction === "rtl") {
+          if (this.i18nConfig.i18n.direction === "rtl") {
             // need to add support for dj_rtl.
             // if the dir node is set when the app loads dojo will handle.
             dirNode.setAttribute("dir", "rtl");
@@ -293,7 +315,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           }
           // get items from the group
           this.portal.queryItems(params).then(lang.hitch(this, function (response) {
-            this.config.groupItems = response;
+            this.groupItemConfig.groupItems = response;
             deferred.resolve(response);
           }), function (error) {
             deferred.reject(error);
@@ -320,7 +342,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             f: "json"
           };
           this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
-            this.config.groupInfo = response;
+            this.groupInfoConfig.groupInfo = response;
             deferred.resolve(response);
           }), function (error) {
             deferred.reject(error);
@@ -348,20 +370,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";
         }
         arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
-          // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-          // existing web map extent with the application item extent when set.
-          if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
-            itemInfo.item.extent = [
-                            [
-                                parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
-                            ],
-                            [
-                                parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
-                            ]
-                        ];
-          }
           // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-          this.config.itemInfo = itemInfo;
+          this.displayItemConfig.itemInfo = itemInfo;
           deferred.resolve(itemInfo);
         }), function (error) {
           if (!error) {
