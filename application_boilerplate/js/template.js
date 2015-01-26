@@ -1,3 +1,8 @@
+/*
+  Version 1.3
+  1/21/2015
+*/
+
 /*global define,document,location,require */
 /*jslint sloppy:true,nomen:true,plusplus:true */
 /*
@@ -41,8 +46,12 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     orgConfig: {},
     appConfig: {},
     urlConfig: {},
+    i18nConfig: {},
+    groupItemConfig: {},
+    groupInfoConfig: {},
+    displayItemConfig: {},
     customUrlConfig: {},
-    commonConfig: {},
+    commonUrlItems: ["webmap", "appid", "group", "oauthappid"],
     constructor: function (templateConfig) {
       // template settings
       var defaultTemplateConfig = {
@@ -55,77 +64,103 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       this.urlObject = this._createUrlParamsObject();
     },
     startup: function () {
-      var deferred = this._init();
-      deferred.then(lang.hitch(this, function (config) {
+      var promise = this._init();
+      promise.then(lang.hitch(this, function (config) {
         // optional ready event to listen to
         this.emit("ready", config);
       }), lang.hitch(this, function (error) {
         // optional error event to listen to
         this.emit("error", error);
       }));
-      return deferred;
+      return promise;
     },
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
     _init: function () {
-      var deferred, paramItems;
+      var deferred;
       deferred = new Deferred();
       // Set the web map, group and appid if they exist but ignore other url params.
       // Additional url parameters may be defined by the application but they need to be mixed in
       // to the config object after we retrieve the application configuration info. As an example,
-      // we'll mix in some commonly used url parameters in the _queryUrlParams function after
+      // we'll mix in some commonly used url parameters after
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      paramItems = ["webmap", "appid", "group", "oauthappid"];
-      this.urlConfig = this._getUrlParamValues(paramItems);
+      this.urlConfig = this._getUrlParamValues(this.commonUrlItems);
+      // This demonstrates how to handle additional custom url parameters. For example
+      // if you want users to be able to specify lat/lon coordinates that define the map's center or
+      // specify an alternate basemap via a url parameter.
+      // If these options are also configurable these updates need to be added after any
+      // application default and configuration info has been applied. Currently these values
+      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
+      // supporting additional url parameters in your application.
+      this.customUrlConfig = this._getUrlParamValues(this.templateConfig.urlItems);
       // config defaults <- standard url params
       // we need the webmap, appid, group and oauthappid to query for the data
-      lang.mixin(this.config, this.urlConfig);
+      this._mixinAll();
       // Define the sharing url and other default values like the proxy.
       // The sharing url defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
-      // execute these async
-      all({
-        // check if signed in
-        auth: this._checkSignIn(),
-        // get localization
-        i18n: this._getLocalization(),
-        // get application data
-        app: this._queryApplicationConfiguration(),
-        // Receives common config file from templates hosted on AGOL.
-        common: this._getCommonConfig(),
-        // do we need to create portal?
-        portal: this._createPortal()
-      }).then(lang.hitch(this, function () {
-        // mix in commonconfig and appconfig before fetching groupInfo and groupItems so that GroupID Configured from Application configuration panel is honoured.
-        lang.mixin(this.config, this.commonConfig, this.appConfig);
-        // then execute these async
+      // check if signed in. Once we know if we're signed in, we can get appConfig, orgConfig and create a portal if needed.
+      this._checkSignIn().always(lang.hitch(this, function () {
+        // execute these tasks async
         all({
-          // webmap item
-          item: this._queryDisplayItem(),
-          // group information
-          groupInfo: this._queryGroupInfo(),
-          // group items
-          groupItems: this.queryGroupItems(),
+          // get localization
+          i18n: this._getLocalization(),
+          // get application data
+          app: this._queryApplicationConfiguration(),
+          // creates a portal for the app if necessary (groups use them)
+          portal: this._createPortal(),
           // get org data
           org: this._queryOrganizationInformation()
         }).then(lang.hitch(this, function () {
-          // Get any custom url params
-          this._queryUrlParams();
-          // mix in all the settings we got!
-          // defaults <- common config <- organization <- application id config <- custom url params <- standard url params
-          lang.mixin(this.config, this.commonConfig, this.orgConfig, this.appConfig, this.customUrlConfig, this.urlConfig);
-          // Set the geometry helper service to be the app default.
-          if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
-            esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
-          }
-          deferred.resolve(this.config);
+          // mixin all new settings from org and app
+          this._mixinAll();
+          // then execute these async
+          all({
+            // webmap item
+            item: this._queryDisplayItem(),
+            // group information
+            groupInfo: this._queryGroupInfo(),
+            // group items
+            groupItems: this.queryGroupItems(),
+          }).then(lang.hitch(this, function () {
+            // mixin all new settings from item, group info and group items.
+            this._mixinAll();
+            // We have all we need, let's set up a few things
+            this._completeApplication();
+            deferred.resolve(this.config);
+          }), deferred.reject);
         }), deferred.reject);
-      }), deferred.reject);
+      }));
       // return promise
       return deferred.promise;
+    },
+    _completeApplication: function () {
+      // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+      // existing web map extent with the application item extent when set.
+      if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0 && this.config.itemInfo && this.config.itemInfo.item && this.config.itemInfo.item.extent) {
+        this.config.itemInfo.item.extent = [
+              [
+                  parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+              ],
+              [
+                  parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+              ]
+          ];
+      }
+      // Set the geometry helper service to be the app default.
+      if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
+        esriConfig.defaults.geometryService = new GeometryService(this.config.helperServices.geometry.url);
+      }
+    },
+    _mixinAll: function () {
+      /*
+      mix in all the settings we got!
+      {} <- i18n <- organization <- application <- group info <- group items <- webmap <- custom url params <- standard url params.
+      */
+      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.displayItemConfig, this.customUrlConfig, this.urlConfig);
     },
     _createPortal: function () {
       var deferred = new Deferred();
@@ -134,19 +169,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         this.portal.on("load", function () {
           deferred.resolve();
         });
-      } else {
-        deferred.resolve();
-      }
-      return deferred.promise;
-    },
-    _getCommonConfig: function () {
-      var deferred;
-      deferred = new Deferred();
-      if (this.templateConfig.queryForCommonConfig) {
-        require(["arcgis_templates/commonConfig"], lang.hitch(this, function (response) {
-          this.commonConfig = response;
-          deferred.resolve(response);
-        }));
       } else {
         deferred.resolve();
       }
@@ -166,7 +188,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return obj;
     },
-    _createUrlParamsObject: function (items) {
+    _createUrlParamsObject: function () {
       var urlObject,
         url;
       // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
@@ -185,20 +207,23 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       return urlObject;
     },
     _initializeApplication: function () {
-      var appLocation, instance;
-      // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
-      // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
-      // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
-      appLocation = location.pathname.indexOf("/apps/");
-      if (appLocation === -1) {
-        appLocation = location.pathname.indexOf("/home/");
-      }
-      // app is hosted and no sharing url is defined so let's figure it out.
-      if (appLocation !== -1) {
-        // hosted or portal
-        instance = location.pathname.substr(0, appLocation); //get the portal instance name
-        this.config.sharinghost = location.protocol + "//" + location.host + instance;
-        this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+      // If this app is hosted on an Esri environment.
+      if (this.templateConfig.esriEnvironment) {
+        var appLocation, instance;
+        // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
+        // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
+        // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
+        appLocation = location.pathname.indexOf("/apps/");
+        if (appLocation === -1) {
+          appLocation = location.pathname.indexOf("/home/");
+        }
+        // app is hosted and no sharing url is defined so let's figure it out.
+        if (appLocation !== -1) {
+          // hosted or portal
+          instance = location.pathname.substr(0, appLocation); //get the portal instance name
+          this.config.sharinghost = location.protocol + "//" + location.host + instance;
+          this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+        }
       }
       arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
       // Define the proxy url for the app
@@ -227,7 +252,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       });
       return deferred.promise;
     },
-
     _getLocalization: function () {
       var deferred, dirNode, classes, rtlClasses;
       deferred = new Deferred();
@@ -235,13 +259,13 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
           // Get the localization strings for the template and store in an i18n variable. Also determine if the
           // application is in a right-to-left language like Arabic or Hebrew.
-          this.config.i18n = appBundle || {};
+          this.i18nConfig.i18n = appBundle || {};
           // Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
           // Note: The map must stay ltr
-          this.config.i18n.direction = "ltr";
+          this.i18nConfig.i18n.direction = "ltr";
           array.some(["ar", "he"], lang.hitch(this, function (l) {
             if (kernel.locale.indexOf(l) !== -1) {
-              this.config.i18n.direction = "rtl";
+              this.i18nConfig.i18n.direction = "rtl";
               return true;
             }
             return false;
@@ -249,7 +273,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
           dirNode = document.getElementsByTagName("html")[0];
           classes = dirNode.className;
-          if (this.config.i18n.direction === "rtl") {
+          if (this.i18nConfig.i18n.direction === "rtl") {
             // need to add support for dj_rtl.
             // if the dir node is set when the app loads dojo will handle.
             dirNode.setAttribute("dir", "rtl");
@@ -291,7 +315,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           }
           // get items from the group
           this.portal.queryItems(params).then(lang.hitch(this, function (response) {
-            this.config.groupItems = response;
+            this.groupItemConfig.groupItems = response;
             deferred.resolve(response);
           }), function (error) {
             deferred.reject(error);
@@ -318,7 +342,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             f: "json"
           };
           this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
-            this.config.groupInfo = response;
+            this.groupInfoConfig.groupInfo = response;
             deferred.resolve(response);
           }), function (error) {
             deferred.reject(error);
@@ -346,20 +370,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";
         }
         arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
-          // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-          // existing web map extent with the application item extent when set.
-          if (this.config.appid && this.config.application_extent.length > 0 && itemInfo.item.extent) {
-            itemInfo.item.extent = [
-                            [
-                                parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
-                            ],
-                            [
-                                parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
-                            ]
-                        ];
-          }
           // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-          this.config.itemInfo = itemInfo;
+          this.displayItemConfig.itemInfo = itemInfo;
           deferred.resolve(itemInfo);
         }), function (error) {
           if (!error) {
@@ -385,18 +397,10 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             this.appConfig = response.itemData.values;
             // save response
             this.appResponse = response;
-            // Get the web map from the app values. But if there's a web url
-            // parameter don't overwrite with the app value.
-            var webmapParam = this._getUrlParamValues(["webmap"]);
-            if (!esriLang.isDefined(webmapParam.webmap)) {
-              if (response.itemData.values.webmap !== "") {
-                this.config.webmap = response.itemData.values.webmap;
-              }
-            }
           }
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
-            this.config.application_extent = response.item.extent;
+            this.appConfig.application_extent = response.item.extent;
           }
           deferred.resolve(response);
         }), function (error) {
@@ -426,7 +430,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           callbackParamName: "callback"
         }).then(lang.hitch(this, function (response) {
           // save organization information
-          this.config.orgInfo = response;
+          this.orgConfig.orgInfo = response;
           // get units defined by the org or the org user
           this.orgConfig.units = "metric";
           if (response.user && response.user.units) { //user defined units
@@ -456,16 +460,6 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         deferred.resolve();
       }
       return deferred.promise;
-    },
-    _queryUrlParams: function () {
-      // This function demonstrates how to handle additional custom url parameters. For example
-      // if you want users to be able to specify lat/lon coordinates that define the map's center or
-      // specify an alternate basemap via a url parameter.
-      // If these options are also configurable these updates need to be added after any
-      // application default and configuration info has been applied. Currently these values
-      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
-      // supporting additional url parameters in your application.
-      this.customUrlConfig = this._getUrlParamValues(this.templateConfig.urlItems);
     }
   });
 });

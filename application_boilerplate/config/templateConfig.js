@@ -31,8 +31,6 @@ define({
   //Note that we've included a placeholder nls folder and a resource file with one error string
   //to show how to setup the strings file.
   "queryForLocale": true,
-  // When true, this will query and mixin a common config file from the path specified in the index.html dojo packages
-  "queryForCommonConfig": false,
   // These are the options specified for querying items within the group. Modify these to get more items. You can also call the public template.queryGroupItems() method with these options as a parameter.
   "groupParams": {
     q: "group:\"${groupid}\" AND -type:\"Code Attachment\"",
@@ -45,6 +43,8 @@ define({
   //if you want users to be able to specify lat/lon coordinates that define the map's center or
   //specify an alternate basemap via a url parameter.
   "urlItems": [
-        "theme" // example param. ?theme=<my theme>
-    ]
+    "theme" // example param. ?theme=<my theme>
+  ],
+  // For esri hosted envoronments only. Will automatically create a sharingurl and proxyurl for the application.
+  esriEnvironment: false
 });
