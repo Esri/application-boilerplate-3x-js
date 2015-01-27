@@ -32,6 +32,8 @@ The template consists of the following folders and files:
 **/config/:** A folder for your application's configuration files. 
 
 *   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a Bing maps key, default color theme and other template-specific settings.
+
+*   **templateConfig.js:** Options file for configuring your template to query for specific resources and items. You can edit this file and your template can enable or disable querying for things such as localization files, ArcGIS group information, group items, custom url parameters, etc.
  
 **/css/:** Contains the CSS files for the application.
 
@@ -50,7 +52,6 @@ The template consists of the following folders and files:
     *   helperServices: geometry, print, locator service urls
     *   i18n: Strings and isRightToLeft property that can be used to determine if the application is being viewed from a language where text is read left-to-right like Hebrew or Arabic.
     *   proxy  url
-*   **templateOptions.js:** Options file for configuring your template to query for specific resources and items. You can edit this file and your template can enable or disable querying for things such as localization files, ArcGIS group information, group items, custom url parameters, etc.
     
 **index.html**: The default html file for the application.
 
