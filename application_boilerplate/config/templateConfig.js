@@ -45,6 +45,6 @@ define({
   "urlItems": [
     "theme" // example param. ?theme=<my theme>
   ],
-  // For esri hosted envoronments only. Will automatically create a sharingurl and proxyurl for the application.
+  // For esri hosted environments only. Will automatically create a sharingurl and proxyurl for the application.
   esriEnvironment: false
 });
