@@ -182,8 +182,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       if (urlObject && urlObject.query && items && items.length) {
         for (i = 0; i < items.length; i++) {
           if (urlObject.query[items[i]]) {
-            var item = urlObject.query[items[i]];
-            obj[items[i]] = item === "true" || (item == "false" ? false : item);
+            obj[items[i]] = urlObject.query[items[i]];
           }
         }
       }
