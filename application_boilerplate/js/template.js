@@ -1,6 +1,6 @@
 /*
-  Version 1.3
-  1/21/2015
+  Version 1.4
+  2/3/2015
 */
 
 /*global define,document,location,require */
@@ -107,22 +107,22 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         // execute these tasks async
         all({
           // get localization
-          i18n: this._getLocalization(),
+          i18n: this._queryLocalization(),
           // get application data
-          app: this._queryApplicationConfiguration(),
+          app: this.queryApplication(),
           // creates a portal for the app if necessary (groups use them)
           portal: this._createPortal(),
           // get org data
-          org: this._queryOrganizationInformation()
+          org: this.queryOrganization()
         }).then(lang.hitch(this, function () {
           // mixin all new settings from org and app
           this._mixinAll();
           // then execute these async
           all({
             // webmap item
-            item: this._queryDisplayItem(),
+            item: this.queryDisplayItem(),
             // group information
-            groupInfo: this._queryGroupInfo(),
+            groupInfo: this.queryGroupInfo(),
             // group items
             groupItems: this.queryGroupItems(),
           }).then(lang.hitch(this, function () {
@@ -252,7 +252,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       });
       return deferred.promise;
     },
-    _getLocalization: function () {
+    _queryLocalization: function () {
       var deferred, dirNode, classes, rtlClasses;
       deferred = new Deferred();
       if (this.templateConfig.queryForLocale) {
@@ -330,7 +330,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryGroupInfo: function () {
+    queryGroupInfo: function () {
       var deferred = new Deferred(),
         error, params;
       // If we want to get the group info
@@ -357,7 +357,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryDisplayItem: function () {
+    queryDisplayItem: function () {
       var deferred;
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -385,7 +385,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryApplicationConfiguration: function () {
+    queryApplication: function () {
       // Get the application configuration details using the application id. When the response contains
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
@@ -414,7 +414,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryOrganizationInformation: function () {
+    queryOrganization: function () {
       var deferred = new Deferred();
       if (this.templateConfig.queryForOrg) {
         // Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you
