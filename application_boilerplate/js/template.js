@@ -1,6 +1,6 @@
 /*
-  Version 1.3
-  1/21/2015
+  Version 1.4
+  2/3/2015
 */
 
 /*global define,document,location,require */
@@ -49,7 +49,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     i18nConfig: {},
     groupItemConfig: {},
     groupInfoConfig: {},
-    displayItemConfig: {},
+    itemConfig: {},
     customUrlConfig: {},
     commonUrlItems: ["webmap", "appid", "group", "oauthappid"],
     constructor: function (templateConfig) {
@@ -107,22 +107,22 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         // execute these tasks async
         all({
           // get localization
-          i18n: this._getLocalization(),
+          i18n: this._queryLocalization(),
           // get application data
-          app: this._queryApplicationConfiguration(),
+          app: this.queryApplication(),
           // creates a portal for the app if necessary (groups use them)
           portal: this._createPortal(),
           // get org data
-          org: this._queryOrganizationInformation()
+          org: this.queryOrganization()
         }).then(lang.hitch(this, function () {
           // mixin all new settings from org and app
           this._mixinAll();
           // then execute these async
           all({
             // webmap item
-            item: this._queryDisplayItem(),
+            item: this.queryItem(),
             // group information
-            groupInfo: this._queryGroupInfo(),
+            groupInfo: this.queryGroupInfo(),
             // group items
             groupItems: this.queryGroupItems(),
           }).then(lang.hitch(this, function () {
@@ -160,7 +160,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       mix in all the settings we got!
       {} <- i18n <- organization <- application <- group info <- group items <- webmap <- custom url params <- standard url params.
       */
-      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.displayItemConfig, this.customUrlConfig, this.urlConfig);
+      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.itemConfig, this.customUrlConfig, this.urlConfig);
     },
     _createPortal: function () {
       var deferred = new Deferred();
@@ -252,20 +252,21 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       });
       return deferred.promise;
     },
-    _getLocalization: function () {
+    _queryLocalization: function () {
       var deferred, dirNode, classes, rtlClasses;
       deferred = new Deferred();
       if (this.templateConfig.queryForLocale) {
         require(["dojo/i18n!application/nls/resources"], lang.hitch(this, function (appBundle) {
+          var cfg = {};
           // Get the localization strings for the template and store in an i18n variable. Also determine if the
           // application is in a right-to-left language like Arabic or Hebrew.
-          this.i18nConfig.i18n = appBundle || {};
+          cfg.i18n = appBundle || {};
           // Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
           // Note: The map must stay ltr
-          this.i18nConfig.i18n.direction = "ltr";
+          cfg.i18n.direction = "ltr";
           array.some(["ar", "he"], lang.hitch(this, function (l) {
             if (kernel.locale.indexOf(l) !== -1) {
-              this.i18nConfig.i18n.direction = "rtl";
+              cfg.i18n.direction = "rtl";
               return true;
             }
             return false;
@@ -273,7 +274,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
           dirNode = document.getElementsByTagName("html")[0];
           classes = dirNode.className;
-          if (this.i18nConfig.i18n.direction === "rtl") {
+          if (cfg.i18n.direction === "rtl") {
             // need to add support for dj_rtl.
             // if the dir node is set when the app loads dojo will handle.
             dirNode.setAttribute("dir", "rtl");
@@ -283,7 +284,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             dirNode.setAttribute("dir", "ltr");
             domClass.add(dirNode, "esriLTR");
           }
-          deferred.resolve(appBundle);
+          this.i18nConfig = cfg;
+          deferred.resolve(cfg);
         }));
       } else {
         deferred.resolve();
@@ -315,8 +317,10 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           }
           // get items from the group
           this.portal.queryItems(params).then(lang.hitch(this, function (response) {
-            this.groupItemConfig.groupItems = response;
-            deferred.resolve(response);
+            var cfg = {};
+            cfg.groupItems = response;
+            this.groupItemConfig = cfg;
+            deferred.resolve(cfg);
           }), function (error) {
             deferred.reject(error);
           });
@@ -330,7 +334,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryGroupInfo: function () {
+    queryGroupInfo: function () {
       var deferred = new Deferred(),
         error, params;
       // If we want to get the group info
@@ -342,8 +346,10 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             f: "json"
           };
           this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
-            this.groupInfoConfig.groupInfo = response;
-            deferred.resolve(response);
+            var cfg = {};
+            cfg.groupInfo = response;
+            this.groupInfoConfig = cfg;
+            deferred.resolve(cfg);
           }), function (error) {
             deferred.reject(error);
           });
@@ -357,7 +363,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryDisplayItem: function () {
+    queryItem: function () {
       var deferred;
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -371,8 +377,10 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         }
         arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
           // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-          this.displayItemConfig.itemInfo = itemInfo;
-          deferred.resolve(itemInfo);
+          var cfg = {};
+          cfg.itemInfo = itemInfo;
+          this.itemConfig = cfg;
+          deferred.resolve(cfg);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving display item.");
@@ -385,24 +393,26 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryApplicationConfiguration: function () {
+    queryApplication: function () {
       // Get the application configuration details using the application id. When the response contains
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
       var deferred = new Deferred();
       if (this.config.appid) {
         arcgisUtils.getItem(this.config.appid).then(lang.hitch(this, function (response) {
+          var cfg = {};
           if (response.item && response.itemData && response.itemData.values) {
             // get app config values - we'll merge them with config later.
-            this.appConfig = response.itemData.values;
+            cfg = response.itemData.values;
             // save response
-            this.appResponse = response;
+            cfg.appResponse = response;
           }
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
-            this.appConfig.application_extent = response.item.extent;
+            cfg.application_extent = response.item.extent;
           }
-          deferred.resolve(response);
+          this.appConfig = cfg;
+          deferred.resolve(cfg);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving application configuration.");
@@ -414,7 +424,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    _queryOrganizationInformation: function () {
+    queryOrganization: function () {
       var deferred = new Deferred();
       if (this.templateConfig.queryForOrg) {
         // Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you
@@ -429,27 +439,29 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           },
           callbackParamName: "callback"
         }).then(lang.hitch(this, function (response) {
+          var cfg = {};
           // save organization information
-          this.orgConfig.orgInfo = response;
+          cfg.orgInfo = response;
           // get units defined by the org or the org user
-          this.orgConfig.units = "metric";
+          cfg.units = "metric";
           if (response.user && response.user.units) { //user defined units
-            this.orgConfig.units = response.user.units;
+            cfg.units = response.user.units;
           } else if (response.units) { //org level units
-            this.orgConfig.units = response.units;
+            cfg.units = response.units;
           } else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
             // use feet/miles only for the US and if nothing is set for a user
-            this.orgConfig.units = "english";
+            cfg.units = "english";
           }
           // Get the helper services (routing, print, locator etc)
-          this.orgConfig.helperServices = response.helperServices;
+          cfg.helperServices = response.helperServices;
           // are any custom roles defined in the organization?
           if (response.user && esriLang.isDefined(response.user.roleId)) {
             if (response.user.privileges) {
-              this.orgConfig.userPrivileges = response.user.privileges;
+              cfg.userPrivileges = response.user.privileges;
             }
           }
-          deferred.resolve(response);
+          this.orgConfig = cfg;
+          deferred.resolve(cfg);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving organization information.");
