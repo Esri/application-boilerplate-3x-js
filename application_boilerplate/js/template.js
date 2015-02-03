@@ -49,7 +49,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
     i18nConfig: {},
     groupItemConfig: {},
     groupInfoConfig: {},
-    displayItemConfig: {},
+    itemConfig: {},
     customUrlConfig: {},
     commonUrlItems: ["webmap", "appid", "group", "oauthappid"],
     constructor: function (templateConfig) {
@@ -120,7 +120,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // then execute these async
           all({
             // webmap item
-            item: this.queryDisplayItem(),
+            item: this.queryItem(),
             // group information
             groupInfo: this.queryGroupInfo(),
             // group items
@@ -160,7 +160,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       mix in all the settings we got!
       {} <- i18n <- organization <- application <- group info <- group items <- webmap <- custom url params <- standard url params.
       */
-      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.displayItemConfig, this.customUrlConfig, this.urlConfig);
+      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.groupInfoConfig, this.groupItemConfig, this.itemConfig, this.customUrlConfig, this.urlConfig);
     },
     _createPortal: function () {
       var deferred = new Deferred();
@@ -283,7 +283,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             dirNode.setAttribute("dir", "ltr");
             domClass.add(dirNode, "esriLTR");
           }
-          deferred.resolve(appBundle);
+          deferred.resolve(this.i18nConfig);
         }));
       } else {
         deferred.resolve();
@@ -316,7 +316,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           // get items from the group
           this.portal.queryItems(params).then(lang.hitch(this, function (response) {
             this.groupItemConfig.groupItems = response;
-            deferred.resolve(response);
+            deferred.resolve(this.groupItemConfig);
           }), function (error) {
             deferred.reject(error);
           });
@@ -343,7 +343,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
           };
           this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
             this.groupInfoConfig.groupInfo = response;
-            deferred.resolve(response);
+            deferred.resolve(this.groupInfoConfig);
           }), function (error) {
             deferred.reject(error);
           });
@@ -357,7 +357,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       }
       return deferred.promise;
     },
-    queryDisplayItem: function () {
+    queryItem: function () {
       var deferred;
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -371,8 +371,8 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
         }
         arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
           // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-          this.displayItemConfig.itemInfo = itemInfo;
-          deferred.resolve(itemInfo);
+          this.itemConfig.itemInfo = itemInfo;
+          deferred.resolve(this.itemConfig);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving display item.");
@@ -396,13 +396,13 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
             // get app config values - we'll merge them with config later.
             this.appConfig = response.itemData.values;
             // save response
-            this.appResponse = response;
+            this.appConfig.appResponse = response;
           }
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
             this.appConfig.application_extent = response.item.extent;
           }
-          deferred.resolve(response);
+          deferred.resolve(this.appConfig);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving application configuration.");
@@ -449,7 +449,7 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
               this.orgConfig.userPrivileges = response.user.privileges;
             }
           }
-          deferred.resolve(response);
+          deferred.resolve(this.orgConfig);
         }), function (error) {
           if (!error) {
             error = new Error("Error retrieving organization information.");
