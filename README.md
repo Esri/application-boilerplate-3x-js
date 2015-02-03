@@ -41,9 +41,9 @@ The template consists of the following folders and files:
 
 **/images/**: Contains images used by the application.
 
-**/js/**: Contains 3 JavaScript files and 1 folder:
+**/js/**: Contains JavaScript files:
 
-*   **/nls/:** The nls folder contains a file called resources.js that contains the strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
+*   **/nls/:** The nls folder contains a file called resources.js that contains the language strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
 *   **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
 *   **template.js:** Module that takes care of "template"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), handling localization details and retrieving organization specific info if applicable. You will most likely not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the defaults.js file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
     *   Template specific properties
