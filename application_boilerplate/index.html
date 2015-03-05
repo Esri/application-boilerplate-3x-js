@@ -1,29 +1,31 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title></title>
-    <meta charset="utf-8">
-    <!-- Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional. -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!-- Responsive -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <!-- End Responsive -->
-    <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-    <link rel="stylesheet" href="//js.arcgis.com/3.9/js/dojo/dijit/themes/claro/claro.css">
-    <link rel="stylesheet"  href="//js.arcgis.com/3.9/js/esri/css/esri.css">
-    <!-- Load any application specific styles -->
-    <link rel="stylesheet" href="css/main.css">
-     <link rel="stylesheet" type="text/css" href="css/Drawer.css">
+  <title></title>
+  <meta charset="utf-8">
+  <!-- Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Responsive -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- End Responsive -->
+  <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
+  <link rel="stylesheet" href="//js.arcgis.com/3.12//dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="//js.arcgis.com/3.12/esri/css/esri.css">
+  <!-- Load any application specific styles -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" type="text/css" href="css/Drawer.css">
 </head>
+
 <body class="claro app-loading">
-    <div class="loading-indicator">
-        <div class="loading-message" id="loading_message"></div>
-    </div>
-    <!-- The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. -->
-        <div id="border_container" class="border-container-outer">
+  <div class="loading-indicator">
+    <div class="loading-message" id="loading_message"></div>
+  </div>
+  <!-- The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. -->
+  <div id="border_container" class="border-container-outer">
             <div id="cp_left" class="content-pane-left">
           
             </div>
@@ -33,50 +35,52 @@
                 </div>
                    <div id="mapDiv" dir="ltr"></div>
             </div>
-        </div>
-
-    <script type="text/javascript">
-        var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-        var dojoConfig = {
-            async: true,
-            // The locationPath logic below may look confusing but all its doing is
-            // enabling us to load the api from a CDN and load local modules from the correct location.
-            packages: [{
-                name: "application",
-                location: package_path + '/js'
+  </div>
+  <script type="text/javascript">
+    var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    var dojoConfig = {
+      async: true,
+      // The locationPath logic below may look confusing but all its doing is
+      // enabling us to load the api from a CDN and load local modules from the correct location.
+      packages: [{
+        name: "application",
+        location: package_path + '/js'
             }, {
-                name: "config",
-                location: package_path + '/config'
+        name: "config",
+        location: package_path + '/config'
             }, {
-                name: "arcgis_templates",
-                location: package_path + '/..'
+        name: "arcgis_templates",
+        location: package_path + '/..'
             }]
-        };
-    </script>
-    <script type="text/javascript" src="//js.arcgis.com/3.9/"></script>
-    <script type="text/javascript">
-        require([
+    };
+  </script>
+  <script type="text/javascript" src="//js.arcgis.com/3.12/"></script>
+  <script type="text/javascript">
+    require([
+            "config/templateConfig",
             "application/template",
             "application/main"
-        ], function(
-            Template,
-            Main
-        ){
-            // create the template. This will take care of all the logic required for template applications
-            var myTemplate = new Template();
-            // create my main application. Start placing your logic in the main.js file.
-            var myApp = new Main();
-            // start template
-            myTemplate.startup().then(function(config) {
-                // The config object contains the following properties: helper services, (optionally)
-                // i18n, appid, webmap and any custom values defined by the application.
-                // In this example we have one called theme.
-                myApp.startup(config);
-            }, function(error) {
-                // something went wrong. Let's report it.
-                myApp.reportError(error);
-            });
-        });
-    </script>
+        ], function (
+      templateConfig,
+      Template,
+      Main
+    ) {
+      // create the template. This will take care of all the logic required for template applications
+      var myTemplate = new Template(templateConfig);
+      // create my main application. Start placing your logic in the main.js file.
+      var myApp = new Main();
+      // start template
+      myTemplate.startup().then(function (config) {
+        // The config object contains the following properties: helper services, (optionally)
+        // i18n, appid, webmap and any custom values defined by the application.
+        // In this example we have one called theme.
+        myApp.startup(config);
+      }, function (error) {
+        // something went wrong. Let's report it.
+        myApp.reportError(error);
+      });
+    });
+  </script>
 </body>
+
 </html>
