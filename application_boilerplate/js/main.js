@@ -15,8 +15,8 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "dojo/domReady!,
-	"application/Drawer"], function (
+define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "application/Drawer","dojo/domReady!"
+	], function (
   declare,
   lang,
   arcgisUtils,
