@@ -1,0 +1,83 @@
+/* Drawer */
+
+.top-bar {
+    position: absolute;
+    z-index: 36;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    background: rgba(255, 255, 255, 0.9);
+    height: 34px;
+    border-bottom: 1px solid #ddd;
+}
+.esriRTL .top-bar {
+    left: auto;
+    right: 0;
+}
+.esriRTL .app-title {
+    float: right;
+}
+.hamburger-button {
+    float: left;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    height: 34px;
+    width: 34px;
+    background: url(../images/menu.png) no-repeat center center;
+}
+.esriRTL .hamburger-button {
+    float: right;
+}
+.border-container-outer {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    overflow: hidden;
+}
+.content-pane-left {
+    width: 0px;
+    max-width: 280px;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: #fff;
+    overflow: hidden;
+    -webkit-transition: width 250ms ease;
+    -moz-transition: width 250ms ease;
+    -ms-transition: width 250ms ease;
+    -o-transition: width 250ms ease;
+    transition: width 250ms ease;
+}
+.app-loading .content-pane-left {
+    width: 280px;
+}
+.drawer-open .content-pane-left {
+    width: 280px;
+    overflow: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #ddd;
+}
+.esriRTL .drawer-open .content-pane-left {
+    border-right: 0;
+    border-left: 1px solid #ddd;
+}
+.content-pane-center {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+.esriSimpleSlider {
+    top: 55px;
+}
+@media screen and (max-width: 850px) {
+    .app-loading .content-pane-left {
+        width: 0px;
+    }
+}

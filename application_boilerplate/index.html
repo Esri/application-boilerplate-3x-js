@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="//js.arcgis.com/3.12/esri/css/esri.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" type="text/css" href="css/Drawer.css">
 </head>
 
 <body class="claro app-loading">
@@ -24,7 +25,17 @@
     <div class="loading-message" id="loading_message"></div>
   </div>
   <!-- The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. -->
-  <div id="mapDiv" dir="ltr"></div>
+  <div id="border_container" class="border-container-outer">
+            <div id="cp_left" class="content-pane-left">
+          
+            </div>
+            <div id="cp_center" class="content-pane-center">
+                <div class="top-bar">
+                 <div id="toggle_button" class="hamburger-button"></div>
+                </div>
+                   <div id="mapDiv" dir="ltr"></div>
+            </div>
+  </div>
   <script type="text/javascript">
     var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
     var dojoConfig = {

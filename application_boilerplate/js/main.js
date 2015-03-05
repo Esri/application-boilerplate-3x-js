@@ -15,13 +15,15 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "dojo/domReady!"], function (
+define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "application/Drawer","dojo/domReady!"
+	], function (
   declare,
   lang,
   arcgisUtils,
   dom,
   domClass,
-  on
+  on,
+  Drawer
 ) {
   return declare(null, {
     config: {},
@@ -31,6 +33,16 @@ define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom"
       // any url parameters and any application specific configuration information.
       if (config) {
         this.config = config;
+ 		this._drawer = new Drawer({
+                    showDrawerSize: 850, // Pixel size when the drawer is automatically opened
+                    borderContainer: "border_container", // border container node id
+                    contentPaneCenter: "cp_center", // center content pane node id
+                    contentPaneSide: "cp_left", // side content pane id
+                    toggleButton: "toggle_button", // button node to toggle drawer id
+                    direction: this.config.i18n.direction // i18n direction "ltr" or "rtl"
+                });
+                // startup drawer
+        this._drawer.startup();
         //supply either the webmap id or, if available, the item info
         var itemInfo = this.config.itemInfo || this.config.webmap;
         this._createWebMap(itemInfo);
