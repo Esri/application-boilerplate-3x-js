@@ -364,29 +364,39 @@ define(["dojo/Evented", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_base/a
       return deferred.promise;
     },
     queryItem: function () {
-      var deferred;
+      var deferred, cfg = {};
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       // If we want to get the webmap
       if (this.templateConfig.queryForWebmap) {
-        // if webmap does not exist
-        if (!this.config.webmap) {
-          // use default webmap for boilerplate
-          this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";
-        }
-        arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
-          // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
-          var cfg = {};
-          cfg.itemInfo = itemInfo;
-          this.itemConfig = cfg;
-          deferred.resolve(cfg);
-        }), function (error) {
-          if (!error) {
-            error = new Error("Error retrieving display item.");
+        // Use local webmap instead of portal webmap
+        if (this.templateConfig.useLocalWebmap) {
+          // get webmap js file
+          require([this.templateConfig.localWebmapFile], lang.hitch(this, function (webmap) {
+            // return webmap json
+            cfg.itemInfo = webmap;
+            this.itemConfig = cfg;
+            deferred.resolve(cfg);
+          }));
+        } else {
+          // if webmap does not exist
+          if (!this.config.webmap) {
+            // use default webmap for boilerplate
+            this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";
           }
-          deferred.reject(error);
-        });
+          arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
+            // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
+            cfg.itemInfo = itemInfo;
+            this.itemConfig = cfg;
+            deferred.resolve(cfg);
+          }), function (error) {
+            if (!error) {
+              error = new Error("Error retrieving display item.");
+            }
+            deferred.reject(error);
+          });
+        }
       } else {
         // we're done. we dont need to get the webmap
         deferred.resolve();
