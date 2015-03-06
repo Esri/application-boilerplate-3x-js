@@ -34,6 +34,8 @@ The template consists of the following folders and files:
 *   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a Bing maps key, default color theme and other template-specific settings.
 
 *   **templateConfig.js:** Options file for configuring your template to query for specific resources and items. You can edit this file and your template can enable or disable querying for things such as localization files, ArcGIS group information, group items, custom url parameters, etc.
+
+*   **demoMap.js:** This map file can be used as a substitute for an arcgis.com hosted webmap. It contains webmap JSON that can be used to configure a map locally. To use this file instead of an online hosted webmap, set the `useLocalWebmap` option to `true` in `templateConfig.js`. Make sure the option `localWebmapFile` is pointing to this file location.
  
 **/css/:** Contains the CSS files for the application.
 
