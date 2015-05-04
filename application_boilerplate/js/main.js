@@ -15,13 +15,20 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom", "dojo/dom-class", "dojo/on", "dojo/domReady!"], function (
-  declare,
-  lang,
-  arcgisUtils,
-  dom,
-  domClass,
-  on
+define([
+  "dojo/_base/declare",
+  "dojo/_base/lang",
+
+  "dojo/dom",
+  "dojo/dom-class",
+
+  "esri/arcgis/utils",
+
+  "dojo/domReady!"
+], function (
+  declare, lang,
+  dom, domClass,
+  arcgisUtils
 ) {
   return declare(null, {
     config: {},
@@ -63,13 +70,21 @@ define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom"
       console.log("My Map:", this.map);
       console.log("My Config:", this.config);
     },
+
     // create a map based on the input web map id
     _createWebMap: function (itemInfo) {
+      // set extent from config/url
+      itemInfo = this._setExtent(itemInfo);
+      // Optionally define additional map config here for example you can
+      // turn the slider off, display info windows, disable wraparound 180, slider position and more.
+      var mapOptions = {};
+      // set zoom level from config/url
+      mapOptions = this._setLevel(mapOptions);
+      // set map center from config/url
+      mapOptions = this._setCenter(mapOptions);
+      // create webmap from item
       arcgisUtils.createMap(itemInfo, "mapDiv", {
-        mapOptions: {
-          // Optionally define additional map config here for example you can
-          // turn the slider off, display info windows, disable wraparound 180, slider position and more.
-        },
+        mapOptions: mapOptions,
         usePopupManager: true,
         editable: this.config.editable,
         bingMapsKey: this.config.bingKey
@@ -87,6 +102,40 @@ define(["dojo/_base/declare", "dojo/_base/lang", "esri/arcgis/utils", "dojo/dom"
         // map has been created. You can start using it.
         // If you need map to be loaded, listen for it's load event.
       }), this.reportError);
+    },
+
+    _setLevel: function (options) {
+      var level = this.config.level;
+      //specify center and zoom if provided as url params 
+      if (level) {
+        options.zoom = level;
+      }
+      return options;
+    },
+
+    _setCenter: function (options) {
+      var center = this.config.center;
+      if (center) {
+        var points = center.split(",");
+        if (points && points.length === 2) {
+          options.center = [parseFloat(points[0]), parseFloat(points[1])];
+        }
+      }
+      return options;
+    },
+
+    _setExtent: function (info) {
+      var e = this.config.extent;
+      //If a custom extent is set as a url parameter handle that before creating the map
+      if (e) {
+        var extArray = e.split(",");
+        var extLength = extArray.length;
+        if (extLength === 4) {
+          info.item.extent = [[parseFloat(extArray[0]), parseFloat(extArray[1])], [parseFloat(extArray[2]), parseFloat(extArray[3])]];
+        }
+      }
+      return info;
     }
+
   });
 });
