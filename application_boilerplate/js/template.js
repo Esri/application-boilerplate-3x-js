@@ -413,9 +413,11 @@ define([
               "title": "Default Webmap",
               "type": "Web Map",
               "description": "A webmap with the default basemap and extent.",
+              "snippet": "A webmap with the default basemap and extent.",
               "extent": this.config.orgInfo.defaultExtent
             },
             "itemData": {
+              "operationalLayers": [],
               "baseMap": this.config.orgInfo.defaultBasemap
             }
           };
