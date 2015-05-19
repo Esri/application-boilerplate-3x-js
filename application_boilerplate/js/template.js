@@ -1,6 +1,6 @@
 /*
-  Version 1.4
-  2/3/2015
+  Version 1.5
+  5/19/2015
 */
 
 /*global define,document,location,require */
@@ -405,12 +405,28 @@ define([
             this.itemConfig = cfg;
             deferred.resolve(cfg);
           }));
-        } else {
-          // if webmap does not exist
-          if (!this.config.webmap) {
-            // use default webmap for boilerplate
-            this.config.webmap = "24e01ef45d40423f95300ad2abc5038a";
-          }
+        }
+        // no webmap is set and we have organization's info
+        else if (!this.config.webmap && this.config.orgInfo) {
+          var defaultWebmap = {
+            "item": {
+              "title": "Default Webmap",
+              "type": "Web Map",
+              "description": "A webmap with the default basemap and extent.",
+              "snippet": "A webmap with the default basemap and extent.",
+              "extent": this.config.orgInfo.defaultExtent
+            },
+            "itemData": {
+              "operationalLayers": [],
+              "baseMap": this.config.orgInfo.defaultBasemap
+            }
+          };
+          cfg.itemInfo = defaultWebmap;
+          this.itemConfig = cfg;
+          deferred.resolve(cfg);
+        }
+        // use webmap from id
+        else {
           arcgisUtils.getItem(this.config.webmap).then(lang.hitch(this, function (itemInfo) {
             // Set the itemInfo config option. This can be used when calling createMap instead of the webmap id
             cfg.itemInfo = itemInfo;
