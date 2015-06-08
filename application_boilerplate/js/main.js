@@ -86,6 +86,7 @@ define([
       arcgisUtils.createMap(itemInfo, "mapDiv", {
         mapOptions: mapOptions,
         usePopupManager: true,
+        layerMixins: this.config.layerMixins || [],
         editable: this.config.editable,
         bingMapsKey: this.config.bingKey
       }).then(lang.hitch(this, function (response) {
