@@ -473,7 +473,7 @@ define([
                 }
               };
             });
-            this.appConfig.layerMixins = layerMixins;
+            cfg.layerMixins = layerMixins;
           }
           this.appConfig = cfg;
           deferred.resolve(cfg);
