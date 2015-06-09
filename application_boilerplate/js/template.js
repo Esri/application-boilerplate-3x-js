@@ -464,18 +464,17 @@ define([
             cfg.application_extent = response.item.extent;
           }
           // get any app proxies defined on the application item
-          if(response.item && response.item.appProxies){
-                var layerMixins = array.map(response.item.appProxies, function(p){
-                    return {
-                      "url": p.sourceUrl,
-                      "mixin":{
-                        "url": p.proxyUrl
-                      }
-                    }
-                });
-                this.appConfig.layerMixins = layerMixins;
+          if (response.item && response.item.appProxies) {
+            var layerMixins = array.map(response.item.appProxies, function (p) {
+              return {
+                "url": p.sourceUrl,
+                "mixin": {
+                  "url": p.proxyUrl
+                }
+              };
+            });
+            this.appConfig.layerMixins = layerMixins;
           }
-
           this.appConfig = cfg;
           deferred.resolve(cfg);
         }), function (error) {
