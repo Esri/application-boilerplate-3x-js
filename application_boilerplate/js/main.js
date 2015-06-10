@@ -19,6 +19,8 @@ define([
   "dojo/_base/declare",
   "dojo/_base/lang",
 
+  "dojo/Deferred",
+
   "dojo/dom",
   "dojo/dom-class",
 
@@ -27,12 +29,14 @@ define([
   "dojo/domReady!"
 ], function (
   declare, lang,
+  Deferred,
   dom, domClass,
   arcgisUtils
 ) {
   return declare(null, {
     config: {},
     startup: function (config) {
+      var promise;
       // config will contain application and user defined info for the template such as i18n strings, the web map id
       // and application id
       // any url parameters and any application specific configuration information.
@@ -40,11 +44,15 @@ define([
         this.config = config;
         //supply either the webmap id or, if available, the item info
         var itemInfo = this.config.itemInfo || this.config.webmap;
-        this._createWebMap(itemInfo);
+        promise = this._createWebMap(itemInfo);
       } else {
         var error = new Error("Main:: Config is not defined");
         this.reportError(error);
+        var def = new Deferred();
+        def.reject(error);
+        promise = def.promise;
       }
+      return promise;
     },
     reportError: function (error) {
       // remove loading class from body
@@ -63,12 +71,7 @@ define([
           node.innerHTML = "Unable to create map: " + error.message;
         }
       }
-    },
-    // Sample function
-    _helloWorld: function () {
-      console.log("Hello World!");
-      console.log("My Map:", this.map);
-      console.log("My Config:", this.config);
+      return error;
     },
 
     // create a map based on the input web map id
@@ -83,7 +86,7 @@ define([
       // set map center from config/url
       mapOptions = this._setCenter(mapOptions);
       // create webmap from item
-      arcgisUtils.createMap(itemInfo, "mapDiv", {
+      return arcgisUtils.createMap(itemInfo, "mapDiv", {
         mapOptions: mapOptions,
         usePopupManager: true,
         layerMixins: this.config.layerMixins || [],
@@ -98,8 +101,18 @@ define([
         this.map = response.map;
         // remove loading class from body
         domClass.remove(document.body, "app-loading");
-        // Start writing my code
-        this._helloWorld();
+        // Start writing code
+        /* ---------------------------------------- */
+        /*  Map is ready. Start writing code        */
+        /* ---------------------------------------- */
+        console.log("Hello World!");
+        console.log("My Map:", this.map);
+        console.log("My Config:", this.config);
+        /* ---------------------------------------- */
+        /*                                          */
+        /* ---------------------------------------- */
+        // return for promise
+        return response;
         // map has been created. You can start using it.
         // If you need map to be loaded, listen for it's load event.
       }), this.reportError);
