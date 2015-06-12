@@ -299,7 +299,7 @@ define([
           }));
           // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
           dirNode = document.getElementsByTagName("html")[0];
-          classes = dirNode.className;
+          classes = dirNode.className + " ";
           if (cfg.i18n.direction === "rtl") {
             // need to add support for dj_rtl.
             // if the dir node is set when the app loads dojo will handle.
