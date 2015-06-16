@@ -191,15 +191,14 @@ define([
       return deferred.promise;
     },
     _getUrlParamValues: function (items) {
-      // retreives only the items specified from the URL object.
-      var urlObject = this.urlObject,
-        obj = {},
-        i;
+      // retrieves only the items specified from the URL object.
+      var urlObject = this.urlObject;
+      var obj = {};
       if (urlObject && urlObject.query && items && items.length) {
-        for (i = 0; i < items.length; i++) {
-          if (urlObject.query[items[i]]) {
-            var item = urlObject.query[items[i]];
-            if (item && (typeof item === "string")) {
+        for (var i = 0; i < items.length; i++) {
+          var item = urlObject.query[items[i]];
+          if (item) {
+            if (typeof item === "string") {
               switch (item.toLowerCase()) {
               case "true":
                 obj[items[i]] = true;
