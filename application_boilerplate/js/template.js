@@ -199,14 +199,18 @@ define([
         for (i = 0; i < items.length; i++) {
           if (urlObject.query[items[i]]) {
             var item = urlObject.query[items[i]];
-            switch (item.toLowerCase()) {
-            case "true":
-              obj[items[i]] = true;
-              break;
-            case "false":
-              obj[items[i]] = false;
-              break;
-            default:
+            if (item && (typeof item === "string")) {
+              switch (item.toLowerCase()) {
+              case "true":
+                obj[items[i]] = true;
+                break;
+              case "false":
+                obj[items[i]] = false;
+                break;
+              default:
+                obj[items[i]] = item;
+              }
+            } else {
               obj[items[i]] = item;
             }
           }
