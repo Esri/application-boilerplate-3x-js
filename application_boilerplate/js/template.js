@@ -1,6 +1,6 @@
 /*
-  Version 1.5
-  5/19/2015
+  Version 1.6
+  6/8/2015
 */
 
 /*global define,document,location,require */
@@ -191,22 +191,25 @@ define([
       return deferred.promise;
     },
     _getUrlParamValues: function (items) {
-      // retreives only the items specified from the URL object.
-      var urlObject = this.urlObject,
-        obj = {},
-        i;
+      // retrieves only the items specified from the URL object.
+      var urlObject = this.urlObject;
+      var obj = {};
       if (urlObject && urlObject.query && items && items.length) {
-        for (i = 0; i < items.length; i++) {
-          if (urlObject.query[items[i]]) {
-            var item = urlObject.query[items[i]];
-            switch (item.toLowerCase()) {
-            case "true":
-              obj[items[i]] = true;
-              break;
-            case "false":
-              obj[items[i]] = false;
-              break;
-            default:
+        for (var i = 0; i < items.length; i++) {
+          var item = urlObject.query[items[i]];
+          if (item) {
+            if (typeof item === "string") {
+              switch (item.toLowerCase()) {
+              case "true":
+                obj[items[i]] = true;
+                break;
+              case "false":
+                obj[items[i]] = false;
+                break;
+              default:
+                obj[items[i]] = item;
+              }
+            } else {
               obj[items[i]] = item;
             }
           }
@@ -299,7 +302,7 @@ define([
           }));
           // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
           dirNode = document.getElementsByTagName("html")[0];
-          classes = dirNode.className;
+          classes = dirNode.className + " ";
           if (cfg.i18n.direction === "rtl") {
             // need to add support for dj_rtl.
             // if the dir node is set when the app loads dojo will handle.
@@ -462,6 +465,18 @@ define([
           // get the extent for the application item. This can be used to override the default web map extent
           if (response.item && response.item.extent) {
             cfg.application_extent = response.item.extent;
+          }
+          // get any app proxies defined on the application item
+          if (response.item && response.item.appProxies) {
+            var layerMixins = array.map(response.item.appProxies, function (p) {
+              return {
+                "url": p.sourceUrl,
+                "mixin": {
+                  "url": p.proxyUrl
+                }
+              };
+            });
+            cfg.layerMixins = layerMixins;
           }
           this.appConfig = cfg;
           deferred.resolve(cfg);
