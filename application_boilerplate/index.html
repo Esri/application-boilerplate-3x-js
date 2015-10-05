@@ -14,7 +14,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-  <link rel="stylesheet" href="//js.arcgis.com/3.14//dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="//js.arcgis.com/3.14/dijit/themes/claro/claro.css">
   <link rel="stylesheet" href="//js.arcgis.com/3.14/esri/css/esri.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/main.css">
@@ -43,6 +43,10 @@
         location: package_path + '/..'
             }]
     };
+   var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
+   if(urlLocale){
+    dojoConfig.locale = urlLocale;
+   }
   </script>
   <script type="text/javascript" src="//js.arcgis.com/3.14/"></script>
   <script type="text/javascript">
