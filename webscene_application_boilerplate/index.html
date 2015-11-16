@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <title></title>
-  <meta charset="utf-8">   
-  <meta name="fragment" content="!">
+  <meta charset="utf-8">
   <!-- Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional. -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!-- Responsive -->
@@ -14,24 +12,20 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-  <link rel="stylesheet" href="//js.arcgis.com/3.14/dijit/themes/claro/claro.css">
-  <link rel="stylesheet" href="//js.arcgis.com/3.14/esri/css/esri.css">
+  <link rel="stylesheet" href="https://jsdev.arcgis.com/4.0beta2/esri/css/main.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/main.css">
 </head>
 
-<body class="claro app-loading">
+<body class="app-loading">
   <div class="loading-indicator">
     <div class="loading-message" id="loading_message"></div>
   </div>
-  <!-- The ArcGIS API for JavaScript provides bidirectional support.  When viewing the application in an right to left (rtl) language like Hebrew and Arabic the map needs to remain in left-to-right (ltr) mode. Specify this by setting the dir attribute on the div to ltr. -->
-  <div id="mapDiv" dir="ltr"></div>
+  <div id="viewDiv" dir="ltr"></div>
   <script type="text/javascript">
     var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
     var dojoConfig = {
       async: true,
-      // The locationPath logic below may look confusing but all its doing is
-      // enabling us to load the api from a CDN and load local modules from the correct location.
       packages: [{
         name: "application",
         location: package_path + '/js'
@@ -41,14 +35,10 @@
             }, {
         name: "arcgis_templates",
         location: package_path + '/..'
-            }]
+      }]
     };
-   var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
-   if(urlLocale){
-    dojoConfig.locale = urlLocale;
-   }
   </script>
-  <script type="text/javascript" src="//js.arcgis.com/3.14/"></script>
+  <script type="text/javascript" src="https://jsdev.arcgis.com/4.0beta2/"></script>
   <script type="text/javascript">
     require([
             "config/templateConfig",
@@ -66,7 +56,7 @@
       // start template
       myTemplate.startup().then(function (config) {
         // The config object contains the following properties: helper services, (optionally)
-        // i18n, appid, webmap and any custom values defined by the application.
+        // i18n, appid, webscene and any custom values defined by the application.
         // In this example we have one called theme.
         myApp.startup(config);
       }, function (error) {

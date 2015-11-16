@@ -14,11 +14,8 @@
  | See the License for the specific language governing permissions and
  | limitations under the License.
  */
-define({
-  root: ({
-    map: {
-      error: "Unable to create map"
-    }
-  }),
-  "fr": 1
-});
+define(({
+  scene: {
+    error: "Impossible de créer la scene"
+  }
+}));
