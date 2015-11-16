@@ -1,20 +1,18 @@
-# application-boilerplate-js
+# webscene-application-boilerplate-js
 
-The Application Boilerplate is a starter application for building custom templates with the ArcGIS API for JavaScript.
+The WebScene Application Boilerplate is a starter application for building custom web scene templates with the ArcGIS API for JavaScript version 4.x.
 
 ## Features
 This bare-bones app includes all the code you need to build an ArcGIS Online template. It will save you time when:
 
 *	Making an ArcGIS Online compatible template.
-*	Using your ArcGIS Online webmap to power the template.
+*	Using your ArcGIS Online webscene to power the template.
 *	Localizing your application in different languages.
 *	Capturing URL parameters and using them in your application.
 *	Using settings from your ArcGIS Online organization or configured application.
 *	Enabling your application to sign-in to ArcGIS Online using [OAuth 2.0](http://oauth.net/2/).
 
-[View it live](http://esri.github.io/application-boilerplate-js/application_boilerplate/)
 
-![App](https://raw.github.com/Esri/application-boilerplate-js/master/application_boilerplate/images/thumb.png)
 
 ## Getting Started
 
