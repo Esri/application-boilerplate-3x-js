@@ -16,8 +16,6 @@
  | limitations under the License.
  */
 define({
-  // When true, the template will query arcgis.com for the web scene item.
-  "queryForWebScene": true,
   // Use a local hosted web scene instead of a web scene on ArcGIS or portal.
   "useLocalWebScene": false,
   // support sending credentials with AJAX requests to specific domains. This will allow editing of feature services secured with web-tier authentication

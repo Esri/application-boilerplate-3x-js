@@ -70,20 +70,22 @@ declare, lang, Deferred, dom, domClass, Camera, Point, SpatialReference, SceneVi
 
         // create a scene based on the input web scene id
         _createWebScene: function () {
-            // Create a scene from json will be coming.
-            // for now scene from id only. 
-            // if(this.config.itemInfo){
-            //   scene = new WebScene(this.config.itemInfo);
-            // }else{  
             if (!this.config.webscene) {
                 return;
             }
 
-            var scene = new WebScene({
-                portalItem: new PortalItem({
-                    id: this.config.webscene
-                })
-            });
+            // Create a scene from json will be coming.
+            // for now scene from id only. 
+             var scene;
+             if(this.config.itemInfo){
+               scene =  WebScene.fromJSON(this.config.itemInfo);
+             }else{  
+                scene = new WebScene({
+                    portalItem: new PortalItem({
+                        id: this.config.webscene
+                    })
+                });
+            }
             var viewProperties = {
                 map: scene,
                 container: "viewDiv"

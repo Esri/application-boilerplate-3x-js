@@ -278,59 +278,40 @@ array, declare, kernel, lang, Url, ioQuery, Evented, Deferred, string, domClass,
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             deferred = new Deferred();
-            // If we want to get the web scene
-            if (this.templateConfig.queryForWebScene) {
-                // Use local web scene instead of portal web scene
-                if (this.templateConfig.useLocalWebScene) {
-                    // get web scene js file
-                    require([this.templateConfig.localWebSceneFile], lang.hitch(this, function (webscene) {
-                        // return web scene json
-                        cfg.itemInfo = webscene;
-                        this.itemConfig = cfg;
-                        deferred.resolve(cfg);
-                    }));
-                }
-                // no web scene is set and we have organization's info
-                else if (!this.config.webscene && this.config.orgInfo) {
-                    var defaultWebScene = {
-                        "item": {
-                            "title": "Default Webscene",
-                            "type": "Web Scene",
-                            "description": "A web scene with the default basemap and extent.",
-                            "snippet": "A web scene with the default basemap and extent.",
-                            "extent": this.config.orgInfo.defaultExtent
-                        },
-                        "itemData": {
-                            "operationalLayers": [],
-                            "baseMap": this.config.orgInfo.defaultBasemap
-                        }
-                    };
-                    cfg.itemInfo = defaultWebScene;
+            // Use local web scene instead of portal web scene
+            if (this.templateConfig.useLocalWebScene) {
+                // get web scene js file
+                require(["dojo/text!./config/demoScene.json","dojo/json"], lang.hitch(this, function (data,JSON) {
+                    // return web scene json
+                    cfg.itemInfo = JSON.parse(data);
                     this.itemConfig = cfg;
                     deferred.resolve(cfg);
-                }
-                // use webscene from id
-                else {
-                    var scene = new PortalItem({
-                        id: this.config.webscene
-                    }).load();
-                    scene.then(lang.hitch(this, function () {
-                        scene.fetchData().then(lang.hitch(this, function (itemInfo) {
-                            cfg.itemInfo = itemInfo;
-                            this.itemConfig = cfg;
-                            deferred.resolve(cfg);
-                        }));
-                    }), function (error) {
-                        if (!error) {
-                            error = new Error("Error retrieving display item.");
-                        }
-                        deferred.reject(error);
-                    });
-                }
-            } else {
-                // we're done. we dont need to get the web scene
-                deferred.resolve();
+                }));
             }
+            // no web scene is set and we have organization's info
+            else if (!this.config.webscene && this.config.orgInfo) {
+                var defaultWebScene = {
+                    "item": {
+                        "title": "Default Webscene",
+                        "type": "Web Scene",
+                        "description": "A web scene with the default basemap and extent.",
+                        "snippet": "A web scene with the default basemap and extent.",
+                        "extent": this.config.orgInfo.defaultExtent
+                    },
+                    "itemData": {
+                        "operationalLayers": [],
+                        "baseMap": this.config.orgInfo.defaultBasemap
+                    }
+                };
+                cfg.itemInfo = defaultWebScene;
+                this.itemConfig = cfg;
+                deferred.resolve(cfg);
+            }
+            // use webscene from id
+            else {
+                deferred.resolve(cfg);
+            }
+
             return deferred.promise;
         },
         queryApplication: function () {
