@@ -35,7 +35,7 @@ body {
 .app-loading .loading-indicator {
   /* Loading image */
   background-position: center center;
-  background-image: url(../images/ajax-loader.gif);
+  background-image: url(../images/loading.gif);
   background-repeat: no-repeat;
 }
 .app-error .loading-message {
