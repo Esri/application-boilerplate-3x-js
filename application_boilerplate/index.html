@@ -3,7 +3,8 @@
 
 <head>
   <title></title>
-  <meta charset="utf-8">
+  <meta charset="utf-8">   
+  <meta name="fragment" content="!">
   <!-- Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional. -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <!-- Responsive -->
@@ -42,6 +43,10 @@
         location: package_path + '/..'
             }]
     };
+   var urlLocale = location.search.match(/locale=([\w\-]+)/) ? RegExp.$1 : null;
+   if(urlLocale){
+    dojoConfig.locale = urlLocale;
+   }
   </script>
   <script type="text/javascript" src="//js.arcgis.com/3.15/"></script>
   <script type="text/javascript">
