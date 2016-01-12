@@ -49,7 +49,7 @@ define([
         var itemInfo = this.config.itemInfo || this.config.webmap;
 
 
-        // Check for center, extent, level and marker url parameters. 
+        // Check for center, extent, level and marker url parameters.
         var mapParams = new MapUrlParams({
           center: this.config.center || null,
           extent: this.config.extent || null,
@@ -57,6 +57,8 @@ define([
           marker: this.config.marker || null,
           mapSpatialReference: itemInfo.itemData.spatialReference,
           defaultMarkerSymbol: this.config.markerSymbol,
+          defaultMarkerSymbolWidth: this.config.markerSymbolWidth,
+          defaultMarkerSymbolHeight: this.config.markerSymbolHeight,
           geometryService: this.config.helperServices.geometry.url
         });
 

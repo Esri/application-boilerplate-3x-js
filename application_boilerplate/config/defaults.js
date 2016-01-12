@@ -38,6 +38,8 @@ define({
   //be dreated with layers that are not set to editable which allows the FeatureLayer to load features optimally.
   "editable": false,
   "markerSymbol": "./images/EsriBluePinCircle26.png",
+  "markerSymbolWidth": 26,
+  "markerSymbolHeight": 26,
   "helperServices": {
     "geometry": {
       "url": null

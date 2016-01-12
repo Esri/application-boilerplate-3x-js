@@ -70,6 +70,8 @@ function(
     extent: null,
     level: null,
     defaultMarkerSymbol: null,
+    defaultMarkerSymbolWidth: null,
+    defaultMarkerSymbolHeight: null,
     mapSpatialReference: null,
     processUrlParams: function(){
       var def =  new Deferred(), deferreds = [];
@@ -212,7 +214,7 @@ function(
               label = markerArray[5] || null;
 
 
-              var markerSymbol = new PictureMarkerSymbol(icon_url, 26, 26);
+              var markerSymbol = new PictureMarkerSymbol(icon_url, this.defaultMarkerSymbolWidth || 26, this.defaultMarkerSymbolHeight || 26);
               var point = new Point({
                   "x": x,
                   "y": y,
@@ -268,20 +270,10 @@ function(
       var mercator = [102113, 102100, 3857];
       if (sp1 && sp2 && sp1.wkt == sp2.wkt && (sp1.wkid == sp2.wkid || (esriLang.isDefined(sp1.latestWkid) && sp1.latestWkid == sp2.wkid) || (esriLang.isDefined(sp2.latestWkid) && sp1.wkid == sp2.latestWkid) || (esriLang.isDefined(sp1.latestWkid) && sp1.latestWkid == sp2.latestWkid))) {
         same = true;
-      } else if (sp1 && sp2 && sp1.wkid && sp2.wkid && this._contains(mercator, sp1.wkid) && this._contains(mercator, sp2.wkid)) {
+      } else if (sp1 && sp2 && sp1.wkid && sp2.wkid && (array.indexOf(mercator, sp1.wkid) != -1) && (array.indexOf(mercator, sp2.wkid)!= -1)) {
         same = true;
       }
       return same;
-    },
-    _contains: function(array, obj){
-      var cont = false;
-      var i = array.length;
-      while (i--){
-        if(array[i] === obj){
-          cont = true;
-        }
-      }
-      return cont;
     }
   });
 
