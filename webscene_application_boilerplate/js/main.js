@@ -75,11 +75,11 @@ declare, lang, Deferred, dom, domClass, Camera, Point, SpatialReference, SceneVi
             }
 
             // Create a scene from json will be coming.
-            // for now scene from id only. 
+            // for now scene from id only.
              var scene;
              if(this.config.itemInfo){
                scene =  WebScene.fromJSON(this.config.itemInfo);
-             }else{  
+             }else{
                 scene = new WebScene({
                     portalItem: new PortalItem({
                         id: this.config.webscene
@@ -111,7 +111,7 @@ declare, lang, Deferred, dom, domClass, Camera, Point, SpatialReference, SceneVi
             }), this.reportError);
 
         },
-        _setCameraViewpoint() {
+        _setCameraViewpoint: function () {
             var viewpointParamString;
             if (this.config.viewpoint) {
                 viewpointParamString = this.config.viewpoint;
