@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <title></title>
   <meta charset="utf-8">
@@ -12,7 +13,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-  <link rel="stylesheet" href="https://jsdev.arcgis.com/4.0beta2/esri/css/main.css">
+  <link rel="stylesheet" href="//jsdev.arcgis.com/4.0/esri/css/main.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -21,24 +22,9 @@
   <div class="loading-indicator">
     <div class="loading-message" id="loading_message"></div>
   </div>
-  <div id="viewDiv" dir="ltr"></div>
-  <script type="text/javascript">
-    var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-    var dojoConfig = {
-      async: true,
-      packages: [{
-        name: "application",
-        location: package_path + '/js'
-            }, {
-        name: "config",
-        location: package_path + '/config'
-            }, {
-        name: "arcgis_templates",
-        location: package_path + '/..'
-      }]
-    };
-  </script>
-  <script type="text/javascript" src="https://jsdev.arcgis.com/4.0beta2/"></script>
+  <div id="viewDiv"></div>
+  <script type="text/javascript" src="js/dojo-config.js"></script>
+  <script type="text/javascript" src="//jsdev.arcgis.com/4.0/"></script>
   <script type="text/javascript">
     require([
             "config/templateConfig",
@@ -64,6 +50,7 @@
         myApp.reportError(error);
       });
     });
+
   </script>
 </body>
 
