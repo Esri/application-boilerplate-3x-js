@@ -1,0 +1,54 @@
+{
+  // ESLint Configuration
+  // See http://eslint.org/docs/rules/ for more details
+
+  "env": {
+    "amd": true,
+    "browser": true
+  },
+  "rules": {
+    // Possible Errors
+    "comma-dangle": 2,
+    "no-control-regex": 2,
+    "no-debugger": 2,
+    "no-dupe-args": 2,
+    "no-dupe-keys": 2,
+    "no-duplicate-case": 2,
+    "no-empty-character-class": 2,
+    "no-extra-boolean-cast": 2,
+    "no-extra-semi": 2,
+    "no-func-assign": 2,
+    "no-invalid-regexp": 2,
+    "no-negated-in-lhs": 2,
+    "no-obj-calls": 2,
+    "no-regex-spaces": 2,
+    "no-sparse-arrays": 2,
+    "no-unexpected-multiline": 2,
+    "no-unreachable": 2,
+    "use-isnan": 2,
+    "valid-typeof": 2,
+
+    // Best Practices
+    "curly": [2, "multi-line"],
+    "no-alert": 2,
+    "no-caller": 2,
+    "no-eval": 2,
+    "no-iterator": 2,
+    "no-new-func": 2,
+    "no-octal": 2,
+    "no-proto": 2,
+    "no-redeclare": 2,
+    "no-with": 2,
+    "wrap-iife": [2, "any"],
+
+    // Variables
+    "no-delete-var": 2,
+    "no-shadow-restricted-names": 2,
+    "no-undef": 2,
+    "no-unused-vars": [1, { "args": "none" }],
+
+    // Stylistic Issues
+    "no-new-object": 1,
+    "semi": 2
+  }
+}
