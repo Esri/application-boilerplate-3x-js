@@ -34,7 +34,7 @@ define(["dojo/_base/array", "dojo/_base/declare", "dojo/_base/kernel", "dojo/_ba
 "esri/portal/Portal", "esri/portal/PortalItem",
 
 "config/defaults"], function (
-array, declare, kernel, lang, Url, ioQuery, Evented, Deferred, string, domClass, all, esriConfig, esriId, oAuthInfo, Portal, PortalItem, defaults) {
+array, declare, kernel, lang, Url, ioQuery, Evented, Deferred, string, domClass, all, esriConfig, esriId, OAuthInfo, Portal, PortalItem, defaults) {
     return declare([Evented], {
         config: {},
         orgConfig: {},
@@ -135,7 +135,7 @@ array, declare, kernel, lang, Url, ioQuery, Evented, Deferred, string, domClass,
                     parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])]
                 ];
             }
-            // TODO do we need geometry service for scene? 
+            // TODO do we need geometry service for scene?
             // if so do we have config option to set geom service at 4?
         },
         _mixinAll: function () {
@@ -218,7 +218,7 @@ array, declare, kernel, lang, Url, ioQuery, Evented, Deferred, string, domClass,
             deferred = new Deferred();
             //If there's an oauth appid specified register it
             if (this.config.oauthappid) {
-                oAuthInfo = new oAuthInfo({
+                oAuthInfo = new OAuthInfo({
                     appId: this.config.oauthappid,
                     portalUrl: this.config.sharinghost,
                     popup: true
