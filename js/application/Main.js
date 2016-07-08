@@ -65,7 +65,11 @@ define([
     //--------------------------------------------------------------------------
 
 
-    startup: function (config) {
+    startup: function (boilerplate) {
+
+      console.log(boilerplate);
+
+      var config = boilerplate.config;
       if (config) {
         this.config = config;
         this._setDirection();
@@ -122,6 +126,7 @@ define([
       }
       else {
         scene = new WebScene({
+          // todo: this should be done in the boilerplate
           portalItem: new PortalItem({
             id: this.config.webscene
           })

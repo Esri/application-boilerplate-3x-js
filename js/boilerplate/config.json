@@ -2,9 +2,26 @@
   "useLocalWebScene": false,
   "webTierSecurity": false,
   "localWebSceneFile": "config/demoScene",
+  "localWebMapFile": "config/demoMap",
+  "queryForWebscene": true,
+  "queryForWebmap": true,
+  "queryForGroupInfo": false,
+  "queryForGroupItems": false,
+  "useLocalWebmap": false,
+  "groupParams": {
+    "q": "group:\"${groupid}\" AND -type:\"Code Attachment\"",
+    "sortField": "modified",
+    "sortOrder": "desc",
+    "num": 9,
+    "start": 0
+  },
   "queryForOrg": true,
   "urlItems": [
     "embed",
+    "center",
+    "extent",
+    "level",
+    "marker",
     "components",
     "viewpoint"
   ],
