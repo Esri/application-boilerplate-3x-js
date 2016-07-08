@@ -17,7 +17,7 @@
   <link rel="stylesheet" href="css/main.css">
 </head>
 
-<body class="app-loading">
+<body class="app-bp--loading">
   <div class="app-bp-loading-indicator">
     <div class="app-bp-loading-message" id="loading_message"></div>
   </div>
@@ -32,13 +32,13 @@
     ], function (
       config,
       Boilerplate,
-      MainApplication
+      applicationMain
     ) {
 
       // create my main application. Start placing your logic in the main.js file.
-      var mainApp = new MainApplication();
+      var mainApp = new applicationMain();
 
-      // create the template. This will take care of all the logic required for template applications
+      // create the template. This will take care of all the logic required for template applications. If unsuccessful, we're calling error on main. Otherwise, we call startup on main.
       new Boilerplate(config).then(mainApp.startup.bind(mainApp), mainApp.reportError.bind(mainApp));
 
     });

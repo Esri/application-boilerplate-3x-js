@@ -1,24 +1,30 @@
 define([
   "dojo/_base/declare",
 
-  "dojo/Deferred",
-
-  "dojo/dom", "dojo/dom-attr", "dojo/dom-class",
+  "dojo/dom",
+  "dojo/dom-attr",
+  "dojo/dom-class",
 
   "esri/Camera",
 
-  "esri/geometry/Point", "esri/geometry/SpatialReference",
+  "esri/geometry/Point",
+  "esri/geometry/SpatialReference",
 
-  "esri/views/SceneView", "esri/portal/PortalItem", "esri/WebScene",
+  "esri/portal/PortalItem",
+
+  "esri/views/SceneView",
+
+  "esri/WebScene",
 
   "dojo/domReady!"
 ], function (
   declare,
-  Deferred,
   dom, domAttr, domClass,
   Camera,
   Point, SpatialReference,
-  SceneView, PortalItem, WebScene
+  PortalItem,
+  SceneView,
+  WebScene
 ) {
 
   //--------------------------------------------------------------------------
@@ -36,12 +42,6 @@ define([
 
     //--------------------------------------------------------------------------
     //
-    //  Properties
-    //
-    //--------------------------------------------------------------------------
-
-    //--------------------------------------------------------------------------
-    //
     //  Variables
     //
     //--------------------------------------------------------------------------
@@ -56,22 +56,15 @@ define([
 
 
     startup: function (config) {
-      var promise;
-      // config will contain application and user defined info for the template such as i18n strings, the web map id
-      // and application id
-      // any url parameters and any application specific configuration information.
+      this.config = config;
       if (config) {
-        this.config = config;
-        promise = this._createWebScene();
+        this._setDirection();
+        this._createWebScene();
       }
       else {
         var error = new Error("Main:: Config is not defined");
         this.reportError(error);
-        var def = new Deferred();
-        def.reject(error);
-        promise = def.promise;
       }
-      return promise;
     },
 
     reportError: function (error) {
@@ -103,7 +96,7 @@ define([
 
     _setDirection: function () {
       var dirNode = document.getElementsByTagName("html")[0];
-      if (this.config.i18n.direction === "rtl") {
+      if (this.config.i18n && this.config.i18n.direction === "rtl") {
         domAttr.set(dirNode, "dir", "rtl");
       }
       else {
@@ -113,10 +106,6 @@ define([
 
     // create a scene based on the input web scene id
     _createWebScene: function () {
-      if (!this.config.webscene) {
-        return;
-      }
-      this._setDirection();
       // Create a scene from json will be coming.
       // for now scene from id only.
       var scene;
@@ -143,31 +132,20 @@ define([
       if (camera) {
         viewProperties.camera = camera;
       }
-
       var view = new SceneView(viewProperties);
-
       view.then(function (response) {
-
         domClass.remove(document.body, CSS.loading);
         document.title = scene.portalItem.title;
-
-        return response;
       }.bind(this), this.reportError);
-
     },
 
     _setCameraViewpoint: function () {
-      var viewpointParamString;
-      if (this.config.viewpoint) {
-        viewpointParamString = this.config.viewpoint;
+      var viewpointParamString = this.config.viewpoint;
+      var viewpointArray = viewpointParamString && viewpointParamString.split(";");
+      if (!viewpointArray || !viewpointArray.length) {
+        return;
       }
       else {
-        return null;
-      }
-
-      var viewpointArray = viewpointParamString.split(";");
-
-      if (viewpointArray.length > 0) {
         var cameraString = "";
         var tiltHeading = "";
         for (var i = 0; i < viewpointArray.length; i++) {
@@ -189,12 +167,9 @@ define([
             y = parseFloat(positionArray[1]);
             z = parseFloat(positionArray[2]);
             var sr = SpatialReference.WGS84;
-
-
             if (positionArray.length === 4) {
               sr = new SpatialReference(parseInt(positionArray[3], 10));
             }
-
             var cameraPosition = new Point(x, y, z, sr);
             var heading = 0,
               tilt = 0;
@@ -213,12 +188,8 @@ define([
               tilt: tilt
             });
             return camera;
-
           }
         }
-      }
-      else {
-        return null;
       }
     }
   });
