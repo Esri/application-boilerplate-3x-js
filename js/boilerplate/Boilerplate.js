@@ -1,19 +1,15 @@
 define([
 
-  "dojo/text!../config/config.json",
+  "dojo/text!config/config.json",
   "dojo/text!./config.json",
 
   "dojo/_base/declare",
   "dojo/_base/kernel",
   "dojo/_base/lang",
-  "dojo/_base/url",
-
-  "dojo/io-query", // todo: remove
 
   "dojo/Deferred",
 
-  // todo: use promiseList
-  "dojo/promise/all",
+  "dojo/promise/all", // todo: use promiseList
 
   "esri/config",
 
@@ -21,21 +17,18 @@ define([
   "esri/identity/OAuthInfo",
 
   "esri/portal/Portal",
-  "esri/portal/PortalItem"
+  "esri/portal/PortalItem",
+
+  "require"
+
 ], function (
-
   applicationConfig, boilerplateConfig,
-
-  declare, kernel, lang, Url, ioQuery,
-
+  declare, kernel, lang,
   Deferred, all,
-
   esriConfig,
-
   IdentityManager, OAuthInfo,
-
-  Portal, PortalItem
-
+  Portal, PortalItem,
+  require
 ) {
 
   //--------------------------------------------------------------------------
@@ -44,10 +37,9 @@ define([
   //
   //--------------------------------------------------------------------------
 
-  var RTL_LANGS = ["ar", "he"];
-  var LTR = "ltr";
-  var RTL = "rtl";
   var TAGS_RE = /<\/?[^>]+>/g;
+  var URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+  var SHARING_PATH = "/sharing";
 
   return declare([Deferred], {
 
@@ -61,8 +53,8 @@ define([
     orgConfig: {},
     appConfig: {},
     urlConfig: {},
-    i18nConfig: {},
     itemConfig: {},
+    customUrlConfig: {},
 
     //--------------------------------------------------------------------------
     //
@@ -70,8 +62,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    customUrlConfig: {},
-    commonUrlItems: ["webscene", "appid", "oauthappid"],
+    _commonUrlItems: ["webscene", "appid", "oauthappid"],
 
     //--------------------------------------------------------------------------
     //
@@ -92,7 +83,7 @@ define([
       // mixin defaults with boilerplate configuration
       this.boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
 
-      // config will contain application and user defined info for the application such as i18n strings the web scene id and application id, any url parameters and any application specific configuration information.
+      // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       this.urlObject = this._createUrlParamsObject();
@@ -120,7 +111,7 @@ define([
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      this.urlConfig = this._getUrlParamValues(this.commonUrlItems);
+      this.urlConfig = this._getUrlParamValues(this._commonUrlItems);
       // This demonstrates how to handle additional custom url parameters. For example
       // if you want users to be able to specify lat/lon coordinates that define the map's center or
       // specify an alternate basemap via a url parameter.
@@ -140,8 +131,6 @@ define([
       this._checkSignIn().always(function () {
         // execute these tasks async
         all({
-          // get localization
-          i18n: this._queryLocalization(),
           // get application data
           app: this.queryApplication(),
           // get org data
@@ -153,7 +142,6 @@ define([
           all({
             // webscene item
             item: this.queryItem(),
-
           }).then(function () {
             // mixin all new settings from item.
             this._mixinAll();
@@ -187,18 +175,18 @@ define([
     _mixinAll: function () {
       /*
             mix in all the settings we got!
-            {} <- i18n <- organization <- application <- web scene <- custom url params <- standard url params.
+            {} <- organization <- application <- web scene <- custom url params <- standard url params.
             */
-      lang.mixin(this.config, this.i18nConfig, this.orgConfig, this.appConfig, this.itemConfig, this.customUrlConfig, this.urlConfig);
+      lang.mixin(this.config, this.orgConfig, this.appConfig, this.itemConfig, this.customUrlConfig, this.urlConfig);
     },
 
     _getUrlParamValues: function (items) {
       // retrieves only the items specified from the URL object.
       var urlObject = this.urlObject;
       var obj = {};
-      if (urlObject && urlObject.query && items && items.length) {
+      if (urlObject && items && items.length) {
         for (var i = 0; i < items.length; i++) {
-          var item = urlObject.query[items[i]];
+          var item = urlObject[items[i]];
           if (item) {
             if (typeof item === "string") {
               switch (item.toLowerCase()) {
@@ -222,7 +210,6 @@ define([
     },
 
     _createUrlParamsObject: function () {
-      var urlObject, url;
       // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
       // resource to work with.
       // Scene templates use the webscene param to define the scene to display
@@ -230,12 +217,7 @@ define([
       // id to retrieve application specific configuration information. The configuration
       // information will contain the values the  user selected on the template configuration
       // panel.
-      url = document.location.href;
-      urlObject = this._urlToObject(url);
-      urlObject.query = urlObject.query || {};
-      // remove any HTML tags from query item
-      urlObject.query = this._stripTags(urlObject.query);
-      return urlObject;
+      return this._stripTags(this._urlToObject());
     },
 
     _initializeApplication: function () {
@@ -277,40 +259,11 @@ define([
         IdentityManager.registerOAuthInfos([oAuthInfo]);
       }
       // check sign-in status
-      signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
+      signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + SHARING_PATH);
       // resolve regardless of signed in or not.
       signedIn.always(function () {
         deferred.resolve();
       });
-      return deferred.promise;
-    },
-
-    _queryLocalization: function () {
-      var deferred;
-      deferred = new Deferred();
-      if (this.boilerplateConfig.queryForLocale) {
-        require(["dojo/i18n!application/nls/resources"], function (appBundle) {
-          var cfg = {};
-          // Get the localization strings for the template and store in an i18n variable. Also determine if the
-          // application is in a right-to-left language like Arabic or Hebrew.
-          cfg.i18n = appBundle || {};
-          // Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
-          // Note: The map must stay ltr
-          cfg.i18n.direction = LTR;
-          RTL_LANGS.some(function (l) {
-            if (kernel.locale.indexOf(l) !== -1) {
-              cfg.i18n.direction = RTL;
-              return true;
-            }
-            return false;
-          });
-          this.i18nConfig = cfg;
-          deferred.resolve(cfg);
-        }.bind(this));
-      }
-      else {
-        deferred.resolve();
-      }
       return deferred.promise;
     },
 
@@ -482,35 +435,13 @@ define([
       return data;
     },
 
-    // todo: needs to be rewritten
-    _urlToObject: function (url) {
-      var r = {},
-        dojoUrl = new Url(url),
-        iq = url.indexOf("?");
-
-      // Check if url has query parameters
-      // Update the return object
-      if (dojoUrl.query === null) {
-        r = {
-          path: url,
-          query: null
-        };
-      }
-      else {
-        r.path = url.substring(0, iq);
-        r.query = ioQuery.queryToObject(dojoUrl.query);
-      }
-
-      // Append the Hash
-      if (dojoUrl.fragment) {
-        r.hash = dojoUrl.fragment;
-        if (dojoUrl.query === null) {
-          // Remove the hash from the path ( length+1 to include '#')
-          r.path = r.path.substring(0, r.path.length - (dojoUrl.fragment.length + 1));
-        }
-      }
-
-      return r;
+    _urlToObject: function () {
+      var query = (window.location.search || "?").substr(1),
+        map = {};
+      query.replace(URL_RE, function (match, key, value) {
+        map[key] = value;
+      });
+      return map;
     }
   });
 });

@@ -9,5 +9,8 @@ var dojoConfig = {
     name: "boilerplate",
     location: package_path + "/js/boilerplate",
     main: "Boilerplate"
+  },{
+    name: "config",
+    location: package_path + "/config"
   }]
 };

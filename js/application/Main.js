@@ -1,5 +1,9 @@
 define([
+
+  "dojo/i18n!./nls/resources",
+
   "dojo/_base/declare",
+  "dojo/_base/kernel",
 
   "dojo/dom",
   "dojo/dom-attr",
@@ -17,8 +21,10 @@ define([
   "esri/WebScene",
 
   "dojo/domReady!"
+
 ], function (
-  declare,
+  i18n,
+  declare, kernel,
   dom, domAttr, domClass,
   Camera,
   Point, SpatialReference,
@@ -37,6 +43,10 @@ define([
     loading: "app-bp--loading",
     error: "app-bp--error"
   };
+
+  var RTL_LANGS = ["ar", "he"];
+  var LTR = "ltr";
+  var RTL = "rtl";
 
   return declare(null, {
 
@@ -78,12 +88,7 @@ define([
       // set message
       var node = dom.byId("loading_message");
       if (node) {
-        if (this.config && this.config.i18n) {
-          node.innerHTML = this.config.i18n.scene.error + ": " + error.message;
-        }
-        else {
-          node.innerHTML = "Unable to create scene: " + error.message;
-        }
+        node.innerHTML = i18n.scene.error + ": " + error.message;
       }
       return error;
     },
@@ -95,13 +100,16 @@ define([
     //--------------------------------------------------------------------------
 
     _setDirection: function () {
+      var direction = LTR;
+      RTL_LANGS.some(function (l) {
+        if (kernel.locale.indexOf(l) !== -1) {
+          direction = RTL;
+          return true;
+        }
+        return false;
+      });
       var dirNode = document.getElementsByTagName("html")[0];
-      if (this.config.i18n && this.config.i18n.direction === "rtl") {
-        domAttr.set(dirNode, "dir", "rtl");
-      }
-      else {
-        domAttr.set(dirNode, "dir", "ltr");
-      }
+      domAttr.set(dirNode, "dir", direction);
     },
 
     // create a scene based on the input web scene id
