@@ -1,8 +1,5 @@
-/*
-  JSAPI 4.x
-  6/8/2016
-*/
 define([
+  "./defaults",
 
   "dojo/_base/declare",
   "dojo/_base/kernel",
@@ -12,8 +9,6 @@ define([
   "dojo/io-query",
 
   "dojo/Deferred",
-
-  "dojo/dom-class",
 
   // todo: use promiseList
   "dojo/promise/all",
@@ -26,29 +21,49 @@ define([
 
   "esri/portal/Portal",
 
-  "esri/portal/PortalItem",
-
-  "./defaults"
-
+  "esri/portal/PortalItem"
 ], function (
+
+  boilerplateDefaults,
 
   declare, kernel, lang, Url, ioQuery,
 
-  Deferred, domClass, all,
+  Deferred, all,
 
-  esriConfig, esriId, OAuthInfo, Portal, PortalItem,
+  esriConfig,
+  esriId, OAuthInfo, Portal, PortalItem
 
-  boilerplateDefaults) {
+) {
 
   return declare([Deferred], {
+
+    //--------------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //--------------------------------------------------------------------------
+
     config: {},
     orgConfig: {},
     appConfig: {},
     urlConfig: {},
     i18nConfig: {},
     itemConfig: {},
+
+    //--------------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //--------------------------------------------------------------------------
+
     customUrlConfig: {},
     commonUrlItems: ["webscene", "appid", "oauthappid"],
+
+    //--------------------------------------------------------------------------
+    //
+    //  Lifecycle
+    //
+    //--------------------------------------------------------------------------
 
     constructor: function (config) {
 
@@ -67,6 +82,12 @@ define([
 
       return this.promise;
     },
+
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
 
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
@@ -246,10 +267,10 @@ define([
     },
 
     _queryLocalization: function () {
-      var deferred, dirNode, classes, rtlClasses;
+      var deferred;
       deferred = new Deferred();
       if (this.boilerplateConfig.queryForLocale) {
-        require(["dojo/i18n!../application/nls/resources"], function (appBundle) {
+        require(["dojo/i18n!application/nls/resources"], function (appBundle) {
           var cfg = {};
           // Get the localization strings for the template and store in an i18n variable. Also determine if the
           // application is in a right-to-left language like Arabic or Hebrew.
@@ -264,22 +285,6 @@ define([
             }
             return false;
           }.bind(this));
-          // add a dir attribute to the html tag. Then you can add special css classes for rtl languages
-          dirNode = document.getElementsByTagName("html")[0];
-          classes = dirNode.className + " ";
-          if (cfg.i18n.direction === "rtl") {
-            // need to add support for dj_rtl.
-            // if the dir node is set when the app loads dojo will handle.
-            dirNode.setAttribute("dir", "rtl");
-            rtlClasses = " esriRTL dj_rtl dijitRtl " + classes.replace(/ /g, "-rtl ");
-            dirNode.className = lang.trim(classes + rtlClasses);
-          }
-          else {
-            dirNode.setAttribute("dir", "ltr");
-
-            // todo: move to view
-            domClass.add(dirNode, "esriLTR");
-          }
           this.i18nConfig = cfg;
           deferred.resolve(cfg);
         }.bind(this));

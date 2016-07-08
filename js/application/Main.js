@@ -3,7 +3,7 @@ define([
 
   "dojo/Deferred",
 
-  "dojo/dom", "dojo/dom-class",
+  "dojo/dom", "dojo/dom-attr", "dojo/dom-class",
 
   "esri/Camera",
 
@@ -15,13 +15,45 @@ define([
 ], function (
   declare,
   Deferred,
-  dom, domClass,
+  dom, domAttr, domClass,
   Camera,
   Point, SpatialReference,
   SceneView, PortalItem, WebScene
 ) {
+
+  //--------------------------------------------------------------------------
+  //
+  //  Static Variables
+  //
+  //--------------------------------------------------------------------------
+
+  var CSS = {
+    loading: "app-bp--loading",
+    error: "app-bp--error"
+  };
+
   return declare(null, {
+
+    //--------------------------------------------------------------------------
+    //
+    //  Properties
+    //
+    //--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
+    //
+    //  Variables
+    //
+    //--------------------------------------------------------------------------
+
     config: {},
+
+    //--------------------------------------------------------------------------
+    //
+    //  Public Methods
+    //
+    //--------------------------------------------------------------------------
+
 
     startup: function (config) {
       var promise;
@@ -44,8 +76,8 @@ define([
 
     reportError: function (error) {
       // remove loading class from body
-      domClass.remove(document.body, "app-loading");
-      domClass.add(document.body, "app-error");
+      domClass.remove(document.body, CSS.loading);
+      domClass.add(document.body, CSS.error);
       // an error occurred - notify the user. In this example we pull the string from the
       // resource.js file located in the nls folder because we've set the application up
       // for localization. If you don't need to support multiple languages you can hardcode the
@@ -63,12 +95,28 @@ define([
       return error;
     },
 
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
+
+    _setDirection: function () {
+      var dirNode = document.getElementsByTagName("html")[0];
+      if (this.config.i18n.direction === "rtl") {
+        domAttr.set(dirNode, "dir", "rtl");
+      }
+      else {
+        domAttr.set(dirNode, "dir", "ltr");
+      }
+    },
+
     // create a scene based on the input web scene id
     _createWebScene: function () {
       if (!this.config.webscene) {
         return;
       }
-
+      this._setDirection();
       // Create a scene from json will be coming.
       // for now scene from id only.
       var scene;
@@ -100,7 +148,7 @@ define([
 
       view.then(function (response) {
 
-        domClass.remove(document.body, "app-loading");
+        domClass.remove(document.body, CSS.loading);
         document.title = scene.portalItem.title;
 
         return response;

@@ -7,10 +7,6 @@ define({
   //Enter the url to the proxy if needed by the application. See the 'Using the proxy page' help topic for details
   //http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
   "proxyurl": "",
-  //Example of a template specific property. If your template had several color schemes
-  //you could define the default here and setup configuration settings to allow users to choose a different
-  //color theme.
-  "theme": "blue",
   "sharinghost": location.protocol + "//" + "www.arcgis.com",
   "units": null,
   "helperServices": {
