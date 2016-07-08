@@ -56,8 +56,8 @@ define([
 
 
     startup: function (config) {
-      this.config = config;
       if (config) {
+        this.config = config;
         this._setDirection();
         this._createWebScene();
       }

@@ -1,0 +1,13 @@
+{
+  "useLocalWebScene": false,
+  "webTierSecurity": false,
+  "localWebSceneFile": "config/demoScene",
+  "queryForOrg": true,
+  "queryForLocale": true,
+  "urlItems": [
+    "embed",
+    "components",
+    "viewpoint"
+  ],
+  "esriEnvironment": false
+}

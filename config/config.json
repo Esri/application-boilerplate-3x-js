@@ -1,0 +1,23 @@
+{
+  "appid": "",
+  "webscene": "19faa71a3bf6468cae35b4fce9393a7d",
+  "webmap": "",
+  "oauthappid": null,
+  "proxyurl": "",
+  "sharinghost": "https://www.arcgis.com",
+  "units": null,
+  "helperServices": {
+    "geometry": {
+      "url": null
+    },
+    "printTask": {
+      "url": null
+    },
+    "elevationSync": {
+      "url": null
+    },
+    "geocode": [{
+      "url": null
+    }]
+  }
+}

@@ -26,11 +26,9 @@
   <script type="text/javascript" src="//js.arcgis.com/4.0/"></script>
   <script type="text/javascript">
     require([
-      "config",
       "boilerplate",
       "application"
     ], function (
-      config,
       Boilerplate,
       applicationMain
     ) {
@@ -39,7 +37,7 @@
       var mainApp = new applicationMain();
 
       // create the template. This will take care of all the logic required for template applications. If unsuccessful, we're calling error on main. Otherwise, we call startup on main.
-      new Boilerplate(config).then(mainApp.startup.bind(mainApp), mainApp.reportError.bind(mainApp));
+      new Boilerplate().then(mainApp.startup.bind(mainApp), mainApp.reportError.bind(mainApp));
 
     });
 

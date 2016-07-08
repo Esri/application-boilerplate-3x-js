@@ -1,12 +1,14 @@
 define([
-  "./defaults",
+
+  "dojo/text!../config/config.json",
+  "dojo/text!./config.json",
 
   "dojo/_base/declare",
   "dojo/_base/kernel",
   "dojo/_base/lang",
   "dojo/_base/url",
 
-  "dojo/io-query",
+  "dojo/io-query", // todo: remove
 
   "dojo/Deferred",
 
@@ -16,24 +18,36 @@ define([
   "esri/config",
 
   "esri/identity/IdentityManager",
-
   "esri/identity/OAuthInfo",
 
   "esri/portal/Portal",
-
   "esri/portal/PortalItem"
 ], function (
 
-  boilerplateDefaults,
+  applicationConfig, boilerplateConfig,
 
   declare, kernel, lang, Url, ioQuery,
 
   Deferred, all,
 
   esriConfig,
-  esriId, OAuthInfo, Portal, PortalItem
+
+  IdentityManager, OAuthInfo,
+
+  Portal, PortalItem
 
 ) {
+
+  //--------------------------------------------------------------------------
+  //
+  //  Static Variables
+  //
+  //--------------------------------------------------------------------------
+
+  var RTL_LANGS = ["ar", "he"];
+  var LTR = "ltr";
+  var RTL = "rtl";
+  var TAGS_RE = /<\/?[^>]+>/g;
 
   return declare([Deferred], {
 
@@ -65,16 +79,21 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function (config) {
+    constructor: function () {
+
+      var boilerplateConfigJSON = JSON.parse(boilerplateConfig);
+      var applicationConfigJSON = JSON.parse(applicationConfig);
 
       // template settings
-      var defaultBoilerplateConfig = {
+      var boilerplateDefaults = {
         queryForWebmap: true
       };
 
-      this.boilerplateConfig = lang.mixin(defaultBoilerplateConfig, boilerplateDefaults);
+      // mixin defaults with boilerplate configuration
+      this.boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
+
       // config will contain application and user defined info for the application such as i18n strings the web scene id and application id, any url parameters and any application specific configuration information.
-      this.config = config;
+      this.config = applicationConfigJSON;
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       this.urlObject = this._createUrlParamsObject();
 
@@ -255,10 +274,10 @@ define([
           portalUrl: this.config.sharinghost,
           popup: true
         });
-        esriId.registerOAuthInfos([oAuthInfo]);
+        IdentityManager.registerOAuthInfos([oAuthInfo]);
       }
       // check sign-in status
-      signedIn = esriId.checkSignInStatus(this.config.sharinghost + "/sharing");
+      signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
       // resolve regardless of signed in or not.
       signedIn.always(function () {
         deferred.resolve();
@@ -277,14 +296,14 @@ define([
           cfg.i18n = appBundle || {};
           // Bi-directional language support added to support right-to-left languages like Arabic and Hebrew
           // Note: The map must stay ltr
-          cfg.i18n.direction = "ltr";
-          ["ar", "he"].some(function (l) {
+          cfg.i18n.direction = LTR;
+          RTL_LANGS.some(function (l) {
             if (kernel.locale.indexOf(l) !== -1) {
-              cfg.i18n.direction = "rtl";
+              cfg.i18n.direction = RTL;
               return true;
             }
             return false;
-          }.bind(this));
+          });
           this.i18nConfig = cfg;
           deferred.resolve(cfg);
         }.bind(this));
@@ -303,7 +322,7 @@ define([
       // Use local web scene instead of portal web scene
       if (this.boilerplateConfig.useLocalWebScene) {
         // get web scene js file
-        require(["dojo/text!./demoScene.json", "dojo/json"], function (data, JSON) {
+        require(["dojo/text!./demoScene.json"], function (data) {
           // return web scene json
           cfg.itemInfo = JSON.parse(data);
           this.itemConfig = cfg;
@@ -440,13 +459,12 @@ define([
     },
 
     _stripTags: function (data) {
-      var tagsRegex = /<\/?[^>]+>/g;
       if (data) {
         // get type of data
         var t = typeof data;
         if (t === "string") {
           // remove tags from a string
-          data = data.replace(tagsRegex, "");
+          data = data.replace(TAGS_RE, "");
         }
         else if (t === "object") {
           // remove tags from an object
@@ -454,7 +472,7 @@ define([
             var currentItem = data[item];
             if (currentItem && typeof currentItem === "string") {
               //strip html tags
-              currentItem = currentItem.replace(tagsRegex, "");
+              currentItem = currentItem.replace(TAGS_RE, "");
             }
             // set item back on data
             data[item] = currentItem;
