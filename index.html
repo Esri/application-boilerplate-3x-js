@@ -2,7 +2,6 @@
 <html>
 
 <head>
-  <title></title>
   <meta charset="utf-8">
   <!-- Define the versions of IE that will be used to render the page. See Microsoft documentation for details. Optional. -->
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -13,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-  <link rel="stylesheet" href="//jsdev.arcgis.com/4.0/esri/css/main.css">
+  <link rel="stylesheet" href="//js.arcgis.com/4.0/esri/css/main.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/main.css">
 </head>
@@ -24,31 +23,24 @@
   </div>
   <div id="viewDiv"></div>
   <script type="text/javascript" src="js/dojo-config.js"></script>
-  <script type="text/javascript" src="//jsdev.arcgis.com/4.0/"></script>
+  <script type="text/javascript" src="//js.arcgis.com/4.0/"></script>
   <script type="text/javascript">
     require([
-            "config/templateConfig",
-            "application/template",
-            "application/main"
-        ], function (
-      templateConfig,
-      Template,
-      Main
+      "config",
+      "boilerplate",
+      "application"
+    ], function (
+      config,
+      Boilerplate,
+      MainApplication
     ) {
-      // create the template. This will take care of all the logic required for template applications
-      var myTemplate = new Template(templateConfig);
+
       // create my main application. Start placing your logic in the main.js file.
-      var myApp = new Main();
-      // start template
-      myTemplate.startup().then(function (config) {
-        // The config object contains the following properties: helper services, (optionally)
-        // i18n, appid, webscene and any custom values defined by the application.
-        // In this example we have one called theme.
-        myApp.startup(config);
-      }, function (error) {
-        // something went wrong. Let's report it.
-        myApp.reportError(error);
-      });
+      var mainApp = new MainApplication();
+
+      // create the template. This will take care of all the logic required for template applications
+      new Boilerplate(config).then(mainApp.startup.bind(mainApp), mainApp.reportError.bind(mainApp));
+
     });
 
   </script>

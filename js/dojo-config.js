@@ -3,12 +3,15 @@ var dojoConfig = {
   async: true,
   packages: [{
     name: "application",
-    location: package_path + "/js"
+    location: package_path + "/js/application",
+    main: "Main"
+  }, {
+    name: "boilerplate",
+    location: package_path + "/js/boilerplate",
+    main: "Boilerplate"
   }, {
     name: "config",
-    location: package_path + "/config"
-  }, {
-    name: "arcgis_templates",
-    location: package_path + "/.."
+    location: package_path + "/config",
+    main: "defaults"
   }]
 };

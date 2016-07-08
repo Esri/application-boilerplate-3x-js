@@ -1,20 +1,3 @@
-/*global define */
-/*jslint sloppy:true */
-/*
- | Copyright 2014 Esri
- |
- | Licensed under the Apache License, Version 2.0 (the "License");
- | you may not use this file except in compliance with the License.
- | You may obtain a copy of the License at
- |
- |    http://www.apache.org/licenses/LICENSE-2.0
- |
- | Unless required by applicable law or agreed to in writing, software
- | distributed under the License is distributed on an "AS IS" BASIS,
- | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- | See the License for the specific language governing permissions and
- | limitations under the License.
- */
 define({
   // Use a local hosted web scene instead of a web scene on ArcGIS or portal.
   "useLocalWebScene": false,
@@ -37,7 +20,7 @@ define({
   "urlItems": [
     "embed",
     "components", //"zoom","logo","compass","attribution" or [] for none
-    "viewpoint"  // viewpoint=cam:posx,posy,posz, [wkid];[heading],[tilt]
+    "viewpoint" // viewpoint=cam:posx,posy,posz, [wkid];[heading],[tilt]
   ],
   // Most users will not need to modify this value. For esri hosting environments only. Will automatically create a "sharinghost" and "proxyurl" for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the "sharinghost" in defaults.js instead of setting this to true.
   esriEnvironment: false
