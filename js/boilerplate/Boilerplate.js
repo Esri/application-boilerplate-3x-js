@@ -3,7 +3,6 @@ define([
   "dojo/text!config/config.json",
   "dojo/text!./config.json",
 
-  "dojo/_base/declare",
   "dojo/_base/kernel",
   "dojo/_base/lang",
 
@@ -11,6 +10,7 @@ define([
 
   "esri/config",
 
+  "esri/core/Promise",
   "esri/core/promiseList",
 
   "esri/identity/IdentityManager",
@@ -21,10 +21,10 @@ define([
 
 ], function (
   applicationConfig, boilerplateConfig,
-  declare, kernel, lang,
+  kernel, lang,
   Deferred,
   esriConfig,
-  promiseList,
+  Promise, promiseList,
   IdentityManager, OAuthInfo,
   Portal, PortalItem
 ) {
@@ -39,7 +39,7 @@ define([
   var URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
   var SHARING_PATH = "/sharing";
 
-  return declare([Deferred], {
+  return Promise.createSubclass({
 
     //--------------------------------------------------------------------------
     //
@@ -82,10 +82,10 @@ define([
       this.config = applicationConfigJSON;
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       this.urlObject = this._createUrlParamsObject();
+    },
 
-      // todo
-      this._init().then(this.resolve, this.reject);
-      return this.promise;
+    initialize: function () {
+      this.addResolvingPromise(this._init);
     },
 
     //--------------------------------------------------------------------------
@@ -94,19 +94,19 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    queryWebsceneItem: function(){
+    queryWebsceneItem: function () {
 
     },
 
-    queryWebmapItem: function(){
+    queryWebmapItem: function () {
 
     },
 
-    queryGroupInfo: function(){
+    queryGroupInfo: function () {
 
     },
 
-    queryGroupItems: function(){
+    queryGroupItems: function () {
 
     },
 
