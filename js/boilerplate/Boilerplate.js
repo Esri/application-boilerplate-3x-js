@@ -61,6 +61,10 @@ define([
 
     _commonUrlItems: ["appid", "group", "oauthappid", "webmap", "webscene"],
 
+    _urlObject: null,
+
+    _boilerplateConfig: null,
+
     //--------------------------------------------------------------------------
     //
     //  Lifecycle
@@ -76,13 +80,13 @@ define([
         queryForWebmap: true
       };
       // mixin defaults with boilerplate configuration
-      this.boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
+      this._boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
       this.configs = {};
       this.responses = {};
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
-      this.urlObject = this._createUrlParamsObject();
+      this._urlObject = this._createUrlParamsObject();
       var initPromise = this._init();
       this.addResolvingPromise(initPromise);
     },
@@ -111,7 +115,7 @@ define([
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       // Use local web scene instead of portal web scene
-      if (this.boilerplateConfig.useLocalWebScene) {
+      if (this._boilerplateConfig.useLocalWebScene) {
         // get web scene js file
         require(["dojo/text!./demoScene.json"], function (data) {
           // return web scene json
@@ -181,7 +185,7 @@ define([
 
     queryPortal: function () {
       var deferred = new Deferred();
-      if (!this.boilerplateConfig.queryPortal) {
+      if (!this._boilerplateConfig.queryPortal) {
         deferred.resolve();
       }
       else {
@@ -193,7 +197,7 @@ define([
         var portal = new Portal().load();
         portal.then(function (response) {
           this.responses.portal = response;
-          if (this.boilerplateConfig.webTierSecurity) {
+          if (this._boilerplateConfig.webTierSecurity) {
             var trustedHost;
             if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
               for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
@@ -267,7 +271,7 @@ define([
       // application default and configuration info has been applied. Currently these values
       // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
       // supporting additional url parameters in your application.
-      this.configs.customUrlParams = this._getUrlParamValues(this.boilerplateConfig.urlItems);
+      this.configs.customUrlParams = this._getUrlParamValues(this._boilerplateConfig.urlItems);
       // config defaults <- standard url params
       // we need the web scene, appid,and oauthappid to query for the data
       this._mixinAll();
@@ -337,7 +341,7 @@ define([
 
     _getUrlParamValues: function (items) {
       // retrieves only the items specified from the URL object.
-      var urlObject = this.urlObject;
+      var urlObject = this._urlObject;
       var obj = {};
       if (urlObject && items && items.length) {
         for (var i = 0; i < items.length; i++) {
@@ -377,7 +381,7 @@ define([
 
     _initializeApplication: function () {
       // If this app is hosted on an Esri environment.
-      if (this.boilerplateConfig.esriEnvironment) {
+      if (this._boilerplateConfig.esriEnvironment) {
         var appLocation, instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
         // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
