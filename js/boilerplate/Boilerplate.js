@@ -47,12 +47,11 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    config: {},
-    orgConfig: {},
-    appConfig: {},
-    urlConfig: {},
-    itemConfig: {},
-    customUrlConfig: {},
+    config: null,
+
+    configs: null,
+
+    responses: null,
 
     //--------------------------------------------------------------------------
     //
@@ -80,12 +79,12 @@ define([
       this.boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
+      this.configs = {};
+      this.responses = {};
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       this.urlObject = this._createUrlParamsObject();
-    },
-
-    initialize: function () {
-      this.addResolvingPromise(this._init);
+      var initPromise = this._init();
+      this.addResolvingPromise(initPromise);
     },
 
     //--------------------------------------------------------------------------
@@ -94,24 +93,19 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    queryWebsceneItem: function () {
-
-    },
-
     queryWebmapItem: function () {
-
+      // todo
     },
 
     queryGroupInfo: function () {
-
+      // todo
     },
 
     queryGroupItems: function () {
-
+      // todo
     },
 
-    // todo: rename to queryWebscene. Have a function for getting group, webscene, or webmap.
-    queryItem: function () {
+    queryWebsceneItem: function () {
       var deferred, cfg = {};
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -122,7 +116,7 @@ define([
         require(["dojo/text!./demoScene.json"], function (data) {
           // return web scene json
           cfg.itemInfo = JSON.parse(data);
-          this.itemConfig = cfg;
+          this.configs.websceneItem = cfg;
           deferred.resolve(cfg);
         }.bind(this));
       }
@@ -142,7 +136,7 @@ define([
           }
         };
         cfg.itemInfo = defaultWebScene;
-        this.itemConfig = cfg;
+        this.configs.websceneItem = cfg;
         deferred.resolve(cfg);
       }
       // use webscene from id
@@ -153,27 +147,27 @@ define([
       return deferred.promise;
     },
 
-    queryApplication: function () {
+    queryApplicationItem: function () {
       // Get the application configuration details using the application id. When the response contains
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
       var deferred = new Deferred();
-      if (this.config.appid) {
-
-        var sceneItem = new PortalItem({
+      if (!this.config.appid) {
+        deferred.resolve();
+      }
+      else {
+        var appItem = new PortalItem({
           id: this.config.appid
         }).load();
-        sceneItem.then(function (itemData) {
+        appItem.then(function (itemData) {
+          this.responses.applicationItem = itemData;
           var cfg = {};
           if (itemData && itemData.values) {
             // get app config values - we'll merge them with config later.
             cfg = itemData.values;
-            // save response
-            cfg.appResponse = itemData;
           }
-
           // todo: (No support yet for app proxies in the scene)
-          this.appConfig = cfg;
+          this.configs.applicationItem = cfg;
           deferred.resolve(cfg);
         }.bind(this), function (error) {
           if (!error) {
@@ -182,15 +176,15 @@ define([
           deferred.reject(error);
         });
       }
-      else {
-        deferred.resolve();
-      }
       return deferred.promise;
     },
 
-    queryOrganization: function () {
+    queryPortal: function () {
       var deferred = new Deferred();
-      if (this.boilerplateConfig.queryForOrg) {
+      if (!this.boilerplateConfig.queryPortal) {
+        deferred.resolve();
+      }
+      else {
         // Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you
         // are a member of an org you'll want to set the sharinghost to be http://<your org name>.arcgis.com. We query
         // the organization by making a self request to the org url which returns details specific to that organization.
@@ -198,6 +192,7 @@ define([
         // If this fails, the application will continue to function
         var portal = new Portal().load();
         portal.then(function (response) {
+          this.responses.portal = response;
           if (this.boilerplateConfig.webTierSecurity) {
             var trustedHost;
             if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
@@ -236,7 +231,7 @@ define([
               cfg.userPrivileges = response.user.privileges;
             }
           }
-          this.orgConfig = cfg;
+          this.configs.portal = cfg;
           deferred.resolve(cfg);
         }.bind(this), function (error) {
           if (!error) {
@@ -244,9 +239,6 @@ define([
           }
           deferred.reject(error);
         });
-      }
-      else {
-        deferred.resolve();
       }
       return deferred.promise;
     },
@@ -260,8 +252,6 @@ define([
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
     _init: function () {
-      var deferred;
-      deferred = new Deferred();
       // Set the web scene and appid if they exist but ignore other url params.
       // Additional url parameters may be defined by the application but they need to be mixed in
       // to the config object after we retrieve the application configuration info. As an example,
@@ -269,7 +259,7 @@ define([
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      this.urlConfig = this._getUrlParamValues(this._commonUrlItems);
+      this.configs.urlParams = this._getUrlParamValues(this._commonUrlItems);
       // This demonstrates how to handle additional custom url parameters. For example
       // if you want users to be able to specify lat/lon coordinates that define the map's center or
       // specify an alternate basemap via a url parameter.
@@ -277,7 +267,7 @@ define([
       // application default and configuration info has been applied. Currently these values
       // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
       // supporting additional url parameters in your application.
-      this.customUrlConfig = this._getUrlParamValues(this.boilerplateConfig.urlItems);
+      this.configs.customUrlParams = this._getUrlParamValues(this.boilerplateConfig.urlItems);
       // config defaults <- standard url params
       // we need the web scene, appid,and oauthappid to query for the data
       this._mixinAll();
@@ -285,32 +275,30 @@ define([
       // The sharing url defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
-      // check if signed in. Once we know if we're signed in, we can get appConfig, orgConfig and create a portal if needed.
-      this._checkSignIn().always(function () {
+      // check if signed in. Once we know if we're signed in, we can get configs and create a portal if needed.
+      return this._checkSignIn().always(function () {
         // execute these tasks async
-        promiseList({
+        return promiseList({
           // get application data
-          app: this.queryApplication(),
+          applicationItem: this.queryApplicationItem(),
           // get org data
-          org: this.queryOrganization()
+          portal: this.queryPortal()
         }).always(function () {
           // mixin all new settings from org and app
           this._mixinAll();
           // then execute these async
-          promiseList({
+          return promiseList({
             // webscene item
-            item: this.queryItem(),
-          }).then(function () {
+            websceneItem: this.queryWebsceneItem()
+          }).always(function () {
             // mixin all new settings from item.
             this._mixinAll();
             // We have all we need, let's set up a few things
             this._completeApplication();
-            deferred.resolve(this);
+            return;
           }.bind(this));
         }.bind(this));
       }.bind(this));
-      // return promise
-      return deferred.promise;
     },
 
     _completeApplication: function () {
@@ -332,9 +320,19 @@ define([
     _mixinAll: function () {
       /*
       mix in all the settings we got!
-      config <- organization <- application <- group/webmap/webscene <- custom url params <- standard url params
+      config <- portal organization <- application <- group/webmap/webscene <- custom url params <- standard url params
       */
-      lang.mixin(this.config, this.orgConfig, this.appConfig, this.itemConfig, this.customUrlConfig, this.urlConfig);
+      lang.mixin(
+        this.config,
+        this.configs.portal,
+        this.configs.applicationItem,
+        this.configs.groupItem,
+        this.configs.groupItems,
+        this.configs.webmapItem,
+        this.configs.websceneItem,
+        this.configs.customUrlParams,
+        this.configs.urlParams
+      );
     },
 
     _getUrlParamValues: function (items) {

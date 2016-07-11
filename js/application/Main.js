@@ -121,8 +121,8 @@ define([
       // Create a scene from json will be coming.
       // for now scene from id only.
       var scene;
-      if (this.config.itemInfo) {
-        scene = WebScene.fromJSON(this.config.itemInfo);
+      if (this.config.websceneItem) {
+        scene = WebScene.fromJSON(this.config.websceneItem);
       }
       else {
         scene = new WebScene({

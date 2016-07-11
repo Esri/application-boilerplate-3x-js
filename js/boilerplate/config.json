@@ -15,7 +15,7 @@
     "num": 9,
     "start": 0
   },
-  "queryForOrg": true,
+  "queryPortal": true,
   "urlItems": [
     "embed",
     "center",
