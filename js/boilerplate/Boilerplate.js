@@ -103,10 +103,86 @@ define([
 
     queryGroupInfo: function () {
       // todo
+
+      /*
+      var deferred = new Deferred(),
+        error, params;
+      // If we want to get the group info
+      if (this.templateConfig.queryForGroupInfo) {
+        if (this.config.group) {
+          // group params
+          params = {
+            q: "id:\"" + this.config.group + "\"",
+            f: "json"
+          };
+          this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
+            var cfg = {};
+            cfg.groupInfo = response;
+            this.groupInfoConfig = cfg;
+            deferred.resolve(cfg);
+          }), function (error) {
+            deferred.reject(error);
+          });
+        } else {
+          error = new Error("Group undefined.");
+          deferred.reject(error);
+        }
+      } else {
+        // just resolve
+        deferred.resolve();
+      }
+      return deferred.promise;
+      */
+
     },
 
     queryGroupItems: function () {
       // todo
+
+      /*
+
+      var deferred = new Deferred(),
+        error, defaultParams, params;
+      // If we want to get the group info
+      if (this.templateConfig.queryForGroupItems) {
+        if (this.config.group) {
+          // group params
+          defaultParams = {
+            q: "group:\"${groupid}\" AND -type:\"Code Attachment\"",
+            sortField: "modified",
+            sortOrder: "desc",
+            num: 9,
+            start: 0,
+            f: "json"
+          };
+          // mixin params
+          params = lang.mixin(defaultParams, this.templateConfig.groupParams, options);
+          // place group ID
+          if (params.q) {
+            params.q = string.substitute(params.q, {
+              groupid: this.config.group
+            });
+          }
+          // get items from the group
+          this.portal.queryItems(params).then(lang.hitch(this, function (response) {
+            var cfg = {};
+            cfg.groupItems = response;
+            this.groupItemConfig = cfg;
+            deferred.resolve(cfg);
+          }), function (error) {
+            deferred.reject(error);
+          });
+        } else {
+          error = new Error("Group undefined.");
+          deferred.reject(error);
+        }
+      } else {
+        // just resolve
+        deferred.resolve();
+      }
+      return deferred.promise;
+
+      */
     },
 
     queryWebsceneItem: function () {
@@ -119,27 +195,27 @@ define([
         // get web scene js file
         require(["dojo/text!./demoScene.json"], function (data) {
           // return web scene json
-          cfg.itemInfo = JSON.parse(data);
+          cfg.websceneItem = JSON.parse(data);
           this.configs.websceneItem = cfg;
           deferred.resolve(cfg);
         }.bind(this));
       }
       // no web scene is set and we have organization's info
-      else if (!this.config.webscene && this.config.orgInfo) {
+      else if (!this.config.webscene && this.configs.portal) {
         var defaultWebScene = {
           "item": {
             "title": "Default Webscene",
             "type": "Web Scene",
             "description": "A web scene with the default basemap and extent.",
             "snippet": "A web scene with the default basemap and extent.",
-            "extent": this.config.orgInfo.defaultExtent
+            "extent": this.configs.portal.defaultExtent
           },
           "itemData": {
             "operationalLayers": [],
-            "baseMap": this.config.orgInfo.defaultBasemap
+            "baseMap": this.configs.portal.defaultBasemap
           }
         };
-        cfg.itemInfo = defaultWebScene;
+        cfg.websceneItem = defaultWebScene;
         this.configs.websceneItem = cfg;
         deferred.resolve(cfg);
       }
@@ -161,6 +237,7 @@ define([
       }
       else {
         var appItem = new PortalItem({
+          // todo: pass in portal
           id: this.config.appid
         }).load();
         appItem.then(function (itemData) {
@@ -170,7 +247,22 @@ define([
             // get app config values - we'll merge them with config later.
             cfg = itemData.values;
           }
-          // todo: (No support yet for app proxies in the scene)
+          // get the extent for the application item. This can be used to override the default web map extent
+          if (itemData.item && itemData.item.extent) {
+            cfg.application_extent = itemData.item.extent;
+          }
+          // get any app proxies defined on the application item
+          if (itemData.item && itemData.item.appProxies) {
+            var layerMixins = itemData.item.appProxies.map(function (p) {
+              return {
+                "url": p.sourceUrl,
+                "mixin": {
+                  "url": p.proxyUrl
+                }
+              };
+            });
+            cfg.layerMixins = layerMixins;
+          }
           this.configs.applicationItem = cfg;
           deferred.resolve(cfg);
         }.bind(this), function (error) {
@@ -194,8 +286,11 @@ define([
         // the organization by making a self request to the org url which returns details specific to that organization.
         // Examples of the type of information returned are custom roles, units settings, helper services and more.
         // If this fails, the application will continue to function
+        // todo: set sharing url on portal
         var portal = new Portal().load();
+        this._portal = portal;
         portal.then(function (response) {
+          // save organization information
           this.responses.portal = response;
           if (this._boilerplateConfig.webTierSecurity) {
             var trustedHost;
@@ -213,8 +308,6 @@ define([
             }
           }
           var cfg = {};
-          // save organization information
-          cfg.orgInfo = response;
           // get units defined by the org or the org user
           cfg.units = "metric";
           if (response.user && response.user.units) { //user defined units
@@ -305,20 +398,31 @@ define([
       }.bind(this));
     },
 
-    _completeApplication: function () {
-      // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-      // existing web map extent with the application item extent when set.
-      if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0 && this.config.itemInfo && this.config.itemInfo.item && this.config.itemInfo.item.extent) {
-        this.config.itemInfo.item.extent = [
+    _overwriteExtent: function (itemInfo, extent) {
+      var item = itemInfo && itemInfo.item;
+      if (item && item.extent) {
+        item.extent = [
           [
-            parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+            parseFloat(extent[0][0]), parseFloat(extent[0][1])
           ],
           [
-            parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+            parseFloat(extent[1][0]), parseFloat(extent[1][1])
           ]
         ];
       }
-      // todo: do we need geometry service for scene? if so do we have config option to set geom service at 4?
+    },
+
+    _completeApplication: function () {
+      // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+      // existing extents with the application item extent when set.
+      if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0) {
+        this._overwriteExtent(this.configs.websceneItem, this.config.application_extent);
+        this._overwriteExtent(this.configs.webmapItem, this.config.application_extent);
+      }
+      // Set the geometry helper service to be the app default.
+      if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
+        esriConfig.geometryServiceUrl = this.config.helperServices.geometry.url;
+      }
     },
 
     _mixinAll: function () {
