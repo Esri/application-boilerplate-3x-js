@@ -14,8 +14,6 @@ define([
   "esri/geometry/Point",
   "esri/geometry/SpatialReference",
 
-  "esri/portal/PortalItem",
-
   "esri/views/SceneView",
 
   "esri/WebScene",
@@ -28,7 +26,6 @@ define([
   dom, domAttr, domClass,
   Camera,
   Point, SpatialReference,
-  PortalItem,
   SceneView,
   WebScene
 ) {
@@ -56,7 +53,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    config: {},
+    boilerplate: null,
 
     //--------------------------------------------------------------------------
     //
@@ -67,11 +64,12 @@ define([
 
     startup: function (boilerplate) {
 
-      console.log(boilerplate);
+      this.boilerplate = boilerplate;
 
-      var config = boilerplate.config;
-      if (config) {
-        this.config = config;
+      if (boilerplate) {
+        this.config = boilerplate.config;
+        this.configs = boilerplate.configs;
+        this.boilerplateConfig = boilerplate.boilerplateConfig;
         this._setDirection();
         this._createWebScene();
       }
@@ -121,35 +119,34 @@ define([
       // Create a scene from json will be coming.
       // for now scene from id only.
       var scene;
-      if (this.config.websceneItem) {
-        scene = WebScene.fromJSON(this.config.websceneItem);
-      }
-      else {
-        scene = new WebScene({
-          // todo: this should be done in the boilerplate
-          portalItem: new PortalItem({
-            id: this.config.webscene
-          })
-        });
-      }
-      var viewProperties = {
-        map: scene,
-        container: "viewDiv"
-      };
-      if (this.config.components) {
-        viewProperties.ui = {
-          components: this.config.components.split(",")
+      if (this.configs.websceneItem) {
+        if (this.boilerplateConfig.useLocalWebScene) {
+          scene = WebScene.fromJSON(this.configs.websceneItem);
+        }
+        else {
+          scene = new WebScene({
+            portalItem: this.configs.websceneItem
+          });
+        }
+        var viewProperties = {
+          map: scene,
+          container: "viewDiv"
         };
+        if (this.config.components) {
+          viewProperties.ui = {
+            components: this.config.components.split(",")
+          };
+        }
+        var camera = this._setCameraViewpoint();
+        if (camera) {
+          viewProperties.camera = camera;
+        }
+        var view = new SceneView(viewProperties);
+        view.then(function (response) {
+          domClass.remove(document.body, CSS.loading);
+          document.title = scene.portalItem && scene.portalItem.title || "";
+        }.bind(this), this.reportError);
       }
-      var camera = this._setCameraViewpoint();
-      if (camera) {
-        viewProperties.camera = camera;
-      }
-      var view = new SceneView(viewProperties);
-      view.then(function (response) {
-        domClass.remove(document.body, CSS.loading);
-        document.title = scene.portalItem.title;
-      }.bind(this), this.reportError);
     },
 
     _setCameraViewpoint: function () {

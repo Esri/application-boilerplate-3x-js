@@ -53,17 +53,15 @@ define([
 
     responses: null,
 
+    boilerplateConfig: null,
+
     //--------------------------------------------------------------------------
     //
     //  Variables
     //
     //--------------------------------------------------------------------------
 
-    _commonUrlItems: ["appid", "group", "oauthappid", "webmap", "webscene"],
-
     _urlObject: null,
-
-    _boilerplateConfig: null,
 
     //--------------------------------------------------------------------------
     //
@@ -80,7 +78,7 @@ define([
         queryForWebmap: true
       };
       // mixin defaults with boilerplate configuration
-      this._boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
+      this.boilerplateConfig = lang.mixin(boilerplateDefaults, boilerplateConfigJSON);
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
       this.configs = {};
@@ -191,11 +189,11 @@ define([
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       // Use local web scene instead of portal web scene
-      if (this._boilerplateConfig.useLocalWebScene) {
+      if (this.boilerplateConfig.useLocalWebScene) {
         // get web scene js file
-        require(["dojo/text!./demoScene.json"], function (data) {
+        require(["dojo/text!" + this.boilerplateConfig.localWebSceneFile], function (data) {
           // return web scene json
-          cfg.websceneItem = JSON.parse(data);
+          cfg = JSON.parse(data);
           this.configs.websceneItem = cfg;
           deferred.resolve(cfg);
         }.bind(this));
@@ -221,8 +219,19 @@ define([
       }
       // use webscene from id
       else {
-        // todo: this should query the portal item data
-        deferred.resolve(cfg);
+        var sceneItem = new PortalItem({
+          id: this.config.webscene
+        }).load();
+        sceneItem.then(function (itemData) {
+          cfg = itemData;
+          this.configs.websceneItem = cfg;
+          deferred.resolve(cfg);
+        }.bind(this), function (error) {
+          if (!error) {
+            error = new Error("Error retrieving webscene item.");
+          }
+          deferred.reject(error);
+        });
       }
       return deferred.promise;
     },
@@ -237,7 +246,6 @@ define([
       }
       else {
         var appItem = new PortalItem({
-          // todo: pass in portal
           id: this.config.appid
         }).load();
         appItem.then(function (itemData) {
@@ -277,22 +285,21 @@ define([
 
     queryPortal: function () {
       var deferred = new Deferred();
-      if (!this._boilerplateConfig.queryPortal) {
+      if (!this.boilerplateConfig.queryPortal) {
         deferred.resolve();
       }
       else {
-        // Query the ArcGIS.com organization. This is defined by the sharinghost that is specified. For example if you
-        // are a member of an org you'll want to set the sharinghost to be http://<your org name>.arcgis.com. We query
+        // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
+        // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
         // the organization by making a self request to the org url which returns details specific to that organization.
         // Examples of the type of information returned are custom roles, units settings, helper services and more.
         // If this fails, the application will continue to function
-        // todo: set sharing url on portal
         var portal = new Portal().load();
         this._portal = portal;
         portal.then(function (response) {
           // save organization information
           this.responses.portal = response;
-          if (this._boilerplateConfig.webTierSecurity) {
+          if (this.boilerplateConfig.webTierSecurity) {
             var trustedHost;
             if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
               for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
@@ -356,7 +363,6 @@ define([
       // the application configuration has been applied so that the url parameters overwrite any
       // configured settings. It's up to the application developer to update the application to take
       // advantage of these parameters.
-      this.configs.urlParams = this._getUrlParamValues(this._commonUrlItems);
       // This demonstrates how to handle additional custom url parameters. For example
       // if you want users to be able to specify lat/lon coordinates that define the map's center or
       // specify an alternate basemap via a url parameter.
@@ -364,12 +370,12 @@ define([
       // application default and configuration info has been applied. Currently these values
       // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
       // supporting additional url parameters in your application.
-      this.configs.customUrlParams = this._getUrlParamValues(this._boilerplateConfig.urlItems);
+      this.configs.urlParams = this._getUrlParamValues(this.boilerplateConfig.urlItems);
       // config defaults <- standard url params
       // we need the web scene, appid,and oauthappid to query for the data
       this._mixinAll();
-      // Define the sharing url and other default values like the proxy.
-      // The sharing url defines where to search for the web map and application content. The
+      // Define the portalUrl and other default values like the proxy.
+      // The portalUrl defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
       // check if signed in. Once we know if we're signed in, we can get configs and create a portal if needed.
@@ -428,7 +434,7 @@ define([
     _mixinAll: function () {
       /*
       mix in all the settings we got!
-      config <- portal organization <- application <- group/webmap/webscene <- custom url params <- standard url params
+      config <- portal settings <- application settings <- group/webmap/webscene settings <- url params
       */
       lang.mixin(
         this.config,
@@ -438,7 +444,6 @@ define([
         this.configs.groupItems,
         this.configs.webmapItem,
         this.configs.websceneItem,
-        this.configs.customUrlParams,
         this.configs.urlParams
       );
     },
@@ -485,27 +490,27 @@ define([
 
     _initializeApplication: function () {
       // If this app is hosted on an Esri environment.
-      if (this._boilerplateConfig.esriEnvironment) {
+      if (this.boilerplateConfig.esriEnvironment) {
         var appLocation, instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
-        // sharing url and the proxy. Otherwise use the sharing url set it to arcgis.com.
+        // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
         // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
         appLocation = location.pathname.indexOf("/apps/");
         if (appLocation === -1) {
           appLocation = location.pathname.indexOf("/home/");
         }
-        // app is hosted and no sharing url is defined so let's figure it out.
+        // app is hosted and no portalUrl is defined so let's figure it out.
         if (appLocation !== -1) {
           // hosted or portal
           instance = location.pathname.substr(0, appLocation); //get the portal instance name
-          this.config.sharinghost = location.protocol + "//" + location.host + instance;
-          this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+          this.config.portalUrl = location.protocol + "//" + location.host + instance;
+          this.config.proxyUrl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
         }
       }
-      esriConfig.portalUrl = this.config.sharinghost;
+      esriConfig.portalUrl = this.config.portalUrl;
       // Define the proxy url for the app
-      if (this.config.proxyurl) {
-        esriConfig.request.proxyUrl = this.config.proxyurl;
+      if (this.config.proxyUrl) {
+        esriConfig.request.proxyUrl = this.config.proxyUrl;
       }
     },
 
@@ -516,13 +521,13 @@ define([
       if (this.config.oauthappid) {
         oAuthInfo = new OAuthInfo({
           appId: this.config.oauthappid,
-          portalUrl: this.config.sharinghost,
+          portalUrl: this.config.portalUrl,
           popup: true
         });
         IdentityManager.registerOAuthInfos([oAuthInfo]);
       }
       // check sign-in status
-      signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + SHARING_PATH);
+      signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
       // resolve regardless of signed in or not.
       signedIn.always(function () {
         deferred.resolve();

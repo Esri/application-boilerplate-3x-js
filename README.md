@@ -27,14 +27,14 @@ Review the following ArcGIS.com help topics for details on Templates:
 
 The template consists of the following folders and files:
 
-**/config/:** A folder for your application's configuration files. 
+**/config/:** A folder for your application's configuration files.
 
 *   **defaults.js:** Define the default configuration information for the template. You can use this file to specify things like a default web map id, a proxy url, default services, a Bing maps key, default color theme and other template-specific settings.
 
 *   **templateConfig.js:** Options file for configuring your template to query for specific resources and items. You can edit this file and your template can enable or disable querying for things such as localization files, ArcGIS group information, group items, custom url parameters, etc.
 
 *   **demoMap.js:** This map file can be used as a substitute for an arcgis.com hosted webmap. It contains webmap JSON that can be used to configure a map locally. To use this file instead of an online hosted webmap, set the `useLocalWebmap` option to `true` in `templateConfig.js`. Make sure the option `localWebmapFile` is pointing to this file location.
- 
+
 **/css/:** Contains the CSS files for the application.
 
 *	**main.css** This file contains the map styles that set the margin, padding and initial height (100%).
@@ -52,7 +52,7 @@ The template consists of the following folders and files:
     *   helperServices: geometry, print, locator service urls
     *   i18n: Strings and isRightToLeft property that can be used to determine if the application is being viewed from a language where text is read left-to-right like Hebrew or Arabic.
     *   proxy  url
-    
+
 **index.html**: The default html file for the application.
 
 **/resources/**: Contains helpful files for your application.
@@ -71,9 +71,9 @@ The template consists of the following folders and files:
 
 1. To deploy this application, download the template from Portal/ArcGIS Online and unzip it.
 2. Copy the unzipped folder containing the web app template files, such as index.html, to your web server. You can rename the folder to change the URL through which users will access the application. By default the URL to the app will be `http://<Your Web Server>/<app folder name>/index.html`
-3. Change the sharing host, found in defaults.js inside the config folder for the application, to the sharing URL for ArcGIS Online or Portal. For ArcGIS Online users, keep the default value of www.arcgis.com or specify the name of your organization.
-  - ArcGIS Online Example:  `"sharinghost": location.protocol + "//" + “<your organization name>.maps.arcgis.com`
-  - Portal Example where `arcgis` is the name of the Web Adaptor: `"sharinghost": location.protocol + "//" + "webadaptor.domain.com/arcgis"`
+3. Change the portalUrl, found in defaults.js inside the config folder for the application, to the portalUrl for ArcGIS Online or Portal. For ArcGIS Online users, keep the default value of www.arcgis.com or specify the name of your organization.
+  - ArcGIS Online Example:  `"portalUrl": location.protocol + "//" + “<your organization name>.maps.arcgis.com`
+  - Portal Example where `arcgis` is the name of the Web Adaptor: `"portalUrl": location.protocol + "//" + "webadaptor.domain.com/arcgis"`
 4. If you are using Portal or a local install of the ArcGIS API for JavaScript, change all references to the ArcGIS API for JavaScript in index.html to refer to your local copy of the API. Search for the references containing `"//js.arcgis.com/3.13"` and replace this portion of the reference with the url to your local install.
   - For example: `"//webadaptor.domain.com/arcgis/jsapi/jsapi"` where `arcgis` is the name of your Web Adaptor.
 5. Copy a map or group ID from Portal/ArcGIS Online and replace the default web map ID in the application’s index.html page. You can now run the application on your web server or customize the application further.

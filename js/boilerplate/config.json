@@ -1,8 +1,8 @@
 {
   "useLocalWebScene": false,
   "webTierSecurity": false,
-  "localWebSceneFile": "config/demoScene",
-  "localWebMapFile": "config/demoMap",
+  "localWebSceneFile": "boilerplate/demoScene.json",
+  "localWebMapFile": "boilerplate/demoMap.json",
   "queryForWebscene": true,
   "queryForWebmap": true,
   "queryForGroupInfo": false,
@@ -17,6 +17,11 @@
   },
   "queryPortal": true,
   "urlItems": [
+    "appid",
+    "group",
+    "oauthappid",
+    "webmap",
+    "webscene",
     "embed",
     "center",
     "extent",

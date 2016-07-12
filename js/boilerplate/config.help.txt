@@ -17,6 +17,6 @@
     "components", //"zoom","logo","compass","attribution" or [] for none
     "viewpoint" // viewpoint=cam:posx,posy,posz, [wkid];[heading],[tilt]
   ],
-  // Most users will not need to modify this value. For esri hosting environments only. Will automatically create a "sharinghost" and "proxyurl" for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the "sharinghost" in defaults.js instead of setting this to true.
+  // Most users will not need to modify this value. For esri hosting environments only. Will automatically create a "portalUrl" and "proxyUrl" for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the "portalUrl" in defaults.js instead of setting this to true.
   "esriEnvironment": false
 }

@@ -4,8 +4,8 @@
   "webscene": "19faa71a3bf6468cae35b4fce9393a7d",
   "webmap": "",
   "oauthappid": null,
-  "proxyurl": "",
-  "sharinghost": "https://www.arcgis.com",
+  "proxyUrl": "",
+  "portalUrl": "https://www.arcgis.com",
   "units": null,
   "helperServices": {
     "geometry": {
