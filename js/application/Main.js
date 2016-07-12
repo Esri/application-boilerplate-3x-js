@@ -66,7 +66,7 @@ define([
     //--------------------------------------------------------------------------
 
 
-    startup: function (boilerplate) {
+    init: function (boilerplate) {
 
       console.log(boilerplate);
 
@@ -77,7 +77,7 @@ define([
         this._createWebScene();
       }
       else {
-        var error = new Error("Main:: Config is not defined");
+        var error = new Error("main:: Config is not defined");
         this.reportError(error);
       }
     },
