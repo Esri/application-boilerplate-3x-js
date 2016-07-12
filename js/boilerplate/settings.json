@@ -2,12 +2,12 @@
   "webscene": {
     "fetch": true,
     "useLocal": false,
-    "localFile": "boilerplate/demoScene.json"
+    "localFile": "boilerplate/demoWebscene.json"
   },
   "webmap": {
     "fetch": true,
     "useLocal": false,
-    "localFile": "boilerplate/demoMap.json"
+    "localFile": "boilerplate/demoWebmap.json"
   },
   "group": {
     "fetchInfo": false,

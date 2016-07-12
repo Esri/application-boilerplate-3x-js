@@ -85,7 +85,8 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    // todo: accept arguments
+    // todo: accept arguments on public methods
+
     queryWebmapItem: function () {
       var deferred;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
@@ -102,26 +103,27 @@ define([
           require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
             // return web scene json
             var json = JSON.parse(webmapText);
-            this.results.webmapItem.data = json;
+            this.results.webmapItem.json = json;
             deferred.resolve(this.results.webmapItem);
           }.bind(this));
         }
         // no web scene is set and we have organization's info
         else if (!this.config.webmap && this.results.portal.data) {
           var defaultWebmap = {
-            "item": {
-              "title": "Default Webmap",
-              "type": "Web Map",
-              "description": "A webmap with the default basemap and extent.",
-              "snippet": "A webmap with the default basemap and extent.",
-              "extent": this.results.portal.data.defaultExtent
+            "operationalLayers": [],
+            "baseMap": {
+              "baseMapLayers": [{
+                "id": "defaultBasemap",
+                "layerType": "ArcGISTiledMapServiceLayer",
+                "opacity": 1,
+                "visibility": true,
+                "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
+              }],
+              "title": "Topographic"
             },
-            "itemData": {
-              "operationalLayers": [],
-              "baseMap": this.results.portal.data.defaultBasemap
-            }
+            "version": "2.1"
           };
-          this.results.webmapItem.data = defaultWebmap;
+          this.results.webmapItem.json = defaultWebmap;
           deferred.resolve(this.results.webmapItem);
         }
         // use webmap from id
@@ -244,10 +246,8 @@ define([
           require(["dojo/text!" + this.settings.webscene.localFile], function (websceneText) {
             // return web scene json
             var json = JSON.parse(websceneText);
-
             this.results.websceneItem.json = json;
             deferred.resolve(this.results.websceneItem);
-
           }.bind(this));
         }
         // no web scene is set and we have organization's info
