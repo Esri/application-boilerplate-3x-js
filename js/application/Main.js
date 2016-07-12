@@ -55,11 +55,9 @@ define([
 
     boilerplate: null,
 
+    boilerplateResults: null,
+
     config: null,
-
-    data: null,
-
-    boilerplateConfig: null,
 
     //--------------------------------------------------------------------------
     //
@@ -70,14 +68,11 @@ define([
 
     startup: function (boilerplate) {
 
-      this.boilerplate = boilerplate;
-
       console.log(boilerplate);
 
       if (boilerplate) {
         this.config = boilerplate.config;
-        this.data = boilerplate.data;
-        this.boilerplateConfig = boilerplate.boilerplateConfig;
+        this.boilerplateResults = boilerplate.results;
         this._setDirection();
         this._createWebScene();
       }
@@ -126,16 +121,16 @@ define([
     _createWebScene: function () {
       // Create a scene from json will be coming.
       // for now scene from id only.
-      var scene;
-      if (this.data.websceneItem) {
-        if (this.boilerplateConfig.useLocalWebScene) {
-          scene = WebScene.fromJSON(this.data.websceneItem);
-        }
-        else {
-          scene = new WebScene({
-            portalItem: this.data.websceneItem
-          });
-        }
+      var scene, websceneItem = this.boilerplateResults.websceneItem;
+      if (websceneItem.data) {
+        scene = new WebScene({
+          portalItem: websceneItem.data
+        });
+      }
+      else if (websceneItem.json) {
+        scene = WebScene.fromJSON(websceneItem.json);
+      }
+      if (scene) {
         var viewProperties = {
           map: scene,
           container: "viewDiv"

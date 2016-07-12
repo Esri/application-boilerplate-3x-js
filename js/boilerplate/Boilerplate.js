@@ -1,7 +1,7 @@
 define([
 
   "dojo/text!config/config.json",
-  "dojo/text!./config.json",
+  "dojo/text!./settings.json",
 
   "dojo/_base/kernel",
   "dojo/_base/lang",
@@ -20,7 +20,7 @@ define([
   "esri/portal/PortalItem"
 
 ], function (
-  applicationConfig, boilerplateConfig,
+  applicationConfig, boilerplateSettings,
   kernel, lang,
   Deferred,
   esriConfig,
@@ -50,11 +50,11 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    boilerplateConfig: null,
+    settings: null,
 
     config: null,
 
-    data: null,
+    results: null,
 
     portal: null,
 
@@ -66,13 +66,15 @@ define([
 
     constructor: function () {
       // convert text to JSON
-      var boilerplateConfigJSON = JSON.parse(boilerplateConfig);
+      var boilerplateSettingsJSON = JSON.parse(boilerplateSettings);
       var applicationConfigJSON = JSON.parse(applicationConfig);
       // mixin defaults with boilerplate configuration
-      this.boilerplateConfig = boilerplateConfigJSON;
+      this.settings = boilerplateSettingsJSON;
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
-      this.data = {};
+      // stores results from queries
+      this.results = {};
+      // initialization
       var initPromise = this._init();
       this.addResolvingPromise(initPromise);
     },
@@ -83,45 +85,44 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    // todo: separate cfg from data in certain cases
-
+    // todo: accept arguments
     queryWebmapItem: function () {
-      var deferred, cfg = {};
+      var deferred;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if (!this.boilerplateConfig.webmap.fetch) {
+      if (!this.settings.webmap.fetch) {
         deferred.resolve();
       }
       else {
+        this.results.webmapItem = {};
         // Use local web scene instead of portal web scene
-        if (this.boilerplateConfig.webmap.useLocal) {
+        if (this.settings.webmap.useLocal) {
           // get web scene js file
-          require(["dojo/text!" + this.boilerplateConfig.webmap.localFile], function (data) {
+          require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
             // return web scene json
-            cfg = JSON.parse(data);
-            this.data.webmapItem = cfg;
-            deferred.resolve(cfg);
+            var json = JSON.parse(webmapText);
+            this.results.webmapItem.data = json;
+            deferred.resolve(this.results.webmapItem);
           }.bind(this));
         }
         // no web scene is set and we have organization's info
-        else if (!this.config.webmap && this.data.portal) {
+        else if (!this.config.webmap && this.results.portal.data) {
           var defaultWebmap = {
             "item": {
               "title": "Default Webmap",
               "type": "Web Map",
               "description": "A webmap with the default basemap and extent.",
               "snippet": "A webmap with the default basemap and extent.",
-              "extent": this.data.portal.defaultExtent
+              "extent": this.results.portal.data.defaultExtent
             },
             "itemData": {
               "operationalLayers": [],
-              "baseMap": this.data.portal.defaultBasemap
+              "baseMap": this.results.portal.data.defaultBasemap
             }
           };
-          cfg = defaultWebmap;
-          this.data.webmapItem = cfg;
-          deferred.resolve(cfg);
+          this.results.webmapItem.data = defaultWebmap;
+          deferred.resolve(this.results.webmapItem);
         }
         // use webmap from id
         else {
@@ -129,9 +130,8 @@ define([
             id: this.config.webmap
           }).load();
           mapItem.then(function (itemData) {
-            cfg = itemData;
-            this.data.webmapItem = cfg;
-            deferred.resolve(cfg);
+            this.results.webmapItem.data = itemData;
+            deferred.resolve(this.results.webmapItem);
           }.bind(this), function (error) {
             if (!error) {
               error = new Error("Error retrieving webmap item.");
@@ -143,6 +143,7 @@ define([
       return deferred.promise;
     },
 
+    // todo: accept arguments
     queryGroupInfo: function () {
       // todo
 
@@ -228,52 +229,44 @@ define([
     },
 
     queryWebsceneItem: function () {
-      var deferred, cfg = {};
+      var deferred, sceneItem;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if (!this.boilerplateConfig.webscene.fetch) {
+      if (!this.settings.webscene.fetch) {
         deferred.resolve();
       }
       else {
+        this.results.websceneItem = {};
         // Use local web scene instead of portal web scene
-        if (this.boilerplateConfig.webscene.useLocal) {
+        if (this.settings.webscene.useLocal) {
           // get web scene js file
-          require(["dojo/text!" + this.boilerplateConfig.webscene.localFile], function (data) {
+          require(["dojo/text!" + this.settings.webscene.localFile], function (websceneText) {
             // return web scene json
-            cfg = JSON.parse(data);
-            this.data.websceneItem = cfg;
-            deferred.resolve(cfg);
+            var json = JSON.parse(websceneText);
+
+            this.results.websceneItem.json = json;
+            deferred.resolve(this.results.websceneItem);
+
           }.bind(this));
         }
         // no web scene is set and we have organization's info
-        else if (!this.config.webscene && this.data.portal) {
+        else if (!this.config.webscene && this.results.portal.data) {
           var defaultWebscene = {
-            "item": {
-              "title": "Default Webscene",
-              "type": "Web Scene",
-              "description": "A web scene with the default basemap and extent.",
-              "snippet": "A web scene with the default basemap and extent.",
-              "extent": this.data.portal.defaultExtent
-            },
-            "itemData": {
-              "operationalLayers": [],
-              "baseMap": this.data.portal.defaultBasemap
-            }
+            "operationalLayers": [],
+            "version": "1.3"
           };
-          cfg = defaultWebscene;
-          this.data.websceneItem = cfg;
-          deferred.resolve(cfg);
+          this.results.websceneItem.json = defaultWebscene;
+          deferred.resolve(this.results.websceneItem);
         }
         // use webscene from id
         else {
-          var sceneItem = new PortalItem({
+          sceneItem = new PortalItem({
             id: this.config.webscene
           }).load();
           sceneItem.then(function (itemData) {
-            cfg = itemData;
-            this.data.websceneItem = cfg;
-            deferred.resolve(cfg);
+            this.results.websceneItem.data = itemData;
+            deferred.resolve(this.results.websceneItem);
           }.bind(this), function (error) {
             if (!error) {
               error = new Error("Error retrieving webscene item.");
@@ -298,7 +291,6 @@ define([
           id: this.config.appid
         }).load();
         appItem.then(function (itemData) {
-          this.data.applicationItem = itemData;
           var cfg = {};
           if (itemData && itemData.values) {
             // get app config values - we'll merge them with config later.
@@ -320,8 +312,11 @@ define([
             });
             cfg.layerMixins = layerMixins;
           }
-          this.data.applicationItem = cfg;
-          deferred.resolve(cfg);
+          this.results.applicationItem = {
+            data: itemData,
+            config: cfg
+          };
+          deferred.resolve(this.results.applicationItem);
         }.bind(this), function (error) {
           if (!error) {
             error = new Error("Error retrieving application configuration.");
@@ -334,7 +329,7 @@ define([
 
     queryPortal: function () {
       var deferred = new Deferred();
-      if (!this.boilerplateConfig.portal.fetch) {
+      if (!this.settings.portal.fetch) {
         deferred.resolve();
       }
       else {
@@ -346,7 +341,7 @@ define([
         var portal = new Portal().load();
         this.portal = portal;
         portal.then(function (response) {
-          if (this.boilerplateConfig.webTierSecurity) {
+          if (this.settings.webTierSecurity) {
             var trustedHost;
             if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
               for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
@@ -382,8 +377,11 @@ define([
               cfg.userPrivileges = response.user.privileges;
             }
           }
-          this.data.portal = cfg;
-          deferred.resolve(cfg);
+          this.results.portal = {
+            config: cfg,
+            data: response
+          };
+          deferred.resolve(this.results.portal);
         }.bind(this), function (error) {
           if (!error) {
             error = new Error("Error retrieving organization information.");
@@ -417,10 +415,12 @@ define([
       // application default and configuration info has been applied. Currently these values
       // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
       // supporting additional url parameters in your application.
-      this.data.urlParams = this._getUrlParamValues(this.boilerplateConfig.urlItems);
+      this.results.urlParams = {
+        config: this._getUrlParamValues(this.settings.urlItems)
+      };
       // config defaults <- standard url params
       // we need the web scene, appid,and oauthappid to query for the data
-      this._mixinAll();
+      this._mixinAllConfigs();
       // Define the portalUrl and other default values like the proxy.
       // The portalUrl defines where to search for the web map and application content. The
       // default value is arcgis.com.
@@ -435,7 +435,7 @@ define([
           portal: this.queryPortal()
         }).always(function () {
           // mixin all new settings from org and app
-          this._mixinAll();
+          this._mixinAllConfigs();
           // let's set up a few things
           this._completeApplication();
           // then execute these async
@@ -467,8 +467,8 @@ define([
       // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
       // existing extents with the application item extent when set.
       if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0) {
-        this._overwriteExtent(this.data.websceneItem, this.config.application_extent);
-        this._overwriteExtent(this.data.webmapItem, this.config.application_extent);
+        this._overwriteExtent(this.results.websceneItem.data, this.config.application_extent);
+        this._overwriteExtent(this.results.webmapItem.data, this.config.application_extent);
       }
       // Set the geometry helper service to be the app default.
       if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
@@ -476,16 +476,16 @@ define([
       }
     },
 
-    _mixinAll: function () {
+    _mixinAllConfigs: function () {
       /*
       mix in all the settings we got!
       config <- portal settings <- application settings <- url params
       */
       lang.mixin(
         this.config,
-        this.data.portal,
-        this.data.applicationItem,
-        this.data.urlParams
+        this.results.portal ? this.results.portal.config : null,
+        this.results.applicationItem ? this.results.applicationItem.config : null,
+        this.results.urlParams ? this.results.urlParams.config : null
       );
     },
 
@@ -532,7 +532,7 @@ define([
 
     _initializeApplication: function () {
       // If this app is hosted on an Esri environment.
-      if (this.boilerplateConfig.esriEnvironment) {
+      if (this.settings.esriEnvironment) {
         var appLocation, instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
         // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
@@ -571,9 +571,7 @@ define([
       // check sign-in status
       signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
       // resolve regardless of signed in or not.
-      signedIn.always(function () {
-        deferred.resolve();
-      });
+      signedIn.always(deferred.resolve);
       return deferred.promise;
     },
 
