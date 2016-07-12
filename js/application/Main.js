@@ -55,6 +55,12 @@ define([
 
     boilerplate: null,
 
+    config: null,
+
+    configs: null,
+
+    boilerplateConfig: null,
+
     //--------------------------------------------------------------------------
     //
     //  Public Methods

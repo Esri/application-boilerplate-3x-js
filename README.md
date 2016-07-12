@@ -58,6 +58,70 @@ The template consists of the following folders and files:
 **/resources/**: Contains helpful files for your application.
 *   **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
 
+## Configs
+
+### Config
+
+```js
+{
+  //Default configuration settings for the application. This is where you'll define things like a bing maps key,
+  //default web scene, default app color theme and more. These values can be overwritten by template configuration settings and url parameters.
+  "appid": "",
+  "group": "",
+  "webscene": "19faa71a3bf6468cae35b4fce9393a7d",
+  "webmap": "",
+  "oauthappid": null, //"AFTKRmv16wj14N3z",
+  //Enter the url to the proxy if needed by the application. See the 'Using the proxy page' help topic for details
+  //http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
+  "proxyUrl": "",
+  "portalUrl": "https://www.arcgis.com",
+  "units": null,
+  "helperServices": {
+    "geometry": {
+      "url": null
+    },
+    "printTask": {
+      "url": null
+    },
+    "elevationSync": {
+      "url": null
+    },
+    "geocode": [{
+      "url": null
+    }]
+  }
+}
+
+```
+
+### Boilerplate Config
+
+```js
+{
+  // Use a local hosted web scene instead of a web scene on ArcGIS or portal.
+  "useLocalWebScene": false,
+  // support sending credentials with AJAX requests to specific domains. This will allow editing of feature services secured with web-tier authentication
+  "webTierSecurity": false,
+  // Webmap file to use for the local web scene
+  "localWebSceneFile": "config/demoScene",
+  //When true the template will query arcgis.com for default settings for helper services, units etc. If you
+  //want to use custom settings for units or any of the helper services set queryForOrg to false then enter
+  //default values for any items you need using the helper services and units properties.
+  "queryForOrg": true,
+  //This option demonstrates how to handle additional custom url parameters. For example
+  //if you want users to be able to specify lat/lon coordinates that define the scene's center or
+  //specify an alternate basemap via a url parameter.
+  "urlItems": [
+    "embed",
+    "components", //"zoom","logo","compass","attribution" or [] for none
+    "viewpoint" // viewpoint=cam:posx,posy,posz, [wkid];[heading],[tilt]
+  ],
+  // Most users will not need to modify this value. For esri hosting environments only. Will automatically create a "portalUrl" and "proxyUrl" for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the "portalUrl" in defaults.js instead of setting this to true.
+  "esriEnvironment": false
+}
+
+```
+
 ## Instructions
 
 1. Download and unzip the .zip file or clone the repository.
