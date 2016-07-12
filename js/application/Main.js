@@ -57,7 +57,7 @@ define([
 
     config: null,
 
-    configs: null,
+    data: null,
 
     boilerplateConfig: null,
 
@@ -72,9 +72,11 @@ define([
 
       this.boilerplate = boilerplate;
 
+      console.log(boilerplate);
+
       if (boilerplate) {
         this.config = boilerplate.config;
-        this.configs = boilerplate.configs;
+        this.data = boilerplate.data;
         this.boilerplateConfig = boilerplate.boilerplateConfig;
         this._setDirection();
         this._createWebScene();
@@ -125,13 +127,13 @@ define([
       // Create a scene from json will be coming.
       // for now scene from id only.
       var scene;
-      if (this.configs.websceneItem) {
+      if (this.data.websceneItem) {
         if (this.boilerplateConfig.useLocalWebScene) {
-          scene = WebScene.fromJSON(this.configs.websceneItem);
+          scene = WebScene.fromJSON(this.data.websceneItem);
         }
         else {
           scene = new WebScene({
-            portalItem: this.configs.websceneItem
+            portalItem: this.data.websceneItem
           });
         }
         var viewProperties = {
@@ -147,10 +149,13 @@ define([
         if (camera) {
           viewProperties.camera = camera;
         }
+        if (!this.config.title && scene.portalItem && scene.portalItem.title) {
+          this.config.title = scene.portalItem.title;
+        }
         var view = new SceneView(viewProperties);
         view.then(function (response) {
           domClass.remove(document.body, CSS.loading);
-          document.title = scene.portalItem && scene.portalItem.title || "";
+          document.title = this.config.title;
         }.bind(this), this.reportError);
       }
     },

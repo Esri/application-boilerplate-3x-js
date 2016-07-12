@@ -1,21 +1,28 @@
 {
-  "useLocalWebScene": false,
-  "webTierSecurity": false,
-  "localWebSceneFile": "boilerplate/demoScene.json",
-  "localWebMapFile": "boilerplate/demoMap.json",
-  "queryForWebscene": true,
-  "queryForWebmap": true,
-  "queryForGroupInfo": false,
-  "queryForGroupItems": false,
-  "useLocalWebmap": false,
-  "groupParams": {
-    "q": "group:\"${groupid}\" AND -type:\"Code Attachment\"",
-    "sortField": "modified",
-    "sortOrder": "desc",
-    "num": 9,
-    "start": 0
+  "webscene": {
+    "fetch": true,
+    "useLocal": false,
+    "localFile": "boilerplate/demoScene.json"
   },
-  "queryPortal": true,
+  "webmap": {
+    "fetch": true,
+    "useLocal": false,
+    "localFile": "boilerplate/demoMap.json"
+  },
+  "group": {
+    "fetchInfo": false,
+    "fetchItems": false,
+    "itemParams": {
+      "q": "group:\"${groupid}\" AND -type:\"Code Attachment\"",
+      "sortField": "modified",
+      "sortOrder": "desc",
+      "num": 9,
+      "start": 0
+    }
+  },
+  "portal": {
+    "fetch": true
+  },
   "urlItems": [
     "appid",
     "group",
@@ -30,5 +37,6 @@
     "components",
     "viewpoint"
   ],
+  "webTierSecurity": false,
   "esriEnvironment": false
 }
