@@ -1,6 +1,8 @@
-# Application Boilerplate: An ArcGIS API for JavaScript 4 Starter Application
+# Application Boilerplate
 
-The Application Boilerplate is a starter application for building applications with the ArcGIS API for JavaScript version 4.x.
+An ArcGIS API for JavaScript 4 Starter Application.
+
+This starter application is for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.x. We hope it helps :)
 
 ## Features
 
@@ -62,20 +64,32 @@ The template consists of the following folders and files:
 
 This is the configuration options for the application.
 
+|property|description|type|default|
+|---|---|---|---|
+|appid|todo|String|""|
+|group|todo|String|""|
+|webscene|todo|String|"19faa71a3bf6468cae35b4fce9393a7d"|
+|webmap|todo|String|""|
+|title|todo|String|""|
+|portalUrl|todo|String|"https://www.arcgis.com"|
+|oauthappid|todo|String|""|
+|proxyUrl|Enter the url to the proxy if needed by the application. See the 'Using the proxy page' help topic for details. http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html|String|""|
+|units|todo|String|todo|
+|helperServices|todo|Object|todo|
+
+#### Sample
+
 ```js
 {
-  //Default configuration settings for the application. This is where you'll define things like a bing maps key,
-  //default web scene, default app color theme and more. These values can be overwritten by template configuration settings and url parameters.
   "appid": "",
   "group": "",
   "webscene": "19faa71a3bf6468cae35b4fce9393a7d",
   "webmap": "",
-  "oauthappid": null, //"AFTKRmv16wj14N3z",
-  //Enter the url to the proxy if needed by the application. See the 'Using the proxy page' help topic for details
-  //http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html
-  "proxyUrl": "",
+  "title": "",
   "portalUrl": "https://www.arcgis.com",
-  "units": null,
+  "oauthappid": "",
+  "proxyUrl": "",
+  "units": "",
   "helperServices": {
     "geometry": {
       "url": null
@@ -91,7 +105,6 @@ This is the configuration options for the application.
     }]
   }
 }
-
 ```
 
 ### Boilerplate Settings (settings.json)
