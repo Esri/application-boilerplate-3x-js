@@ -91,7 +91,7 @@ The template consists of the following folders and files:
 ## Resources
 
 * [Community](https://developers.arcgis.com/en/javascript/jshelp/community.html)
-* [ArcGIS for JavaScript API Resource Center](http://help.arcgis.com/en/webapi/javascript/arcgis/index.html)
+* [ArcGIS for JavaScript API Resource Center](https://js.arcgis.com)
 * [ArcGIS Blog](http://blogs.esri.com/esri/arcgis/)
 * [twitter@esri](http://twitter.com/esri)
 
