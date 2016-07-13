@@ -67,7 +67,7 @@ define([
     //--------------------------------------------------------------------------
 
     init: function (boilerplate) {
-      if (boilerplate && false) {
+      if (boilerplate) {
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
         this._setDirection();
