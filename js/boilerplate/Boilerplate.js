@@ -86,9 +86,106 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    // todo: accept arguments on public methods
+    queryGroupItems: function (options) {
+      var deferred;
+      // Get details about the specified web scene. If the web scene is not shared publicly users will
+      // be prompted to log-in by the Identity Manager.
+      deferred = new Deferred();
+      if (!this.settings.group.fetchItems || !this.config.group) {
+        deferred.resolve();
+      }
+      else {
+        this.results.group = {};
+        var defaultParams = {
+          query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+          sortField: "modified",
+          sortOrder: "desc",
+          num: 9,
+          start: 1
+        };
+        var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams, options);
+        // place group ID
+        if (paramOptions.query) {
+          paramOptions.query = lang.replace(paramOptions.query, {
+            groupid: this.config.group
+          });
+        }
+        // group params
+        var params = new PortalQueryParams(paramOptions);
+        this.portal.queryItems(params).then(function (response) {
+          this.results.group.itemsData = response;
+          deferred.resolve(this.results.group);
+        }.bind(this), function (error) {
+          if (!error) {
+            error = new Error("Error retrieving group items.");
+          }
+          deferred.reject(error);
+        });
+      }
+      return deferred.promise;
+    },
 
-    queryWebmapItem: function () {
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
+
+    // Get URL parameters and set application defaults needed to query arcgis.com for
+    // an application and to see if the app is running in Portal or an Org
+    _init: function () {
+      // Set the web scene and appid if they exist but ignore other url params.
+      // Additional url parameters may be defined by the application but they need to be mixed in
+      // to the config object after we retrieve the application configuration info. As an example,
+      // we'll mix in some commonly used url parameters after
+      // the application configuration has been applied so that the url parameters overwrite any
+      // configured settings. It's up to the application developer to update the application to take
+      // advantage of these parameters.
+      // This demonstrates how to handle additional custom url parameters. For example
+      // if you want users to be able to specify lat/lon coordinates that define the map's center or
+      // specify an alternate basemap via a url parameter.
+      // If these options are also configurable these updates need to be added after any
+      // application default and configuration info has been applied. Currently these values
+      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
+      // supporting additional url parameters in your application.
+      this.results.urlParams = {
+        config: this._getUrlParamValues(this.settings.urlItems)
+      };
+      // config defaults <- standard url params
+      // we need the web scene, appid,and oauthappid to query for the data
+      this._mixinAllConfigs();
+      // Define the portalUrl and other default values like the proxy.
+      // The portalUrl defines where to search for the web map and application content. The
+      // default value is arcgis.com.
+      this._initializeApplication();
+      // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
+      return this._checkSignIn().always(function () {
+        // execute these tasks async
+        return promiseList({
+          // get application data
+          applicationItem: this._queryApplicationItem(),
+          // get org data
+          portal: this._queryPortal()
+        }).always(function () {
+          // mixin all new settings from org and app
+          this._mixinAllConfigs();
+          // let's set up a few things
+          this._completeApplication();
+          // then execute these async
+          return promiseList({
+            // webmap item
+            webmapItem: this._queryWebmapItem(),
+            // webscene item
+            websceneItem: this._queryWebsceneItem(),
+            // group information
+            groupInfo: this._queryGroupInfo(),
+            groupItems: this.queryGroupItems()
+          });
+        }.bind(this));
+      }.bind(this));
+    },
+
+    _queryWebmapItem: function () {
       var deferred;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -158,7 +255,7 @@ define([
       return deferred.promise;
     },
 
-    queryGroupInfo: function () {
+    _queryGroupInfo: function () {
       var deferred;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -185,46 +282,7 @@ define([
       return deferred.promise;
     },
 
-    queryGroupItems: function (options) {
-      var deferred;
-      // Get details about the specified web scene. If the web scene is not shared publicly users will
-      // be prompted to log-in by the Identity Manager.
-      deferred = new Deferred();
-      if (!this.settings.group.fetchItems || !this.config.group) {
-        deferred.resolve();
-      }
-      else {
-        this.results.group = {};
-        var defaultParams = {
-          query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
-          sortField: "modified",
-          sortOrder: "desc",
-          num: 9,
-          start: 1
-        };
-        var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams, options);
-        // place group ID
-        if (paramOptions.query) {
-          paramOptions.query = lang.replace(paramOptions.query, {
-            groupid: this.config.group
-          });
-        }
-        // group params
-        var params = new PortalQueryParams(paramOptions);
-        this.portal.queryItems(params).then(function (response) {
-          this.results.group.itemsData = response;
-          deferred.resolve(this.results.group);
-        }.bind(this), function (error) {
-          if (!error) {
-            error = new Error("Error retrieving group items.");
-          }
-          deferred.reject(error);
-        });
-      }
-      return deferred.promise;
-    },
-
-    queryWebsceneItem: function () {
+    _queryWebsceneItem: function () {
       var deferred, sceneItem;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
@@ -290,7 +348,7 @@ define([
       return deferred.promise;
     },
 
-    queryApplicationItem: function () {
+    _queryApplicationItem: function () {
       // Get the application configuration details using the application id. When the response contains
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
@@ -339,7 +397,7 @@ define([
       return deferred.promise;
     },
 
-    queryPortal: function () {
+    _queryPortal: function () {
       var deferred = new Deferred();
       if (!this.settings.portal.fetch) {
         deferred.resolve();
@@ -402,66 +460,6 @@ define([
         });
       }
       return deferred.promise;
-    },
-
-    //--------------------------------------------------------------------------
-    //
-    //  Private Methods
-    //
-    //--------------------------------------------------------------------------
-
-    // Get URL parameters and set application defaults needed to query arcgis.com for
-    // an application and to see if the app is running in Portal or an Org
-    _init: function () {
-      // Set the web scene and appid if they exist but ignore other url params.
-      // Additional url parameters may be defined by the application but they need to be mixed in
-      // to the config object after we retrieve the application configuration info. As an example,
-      // we'll mix in some commonly used url parameters after
-      // the application configuration has been applied so that the url parameters overwrite any
-      // configured settings. It's up to the application developer to update the application to take
-      // advantage of these parameters.
-      // This demonstrates how to handle additional custom url parameters. For example
-      // if you want users to be able to specify lat/lon coordinates that define the map's center or
-      // specify an alternate basemap via a url parameter.
-      // If these options are also configurable these updates need to be added after any
-      // application default and configuration info has been applied. Currently these values
-      // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
-      // supporting additional url parameters in your application.
-      this.results.urlParams = {
-        config: this._getUrlParamValues(this.settings.urlItems)
-      };
-      // config defaults <- standard url params
-      // we need the web scene, appid,and oauthappid to query for the data
-      this._mixinAllConfigs();
-      // Define the portalUrl and other default values like the proxy.
-      // The portalUrl defines where to search for the web map and application content. The
-      // default value is arcgis.com.
-      this._initializeApplication();
-      // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-      return this._checkSignIn().always(function () {
-        // execute these tasks async
-        return promiseList({
-          // get application data
-          applicationItem: this.queryApplicationItem(),
-          // get org data
-          portal: this.queryPortal()
-        }).always(function () {
-          // mixin all new settings from org and app
-          this._mixinAllConfigs();
-          // let's set up a few things
-          this._completeApplication();
-          // then execute these async
-          return promiseList({
-            // webmap item
-            webmapItem: this.queryWebmapItem(),
-            // webscene item
-            websceneItem: this.queryWebsceneItem(),
-            // group information
-            groupInfo: this.queryGroupInfo(),
-            groupItems: this.queryGroupItems()
-          });
-        }.bind(this));
-      }.bind(this));
     },
 
     _overwriteExtent: function (itemInfo, extent) {
@@ -605,13 +603,15 @@ define([
         else if (t === "object") {
           // remove tags from an object
           for (var item in data) {
-            var currentItem = data[item];
-            if (currentItem && typeof currentItem === "string") {
-              //strip html tags
-              currentItem = currentItem.replace(TAGS_RE, "");
+            if (data[item]) {
+              var currentItem = data[item];
+              if (typeof currentItem === "string") {
+                //strip html tags
+                currentItem = currentItem.replace(TAGS_RE, "");
+              }
+              // set item back on data
+              data[item] = currentItem;
             }
-            // set item back on data
-            data[item] = currentItem;
           }
         }
       }

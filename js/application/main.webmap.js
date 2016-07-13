@@ -9,14 +9,9 @@ define([
   "dojo/dom-attr",
   "dojo/dom-class",
 
-  "esri/Camera",
+  "esri/views/MapView",
 
-  "esri/geometry/Point",
-  "esri/geometry/SpatialReference",
-
-  "esri/views/SceneView",
-
-  "esri/WebScene",
+  "esri/WebMap",
 
   "dojo/domReady!"
 
@@ -24,10 +19,8 @@ define([
   i18n,
   declare, kernel,
   dom, domAttr, domClass,
-  Camera,
-  Point, SpatialReference,
-  SceneView,
-  WebScene
+  MapView,
+  WebMap
 ) {
 
   //--------------------------------------------------------------------------
@@ -70,7 +63,7 @@ define([
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
         this._setDirection();
-        this._createWebscene();
+        this._createWebmap();
       }
       else {
         var error = new Error("main:: Config is not defined");
@@ -113,94 +106,33 @@ define([
       domAttr.set(dirNode, "dir", direction);
     },
 
-    _createWebscene: function () {
-      var webscene, websceneItem = this.boilerplateResults.websceneItem;
-      if (websceneItem.data) {
-        webscene = new WebScene({
-          portalItem: websceneItem.data
+    // create a scene based on the input web scene id
+    _createWebmap: function () {
+      var webmap, webmapItem = this.boilerplateResults.webmapItem;
+      if (webmapItem.data) {
+        webmap = new WebMap({
+          portalItem: webmapItem.data
         });
       }
-      else if (websceneItem.json) {
-        webscene = WebScene.fromJSON(websceneItem.json.itemData);
-        webscene.portalItem = websceneItem.json.item;
+      else if (webmapItem.json) {
+        webmap = WebMap.fromJSON(webmapItem.json.itemData);
+        webmap.portalItem = webmapItem.json.item;
       }
-      if (webscene) {
+      if (webmap) {
         var viewProperties = {
-          map: webscene,
+          map: webmap,
           container: "viewDiv"
         };
-        if (this.config.components) {
-          viewProperties.ui = {
-            components: this.config.components.split(",")
-          };
+        if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
+          this.config.title = webmap.portalItem.title;
         }
-        var camera = this._setCameraViewpoint();
-        if (camera) {
-          viewProperties.camera = camera;
-        }
-        if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
-          this.config.title = webscene.portalItem.title;
-        }
-        var view = new SceneView(viewProperties);
+        var view = new MapView(viewProperties);
         view.then(function (response) {
           domClass.remove(document.body, CSS.loading);
           document.title = this.config.title;
         }.bind(this), this.reportError);
       }
-    },
-
-    _setCameraViewpoint: function () {
-      var viewpointParamString = this.config.viewpoint;
-      var viewpointArray = viewpointParamString && viewpointParamString.split(";");
-      if (!viewpointArray || !viewpointArray.length) {
-        return;
-      }
-      else {
-        var cameraString = "";
-        var tiltHeading = "";
-        for (var i = 0; i < viewpointArray.length; i++) {
-          if (viewpointArray[i].indexOf("cam:") !== -1) {
-            cameraString = viewpointArray[i];
-          }
-          else {
-            tiltHeading = viewpointArray[i];
-          }
-        }
-        if (cameraString !== "") {
-          cameraString = cameraString.substr(4, cameraString.length - 4);
-          var positionArray = cameraString.split(",");
-          if (positionArray.length >= 3) {
-            var x = 0,
-              y = 0,
-              z = 0;
-            x = parseFloat(positionArray[0]);
-            y = parseFloat(positionArray[1]);
-            z = parseFloat(positionArray[2]);
-            var sr = SpatialReference.WGS84;
-            if (positionArray.length === 4) {
-              sr = new SpatialReference(parseInt(positionArray[3], 10));
-            }
-            var cameraPosition = new Point(x, y, z, sr);
-            var heading = 0,
-              tilt = 0;
-            if (tiltHeading !== "") {
-              var tiltHeadingArray = tiltHeading.split(",");
-              if (tiltHeadingArray.length >= 0) {
-                heading = parseFloat(tiltHeadingArray[0]);
-                if (tiltHeadingArray.length > 1) {
-                  tilt = parseFloat(tiltHeadingArray[1]);
-                }
-              }
-            }
-            var camera = new Camera({
-              position: cameraPosition,
-              heading: heading,
-              tilt: tilt
-            });
-            return camera;
-          }
-        }
-      }
     }
+
   });
 });

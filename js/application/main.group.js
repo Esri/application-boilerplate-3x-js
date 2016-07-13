@@ -58,16 +58,12 @@ define([
     //
     //--------------------------------------------------------------------------
 
-
     init: function (boilerplate) {
-
-      console.log(boilerplate);
-
       if (boilerplate) {
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
         this._setDirection();
-        this._createWebmap();
+        this._createGroupGallery();
       }
       else {
         var error = new Error("main:: Config is not defined");
@@ -110,32 +106,31 @@ define([
       domAttr.set(dirNode, "dir", direction);
     },
 
-    // create a scene based on the input web scene id
-    _createWebmap: function () {
-      var webmap, webmapItem = this.boilerplateResults.webmapItem;
-      if (webmapItem.data) {
-        webmap = new WebMap({
-          portalItem: webmapItem.data
-        });
-      }
-      else if (webmapItem.json) {
-        webmap = WebMap.fromJSON(webmapItem.json.itemData);
-        webmap.portalItem = webmapItem.json.item;
-      }
-      if (webmap) {
-        var viewProperties = {
-          map: webmap,
-          container: "viewDiv"
-        };
-        if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
-          this.config.title = webmap.portalItem.title;
-        }
-        var view = new MapView(viewProperties);
-        view.then(function (response) {
-          domClass.remove(document.body, CSS.loading);
-          document.title = this.config.title;
-        }.bind(this), this.reportError);
-      }
+    _createGroupGallery: function () {
+
+      domClass.remove(document.body, CSS.loading);
+      document.title = this.config.title;
+
+      var groupInfoData = this.boilerplateResults.group.infoData;
+      var groupItemsData = this.boilerplateResults.group.itemsData;
+
+      var info = groupInfoData.results[0];
+      var items = groupItemsData.results;
+
+      var html = "";
+
+      html += "<h1>" + info.title + "</h1>";
+
+      html += "<ol>";
+
+      items.forEach(function (item) {
+        html += "<li>" + item.title + "</li>";
+      });
+
+      html += "</ol>";
+
+      dom.byId("viewDiv").innerHTML = html;
+
     }
 
   });
