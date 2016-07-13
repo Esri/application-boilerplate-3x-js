@@ -75,7 +75,7 @@ This is the configuration options for the application.
 |oauthappid|todo|String|""|
 |proxyUrl|Enter the url to the proxy if needed by the application. See the [Using the proxy page](http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) help topic for details.|String|""|
 |units|todo|String|todo|
-|helperServices|todo|Object|todo|
+|helperServices|todo|Object|See below|
 
 #### Sample
 
@@ -111,21 +111,21 @@ This is the configuration options for the application.
 
 |property|description|type|default|
 |---|---|---|---|
-|webscene|todo|Object|todo|
+|webscene|todo|Object|See below|
 |webscene.fetch|todo|Boolean|true|
 |webscene.useLocal|Use a local hosted web scene instead of a web scene on ArcGIS or portal|Boolean|false|
 |webscene.localFile|Webscene file to use for the local web scene|String|"boilerplate/demoWebscene.json"|
-|webmap|todo|Object|todo|
+|webmap|todo|Object|See below|
 |webmap.fetch|todo|Boolean|false|
 |webmap.useLocal|Use a local hosted web map instead of a web map on ArcGIS or portal|Boolean|false|
 |webmap.localFile|Webmap file to use for the local web map|String|"boilerplate/demoWebmap.json"|
-|group|todo|Object|todo|
+|group|todo|Object|See below|
 |group.fetchInfo|todo|Boolean|false|
 |group.fetchItems|todo|Boolean|false|
-|group.itemParams|todo|Object|todo|
-|portal|todo|Object|todo|
+|group.itemParams|todo|Object|See below|
+|portal|todo|Object|See below|
 |portal.fetch|When true the template will query arcgis.com for default settings for helper services, units etc. If you want to use custom settings for units or any of the helper services set queryForOrg to false then enter default values for any items you need using the helper services and units properties.|Boolean|true|
-|urlItems|this option demonstrates how to handle url parameters|String[]|todo|
+|urlItems|this option demonstrates how to handle url parameters|String[]|See below|
 |webTierSecurity|support sending credentials with AJAX requests to specific domains. This will allow editing of feature services secured with web-tier authentication|Boolean|false|
 |esriEnvironment|Most users will not need to modify this value. For esri hosting environments only. Will automatically create a "portalUrl" and "proxyUrl" for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the "portalUrl" in config.json instead of setting this to true.|   Boolean|false|
 
