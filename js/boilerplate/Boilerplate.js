@@ -1,7 +1,6 @@
 define([
 
   "dojo/text!config/config.json",
-  "dojo/text!./settings.json",
 
   "dojo/_base/kernel",
   "dojo/_base/lang",
@@ -21,7 +20,7 @@ define([
   "esri/portal/PortalQueryParams"
 
 ], function (
-  applicationConfig, boilerplateSettings,
+  applicationConfig,
   kernel, lang,
   Deferred,
   esriConfig,
@@ -74,12 +73,16 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function () {
-      // convert text to JSON
-      var boilerplateSettingsJSON = JSON.parse(boilerplateSettings);
+    constructor: function (boilerplateSettings) {
       var applicationConfigJSON = JSON.parse(applicationConfig);
       // mixin defaults with boilerplate configuration
-      this.settings = boilerplateSettingsJSON;
+      this.settings = lang.mixin({
+        "webscene": {},
+        "webmap": {},
+        "group": {},
+        "portal": {},
+        "urlItems": []
+      }, boilerplateSettings);
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
       this.config = applicationConfigJSON;
       // stores results from queries

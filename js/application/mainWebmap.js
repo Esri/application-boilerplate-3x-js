@@ -98,6 +98,13 @@ define([
     // create a scene based on the input web scene id
     _createWebmap: function () {
       var webmap, webmapItem = this.boilerplateResults.webmapItem;
+
+      if (!webmapItem) {
+        var error = new Error("main:: webmap data does not exist.");
+        this.reportError(error);
+        return;
+      }
+
       if (webmapItem.data) {
         webmap = new WebMap({
           portalItem: webmapItem.data

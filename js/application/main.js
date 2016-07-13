@@ -105,6 +105,11 @@ define([
 
     _createWebscene: function () {
       var webscene, websceneItem = this.boilerplateResults.websceneItem;
+      if (!websceneItem) {
+        var error = new Error("main:: webscene data does not exist.");
+        this.reportError(error);
+        return;
+      }
       if (websceneItem.data) {
         webscene = new WebScene({
           portalItem: websceneItem.data
@@ -139,6 +144,7 @@ define([
       }
     },
 
+    // todo: move this into some kind of helper class
     _setCameraViewpoint: function () {
       var viewpointParamString = this.config.viewpoint;
       var viewpointArray = viewpointParamString && viewpointParamString.split(";");

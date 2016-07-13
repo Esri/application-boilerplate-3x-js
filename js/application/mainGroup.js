@@ -97,11 +97,14 @@ define([
 
     _createGroupGallery: function () {
 
-      domClass.remove(document.body, CSS.loading);
-      document.title = this.config.title;
-
       var groupInfoData = this.boilerplateResults.group.infoData;
       var groupItemsData = this.boilerplateResults.group.itemsData;
+
+      if (!groupInfoData || !groupItemsData) {
+        var error = new Error("main:: group data does not exist.");
+        this.reportError(error);
+        return;
+      }
 
       var info = groupInfoData.results[0];
       var items = groupItemsData.results;
@@ -119,6 +122,9 @@ define([
       html += "</ol>";
 
       dom.byId("viewDiv").innerHTML = html;
+
+      domClass.remove(document.body, CSS.loading);
+      document.title = this.config.title;
 
     }
 
