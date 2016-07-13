@@ -41,8 +41,7 @@ The template consists of the following folders and files:
     - **dojoConfig.js:** Dojo configuration file for defining module packages.
     - **/application/:** Application specific logic. This is where you would put your application's classes and logic.
         - **main.js:** Creates a scene based on configuration info. You will write all your main application logic in here.
-        - **mainGroup.js:** Creates a group based on configuration info. This file is not used by default and serves as an example.
-        - **mainWebmap.js:** Creates a map based on configuration info. This file is not used by default and serves as an example.
+        - **/examples/:** Other `main.js` example js files. Demonstrates code using a group or webmap.
         - **/nls/:** The nls folder contains a file called resources.js that contains the language strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
     - **/boilerplate/:** These are boilerplate specific classes and logic.
         -  **Boilerplate.js:** Module that takes care of "application"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), and retrieving organization specific info if applicable. You will not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the config.json file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
