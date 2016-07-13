@@ -4,8 +4,16 @@ body {
   margin: 0;
   height: 100%;
   width: 100%;
+}
+
+body {
   font-family: Arial, Helvetica, sans-serif;
 }
+
+body:lang(ja) {
+  font-family: meiryo, Arial, Helvetica, sans-serif;
+}
+
 #mapDiv {
   padding: 0;
   margin: 0;
