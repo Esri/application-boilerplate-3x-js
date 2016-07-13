@@ -28,6 +28,10 @@ Review the following ArcGIS.com help topics for details on Templates:
 *   [Create apps from maps](http://doc.arcgis.com/en/arcgis-online/create-maps/create-app-templates.htm)
 *   [Add configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm)
 
+## Boilerplate API & Use
+
+todo
+
 ## Folders and Files
 
 The template consists of the following folders and files:
