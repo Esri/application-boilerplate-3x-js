@@ -109,20 +109,32 @@ define([
           }.bind(this));
         }
         // no web scene is set and we have organization's info
-        else if (!this.config.webmap && this.results.portal.data) {
+        else if (!this.config.webmap) {
           var defaultWebmap = {
-            "operationalLayers": [],
-            "baseMap": {
-              "baseMapLayers": [{
-                "id": "defaultBasemap",
-                "layerType": "ArcGISTiledMapServiceLayer",
-                "opacity": 1,
-                "visibility": true,
-                "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
-              }],
-              "title": "Topographic"
+            "item": {
+              "title": "Default Webmap",
+              "type": "Web Map",
+              "description": "A webmap with the default basemap and extent.",
+              "snippet": "A webmap with the default basemap and extent."
             },
-            "version": "2.1"
+            "itemData": {
+              "operationalLayers": [],
+              "baseMap": {
+                "baseMapLayers": [{
+                  "id": "defaultBasemap",
+                  "layerType": "ArcGISTiledMapServiceLayer",
+                  "opacity": 1,
+                  "visibility": true,
+                  "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
+                }],
+                "title": "Topographic"
+              },
+              "spatialReference": {
+                "wkid": 102100,
+                "latestWkid": 3857
+              },
+              "version": "2.1"
+            }
           };
           this.results.webmapItem.json = defaultWebmap;
           deferred.resolve(this.results.webmapItem);
@@ -233,10 +245,28 @@ define([
           }.bind(this));
         }
         // no web scene is set and we have organization's info
-        else if (!this.config.webscene && this.results.portal.data) {
+        else if (!this.config.webscene) {
           var defaultWebscene = {
-            "operationalLayers": [],
-            "version": "1.3"
+            "item": {
+              "title": "Default Webscene",
+              "type": "Web Scene",
+              "description": "A web scene with the default basemap and extent.",
+              "snippet": "A web scene with the default basemap and extent."
+            },
+            "itemData": {
+              "operationalLayers": [],
+              "version": "1.3",
+              "baseMap": {
+                "baseMapLayers": [{
+                  "id": "defaultBasemap",
+                  "layerType": "ArcGISTiledMapServiceLayer",
+                  "opacity": 1,
+                  "visibility": true,
+                  "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
+                }],
+                "title": "Topographic"
+              }
+            }
           };
           this.results.websceneItem.json = defaultWebscene;
           deferred.resolve(this.results.websceneItem);

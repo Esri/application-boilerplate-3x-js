@@ -119,7 +119,8 @@ define([
         });
       }
       else if (webmapItem.json) {
-        webmap = WebMap.fromJSON(webmapItem.json);
+        webmap = WebMap.fromJSON(webmapItem.json.itemData);
+        webmap.portalItem = webmapItem.json.item;
       }
       if (webmap) {
         var viewProperties = {

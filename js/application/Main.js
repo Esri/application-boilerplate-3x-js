@@ -125,7 +125,8 @@ define([
         });
       }
       else if (websceneItem.json) {
-        webscene = WebScene.fromJSON(websceneItem.json);
+        webscene = WebScene.fromJSON(websceneItem.json.itemData);
+        webscene.portalItem = websceneItem.json.item;
       }
       if (webscene) {
         var viewProperties = {
