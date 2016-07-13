@@ -30,6 +30,8 @@ define([
   Portal, PortalItem, PortalQueryParams
 ) {
 
+  // todo: comment all code
+
   //--------------------------------------------------------------------------
   //
   //  Static Variables
@@ -558,8 +560,8 @@ define([
         if (appLocation !== -1) {
           // hosted or portal
           instance = location.pathname.substr(0, appLocation); //get the portal instance name
-          this.config.portalUrl = location.protocol + "//" + location.host + instance;
-          this.config.proxyUrl = location.protocol + "//" + location.host + instance + ESRI_PROXY_PATH;
+          this.config.portalUrl = "https://" + location.host + instance;
+          this.config.proxyUrl = "https://" + location.host + instance + ESRI_PROXY_PATH;
         }
       }
       esriConfig.portalUrl = this.config.portalUrl;
