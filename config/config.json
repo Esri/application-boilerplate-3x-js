@@ -5,9 +5,9 @@
   "webmap": "",
   "title": "",
   "portalUrl": "https://www.arcgis.com",
-  "oauthappid": null,
+  "oauthappid": "",
   "proxyUrl": "",
-  "units": null,
+  "units": "",
   "helperServices": {
     "geometry": {
       "url": null
