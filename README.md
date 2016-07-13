@@ -1,8 +1,9 @@
-# webscene-application-boilerplate-js
+# Application Boilerplate: An ArcGIS API for JavaScript 4 Starter Application
 
 The Application Boilerplate is a starter application for building applications with the ArcGIS API for JavaScript version 4.x.
 
 ## Features
+
 This bare-bones app includes all the code you need to build an ArcGIS Online configurable application. It will save you time when:
 
 *	Making an ArcGIS Online compatible application.
@@ -14,7 +15,7 @@ This bare-bones app includes all the code you need to build an ArcGIS Online con
 
 [View it live](http://esri.github.io/application-boilerplate-js/)
 
-![App](https://raw.github.com/Esri/application-boilerplate-js/4master/images/thumb.png)
+[![App](https://raw.github.com/Esri/application-boilerplate-js/4master/images/thumb.png)](http://esri.github.io/application-boilerplate-js/)
 
 ## Getting Started
 
@@ -29,53 +30,37 @@ Review the following ArcGIS.com help topics for details on Templates:
 
 The template consists of the following folders and files:
 
-**/config/:** A folder for your application's configuration files.
+- **/config/:** A folder for your application's configuration files.
+    - **config.json:** Define the default configuration information for the application. You can use this file to specify things like a default web map id, a proxy url, default services, default color theme and other application-specific settings.
+- **/css/:** Contains the CSS files for the application.
+    - **main.css** This file contains the map styles that set the margin, padding and initial height (100%).
+- **/images/**: Contains images used by the application and this readme.
+- **/js/**: Contains JavaScript files
+    - **dojoConfig.js:** Dojo configuration file for defining module packages.
+    - **/application/:** Application specific logic. This is where you would put your application's classes and logic.
+        - **main.js:** Creates a scene based on configuration info. You will write all your main application logic in here.
+        - **mainGroup.js:** Creates a group based on configuration info. This file is not used by default and serves as an example.
+        - **mainWebmap.js:** Creates a map based on configuration info. This file is not used by default and serves as an example.
+        - **/nls/:** The nls folder contains a file called resources.js that contains the language strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
+    - **/boilerplate/:** These are boilerplate specific classes and logic.
+        -  **Boilerplate.js:** Module that takes care of "application"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), and retrieving organization specific info if applicable. You will not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the config.json file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
+            - application specific properties
+            - appid
+            -  webmap
+            - helperServices: geometry, print, locator service urls
+            - proxy  url
+        - **demoWebmap.json:** An example local webmap JSON file. Can be turned on in the boilerplate settings.
+        - **demoWebscene.json:** An example local webscene JSON file. Can be turned on in the boilerplate settings.
+        - **settings.json:** Customize how the boilerplate operates by editing this file.
+- **/resources/:** Contains helpful files for your application.
+    - *resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
+- **index.html**: The default html file for the application.
 
-*   **config.json:** Define the default configuration information for the application. You can use this file to specify things like a default web map id, a proxy url, default services, default color theme and other application-specific settings.
+## Settings & Configuration
 
-**/css/:** Contains the CSS files for the application.
+### Configuration Options (config.json)
 
-*	**main.css** This file contains the map styles that set the margin, padding and initial height (100%).
-
-**/images/**: Contains images used by the application.
-
-**/js/**: Contains JavaScript files:
-
-*   **dojoConfig.js:** todo
-
-*   **/application/:** todo
-
-*     **/nls/:** The nls folder contains a file called resources.js that contains the language strings used by the application. If the application needs to be supported by [multiple locales](https://developers.arcgis.com/en/javascript/jshelp/localization.html) you can create a folder for each locale and inside that folder add a resources.js file with the translated strings. See the resources.js file in the nls/fr folder for an example of this in French.
-
-*     **main.js:** Creates the map based on configuration info. You will write all your main application logic in here.
-
-*     **mainGroup.js:** todo
-
-*     **mainWebmap.js:** todo
-
-*   **/boilerplate/:** todo
-
-*     **Boilerplate.js:** Module that takes care of "application"-specific work like retrieving the application configuration settings by appid, getting the url parameters (web map id and appid), and retrieving organization specific info if applicable. You will not need to modify this file. Also sets the [proxy](https://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) and geometry service if the url's have been provided in the config.json file or are available from the org. Once executed you'll have access to an object that contains properties that give you access to the following:
-    *   application specific properties
-    *   appid
-    *   webmap
-    *   helperServices: geometry, print, locator service urls
-    *   proxy  url
-
-*     **demoWebmap.json:** todo
-
-*     **demoWebscene.json:** todo
-
-*     **settings.json:** todo
-
-**index.html**: The default html file for the application.
-
-**/resources/**: Contains helpful files for your application.
-*   **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
-
-## Configs
-
-### Config
+This is the configuration options for the application.
 
 ```js
 {
@@ -109,7 +94,9 @@ The template consists of the following folders and files:
 
 ```
 
-### Boilerplate Config
+### Boilerplate Settings (settings.json)
+
+These are settings options for the boilerplate.
 
 ```js
 {
