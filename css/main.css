@@ -39,7 +39,6 @@ body {
 
 .app-bp--error .app-bp-loading-message {
   background-position: top center;
-  background-image: url(../images/error.png);
   background-repeat: no-repeat;
   padding-top: 60px;
   width: 100%;

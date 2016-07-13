@@ -38,7 +38,8 @@ define([
 
   var CSS = {
     loading: "app-bp--loading",
-    error: "app-bp--error"
+    error: "app-bp--error",
+    errorIcon: "esri-icon-notice-round"
   };
 
   var RTL_LANGS = ["ar", "he"];
@@ -66,7 +67,7 @@ define([
     //--------------------------------------------------------------------------
 
     init: function (boilerplate) {
-      if (boilerplate) {
+      if (boilerplate && false) {
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
         this._setDirection();
@@ -89,7 +90,7 @@ define([
       // set message
       var node = dom.byId("loading_message");
       if (node) {
-        node.innerHTML = i18n.scene.error + ": " + error.message;
+        node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + i18n.scene.error + ": " + error.message + "</p>";
       }
       return error;
     },

@@ -82,7 +82,7 @@ define([
       // set message
       var node = dom.byId("loading_message");
       if (node) {
-        node.innerHTML = i18n.scene.error + ": " + error.message;
+        node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + i18n.group.error + ": " + error.message + "</p>";
       }
       return error;
     },
