@@ -17,7 +17,8 @@ define([
   "esri/identity/OAuthInfo",
 
   "esri/portal/Portal",
-  "esri/portal/PortalItem"
+  "esri/portal/PortalItem",
+  "esri/portal/PortalQueryParams"
 
 ], function (
   applicationConfig, boilerplateSettings,
@@ -26,7 +27,7 @@ define([
   esriConfig,
   Promise, promiseList,
   IdentityManager, OAuthInfo,
-  Portal, PortalItem
+  Portal, PortalItem, PortalQueryParams
 ) {
 
   //--------------------------------------------------------------------------
@@ -145,89 +146,70 @@ define([
       return deferred.promise;
     },
 
-    // todo: accept arguments
     queryGroupInfo: function () {
-      // todo
-
-      /*
-      var deferred = new Deferred(),
-        error, params;
-      // If we want to get the group info
-      if (this.templateConfig.group.fetchInfo) {
-        if (this.config.group) {
-          // group params
-          params = {
-            q: "id:\"" + this.config.group + "\"",
-            f: "json"
-          };
-          this.portal.queryGroups(params).then(lang.hitch(this, function (response) {
-            var cfg = {};
-            cfg.groupInfo = response;
-            this.groupInfoConfig = cfg;
-            deferred.resolve(cfg);
-          }), function (error) {
-            deferred.reject(error);
-          });
-        } else {
-          error = new Error("Group undefined.");
-          deferred.reject(error);
-        }
-      } else {
-        // just resolve
+      var deferred;
+      // Get details about the specified web scene. If the web scene is not shared publicly users will
+      // be prompted to log-in by the Identity Manager.
+      deferred = new Deferred();
+      if (!this.settings.group.fetchInfo || !this.config.group) {
         deferred.resolve();
       }
+      else {
+        this.results.group = {};
+        // group params
+        var params = new PortalQueryParams({
+          query: "id:\"" + this.config.group + "\""
+        });
+        this.portal.queryGroups(params).then(function (response) {
+          this.results.group.infoData = response;
+          deferred.resolve(this.results.group);
+        }.bind(this), function (error) {
+          if (!error) {
+            error = new Error("Error retrieving group info.");
+          }
+          deferred.reject(error);
+        });
+      }
       return deferred.promise;
-      */
-
     },
 
-    queryGroupItems: function () {
-      // todo
-
-      /*
-
-      var deferred = new Deferred(),
-        error, defaultParams, params;
-      // If we want to get the group info
-      if (this.templateConfig.group.fetchItems) {
-        if (this.config.group) {
-          // group params
-          defaultParams = {
-            q: "group:\"${groupid}\" AND -type:\"Code Attachment\"",
-            sortField: "modified",
-            sortOrder: "desc",
-            num: 9,
-            start: 0,
-            f: "json"
-          };
-          // mixin params
-          params = lang.mixin(defaultParams, this.templateConfig.group.itemParams, options);
-          // place group ID
-          if (params.q) {
-            params.q = string.substitute(params.q, {
-              groupid: this.config.group
-            });
-          }
-          // get items from the group
-          this.portal.queryItems(params).then(lang.hitch(this, function (response) {
-            var cfg = {};
-            cfg.groupItems = response;
-            this.groupItemConfig = cfg;
-            deferred.resolve(cfg);
-          }), function (error) {
-            deferred.reject(error);
-          });
-        } else {
-          error = new Error("Group undefined.");
-          deferred.reject(error);
-        }
-      } else {
-        // just resolve
+    queryGroupItems: function (options) {
+      var deferred;
+      // Get details about the specified web scene. If the web scene is not shared publicly users will
+      // be prompted to log-in by the Identity Manager.
+      deferred = new Deferred();
+      if (!this.settings.group.fetchItems || !this.config.group) {
         deferred.resolve();
       }
+      else {
+        this.results.group = {};
+        var defaultParams = {
+          query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+          sortField: "modified",
+          sortOrder: "desc",
+          num: 9,
+          start: 1
+        };
+        var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams, options);
+        // place group ID
+        if (paramOptions.query) {
+          paramOptions.query = lang.replace(paramOptions.query, {
+            groupid: this.config.group
+          });
+        }
+        // group params
+        var params = new PortalQueryParams(paramOptions);
+        this.portal.queryItems(params).then(function (response) {
+          this.results.group.itemsData = response;
+          deferred.resolve(this.results.group);
+        }.bind(this), function (error) {
+          if (!error) {
+            error = new Error("Error retrieving group items.");
+          }
+          deferred.reject(error);
+        });
+      }
       return deferred.promise;
-
-      */
     },
 
     queryWebsceneItem: function () {
@@ -443,7 +425,10 @@ define([
             // webmap item
             webmapItem: this.queryWebmapItem(),
             // webscene item
-            websceneItem: this.queryWebsceneItem()
+            websceneItem: this.queryWebsceneItem(),
+            // group information
+            groupInfo: this.queryGroupInfo(),
+            groupItems: this.queryGroupItems()
           });
         }.bind(this));
       }.bind(this));

@@ -5,7 +5,7 @@
     "localFile": "boilerplate/demoWebscene.json"
   },
   "webmap": {
-    "fetch": true,
+    "fetch": false,
     "useLocal": false,
     "localFile": "boilerplate/demoWebmap.json"
   },
@@ -13,7 +13,7 @@
     "fetchInfo": false,
     "fetchItems": false,
     "itemParams": {
-      "q": "group:\"${groupid}\" AND -type:\"Code Attachment\"",
+      "query": "group:\"{groupid}\" AND -type:\"Code Attachment\"",
       "sortField": "modified",
       "sortOrder": "desc",
       "num": 9,
