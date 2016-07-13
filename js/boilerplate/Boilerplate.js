@@ -44,6 +44,9 @@ define([
   var ESRI_PROXY_PATH = "/sharing/proxy";
   var ESRI_APPS_PATH = "/apps/";
   var ESRI_HOME_PATH = "/home/";
+  var RTL_LANGS = ["ar", "he"];
+  var LTR = "ltr";
+  var RTL = "rtl";
 
   return Promise.createSubclass({
 
@@ -60,6 +63,12 @@ define([
     results: null,
 
     portal: null,
+
+    direction: null,
+
+    units: null,
+
+    userPrivileges: null,
 
     //--------------------------------------------------------------------------
     //
@@ -160,6 +169,7 @@ define([
       // The portalUrl defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
+      this._setDirection();
       // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
       return this._checkSignIn().always(function () {
         // execute these tasks async
@@ -428,29 +438,25 @@ define([
               }
             }
           }
-          var cfg = {};
-          // get units defined by the org or the org user
-          cfg.units = "metric";
+          var units = "metric";
           if (response.user && response.user.units) { //user defined units
-            cfg.units = response.user.units;
+            units = response.user.units;
           }
           else if (response.units) { //org level units
-            cfg.units = response.units;
+            units = response.units;
           }
           else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
             // use feet/miles only for the US and if nothing is set for a user
-            cfg.units = "english";
+            units = "english";
           }
-          // Get the helper services (routing, print, locator etc)
-          cfg.helperServices = response.helperServices;
+          this.units = units;
           // are any custom roles defined in the organization?
           if (response.user && this._isDefined(response.user.roleId)) {
             if (response.user.privileges) {
-              cfg.userPrivileges = response.user.privileges;
+              this.userPrivileges = response.user.privileges;
             }
           }
           this.results.portal = {
-            config: cfg,
             data: response
           };
           deferred.resolve(this.results.portal);
@@ -486,19 +492,33 @@ define([
         this._overwriteExtent(this.results.webmapItem.data, this.config.application_extent);
       }
       // Set the geometry helper service to be the app default.
-      if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
-        esriConfig.geometryServiceUrl = this.config.helperServices.geometry.url;
+      var configGeometryUrl = this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url;
+      var portalGeometryUrl = this.portal && this.portal.helperServices.geometry && this.config.helperServices.geometry.url;
+      var geometryUrl = portalGeometryUrl || configGeometryUrl;
+      if (geometryUrl) {
+        esriConfig.geometryServiceUrl = geometryUrl;
       }
+    },
+
+    _setDirection: function () {
+      var direction = LTR;
+      RTL_LANGS.some(function (l) {
+        if (kernel.locale.indexOf(l) !== -1) {
+          direction = RTL;
+          return true;
+        }
+        return false;
+      });
+      this.direction = direction;
     },
 
     _mixinAllConfigs: function () {
       /*
       mix in all the settings we got!
-      config <- portal settings <- application settings <- url params
+      config <- application settings <- url params
       */
       lang.mixin(
         this.config,
-        this.results.portal ? this.results.portal.config : null,
         this.results.applicationItem ? this.results.applicationItem.config : null,
         this.results.urlParams ? this.results.urlParams.config : null
       );
