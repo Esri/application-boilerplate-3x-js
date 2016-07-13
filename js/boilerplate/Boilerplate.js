@@ -30,8 +30,6 @@ define([
   Portal, PortalItem, PortalQueryParams
 ) {
 
-  // todo: comment all code
-
   //--------------------------------------------------------------------------
   //
   //  Static Variables
@@ -169,6 +167,7 @@ define([
       // The portalUrl defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
+      // determine application language direction
       this._setDirection();
       // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
       return this._checkSignIn().always(function () {
@@ -191,6 +190,7 @@ define([
             websceneItem: this._queryWebsceneItem(),
             // group information
             groupInfo: this._queryGroupInfo(),
+            // items within a specific group
             groupItems: this.queryGroupItems()
           });
         }.bind(this));
@@ -438,6 +438,7 @@ define([
               }
             }
           }
+          // set boilerplate units
           var units = "metric";
           if (response.user && response.user.units) { //user defined units
             units = response.user.units;
@@ -456,6 +457,7 @@ define([
               this.userPrivileges = response.user.privileges;
             }
           }
+          // set data for portal on boilerplate
           this.results.portal = {
             data: response
           };
@@ -487,19 +489,28 @@ define([
     _completeApplication: function () {
       // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
       // existing extents with the application item extent when set.
-      if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0) {
-        this._overwriteExtent(this.results.websceneItem.data, this.config.application_extent);
-        this._overwriteExtent(this.results.webmapItem.data, this.config.application_extent);
+      var applicationExtent = this.config.application_extent;
+      var results = this.results;
+      if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
+        this._overwriteExtent(results.websceneItem.data, applicationExtent);
+        this._overwriteExtent(results.webmapItem.data, applicationExtent);
       }
-      // Set the geometry helper service to be the app default.
-      var configGeometryUrl = this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url;
-      var portalGeometryUrl = this.portal && this.portal.helperServices.geometry && this.config.helperServices.geometry.url;
+      // get helper services
+      var configHelperServices = this.config.helperServices;
+      var portalHelperServices = this.portal && this.portal.helperServices;
+      // see if config has a geometry service
+      var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
+      // seee if portal has a geometry service
+      var portalGeometryUrl = portalHelperServices && portalHelperServices.geometry && portalHelperServices.geometry.url;
+      // use the portal geometry service or config geometry service
       var geometryUrl = portalGeometryUrl || configGeometryUrl;
       if (geometryUrl) {
+        // set the esri config to use the geometry service
         esriConfig.geometryServiceUrl = geometryUrl;
       }
     },
 
+    // determine appropriate language direction for the application
     _setDirection: function () {
       var direction = LTR;
       RTL_LANGS.some(function (l) {
@@ -591,6 +602,7 @@ define([
       }
     },
 
+    // check if user is signed into a portal
     _checkSignIn: function () {
       var deferred, signedIn, oAuthInfo;
       deferred = new Deferred();
@@ -610,10 +622,12 @@ define([
       return deferred.promise;
     },
 
+    // helper function for determining if a value is defined
     _isDefined: function (value) {
       return (value !== undefined) && (value !== null);
     },
 
+    // remove HTML tags from values
     _stripTags: function (data) {
       if (data) {
         // get type of data
@@ -640,6 +654,7 @@ define([
       return data;
     },
 
+    // capture all url params to an object with values
     _urlToObject: function () {
       var query = (window.location.search || "?").substr(1),
         map = {};
