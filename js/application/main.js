@@ -49,8 +49,6 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    boilerplate: null,
-
     boilerplateResults: null,
 
     config: null,
