@@ -69,16 +69,16 @@ This is the configuration options for the application.
 
 |property|description|type|default|
 |---|---|---|---|
-|appid|todo|String|""|
-|group|todo|String|""|
-|webscene|todo|String|"19faa71a3bf6468cae35b4fce9393a7d"|
-|webmap|todo|String|""|
-|title|todo|String|""|
-|portalUrl|todo|String|"https://www.arcgis.com"|
-|oauthappid|todo|String|""|
+|appid|Application ID for querying application configuration|String|""|
+|group|Group ID for querying a portal group|String|""|
+|webscene|Webscene ID for querying a webscene|String|"19faa71a3bf6468cae35b4fce9393a7d"|
+|webmap|Webmap ID for querying a webmap|String|""|
+|title|Title of the application|String|""|
+|portalUrl|URL to the ArcGIS Portal|String|"https://www.arcgis.com"|
+|oauthappid|oAuth authentication ID|String|""|
 |proxyUrl|Enter the url to the proxy if needed by the application. See the [Using the proxy page](http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) help topic for details.|String|""|
-|units|todo|String|todo|
-|helperServices|todo|Object|See below|
+|units|Application measurement units|String|""|
+|helperServices|Object containing URLs to various helper services|Object|See below|
 
 #### Sample
 

@@ -516,12 +516,10 @@ define([
     // determine appropriate language direction for the application
     _setDirection: function () {
       var direction = LTR;
-      RTL_LANGS.some(function (l) {
+      RTL_LANGS.forEach(function (l) {
         if (kernel.locale.indexOf(l) !== -1) {
           direction = RTL;
-          return true;
         }
-        return false;
       });
       this.direction = direction;
     },
