@@ -1,5 +1,6 @@
+/* global dojoConfig:true */
 var package_path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/"));
-var dojoConfig = {
+dojoConfig = {
   async: true,
   packages: [{
     name: "application",
@@ -9,7 +10,7 @@ var dojoConfig = {
     name: "boilerplate",
     location: package_path + "/js/boilerplate",
     main: "Boilerplate"
-  },{
+  }, {
     name: "config",
     location: package_path + "/config"
   }]

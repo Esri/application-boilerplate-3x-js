@@ -14,14 +14,14 @@ body:lang(ja) {
   font-family: meiryo, Arial, Helvetica, sans-serif;
 }
 
-.app-bp-view {
+.boilerplate-view {
   padding: 0;
   margin: 0;
   width: 100%;
   height: 100%;
 }
 
-.app-bp-loading-indicator {
+.boilerplate-loading-indicator {
   display: none;
   height: 100%;
   width: 100%;
@@ -30,21 +30,18 @@ body:lang(ja) {
   top: 0;
   left: 0;
   overflow: hidden;
-  background: #fff;
+  background-color: #fff;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url(../images/loading.gif);
 }
 
-.app-bp--loading .app-bp-loading-indicator,
-.app-bp--error .app-bp-loading-indicator {
+.boilerplate--loading .boilerplate-loading-indicator,
+.boilerplate--error .boilerplate-loading-indicator {
   display: block;
 }
 
-.app-bp--loading .app-bp-loading-indicator {
-  background-position: center center;
-  background-image: url(../images/loading.gif);
-  background-repeat: no-repeat;
-}
-
-.app-bp--error .app-bp-loading-message {
+.boilerplate-loading-message {
   background-position: top center;
   background-repeat: no-repeat;
   padding-top: 60px;

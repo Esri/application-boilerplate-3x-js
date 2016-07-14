@@ -29,8 +29,8 @@ define([
   //--------------------------------------------------------------------------
 
   var CSS = {
-    loading: "app-bp--loading",
-    error: "app-bp--error"
+    loading: "boilerplate--loading",
+    error: "boilerplate--error"
   };
 
   return declare(null, {
