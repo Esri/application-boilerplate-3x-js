@@ -174,9 +174,60 @@ The template consists of the following folders and files:
     - **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
 - **index.html**: The default html file for the application.
 
-# Boilerplate API & Use
+# API (Boilerplate.js)
 
-todo
+`new BoilerPlate(options)`
+
+
+## Constructor Options
+
+See [boilerplate settings](#boilerplate-settings-settingsjson) for more information.
+
+|property|type
+|---|---|---|
+|webscene|Object|
+|webmap|Object|
+|group|Object|
+|portal|Object|
+|urlItems|String[]|
+|webTierSecurity|Boolean|
+|esriEnvironment|Boolean|
+
+## Properties
+
+|property|description|type|readonly
+|---|---|---|---|
+|settings|Boilerplate settings|Object|true|
+|config|Config created|Object|true|
+|results|Boilerplate query results|Object|true|
+|portal|`Portal` created by Boilerplate|`esri/portal/Portal`|true|
+|direction|Language direction|String|true|
+|units|Appropriate units of measurement|String|true|
+|userPrivileges|Boilerplate user privileges|Object|true|
+
+## Events
+
+None
+
+## Methods
+
+### queryGroupItems
+
+Query a group by paraemters. `Boilerplate.queryGroupItems(options)`.
+
+#### Options
+
+```js
+{
+  "query": "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+  "sortField": "modified",
+  "sortOrder": "desc",
+  "num": 9,
+  "start": 0
+}
+```
+
+# Setup
 
 ## Instructions
 
