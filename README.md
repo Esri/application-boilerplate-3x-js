@@ -30,9 +30,9 @@ Review the following ArcGIS.com help topics for details on Templates:
 
 # Settings & Configuration
 
-## Configuration Options (config.json)
+## Configuration Options
 
-This is the configuration options for the application.
+This is the configuration options for the application. `config.json`
 
 |property|description|type|default|
 |---|---|---|---|
@@ -77,7 +77,9 @@ This is the configuration options for the application.
 }
 ```
 
-## Boilerplate Settings (settings.json)
+## Boilerplate Settings
+
+These are the configuration options for the Boilerplate. `settings.json`
 
 |property|description|type|default|
 |---|---|---|---|
@@ -174,14 +176,17 @@ The template consists of the following folders and files:
     - **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
 - **index.html**: The default html file for the application.
 
-# API (Boilerplate.js)
+# API
+
+This is the API for the boilerplate class. `Boilerplate.js`
+
+## Constructor
 
 `new BoilerPlate(options)`
 
-
 ## Constructor Options
 
-See [boilerplate settings](#boilerplate-settings-settingsjson) for more information.
+See [boilerplate settings](#boilerplate-settings) for more information.
 
 |property|type
 |---|---|---|
