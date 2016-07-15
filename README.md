@@ -1,8 +1,20 @@
 # Application Boilerplate
 
-An ArcGIS API for JavaScript 4 Starter Application.
+A starter Application for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.x. We hope it helps :)
 
-This starter application is for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.x. We hope it helps :)
+## Purpose
+
+The purpose of the `Boilerplate.js` is to handle querying standard data used for configurable applications on ArcGIS Online.
+
+This includes:
+
+- Portal information
+- User information
+- Item data (webscene, webmap, group)
+- Configured application data
+- URL parameters
+
+The boilerplate will handle fetching this information, store it, and perform setup when necessary.
 
 ## Features
 
@@ -18,15 +30,6 @@ This bare-bones app includes all the code you need to build an ArcGIS Online con
 [View it live](http://esri.github.io/application-boilerplate-js/)
 
 [![App](https://raw.github.com/Esri/application-boilerplate-js/4master/images/thumb.png)](http://esri.github.io/application-boilerplate-js/)
-
-## Getting Started
-
-Review the following ArcGIS.com help topics for details on Templates:
-
-*	[Writing your first application](https://developers.arcgis.com/en/javascript/jstutorials/intro_firstmap_amd.html)
-*   [Make your first app](http://doc.arcgis.com/en/arcgis-online/create-maps/make-your-first-app.htm)
-*   [Create apps from maps](http://doc.arcgis.com/en/arcgis-online/create-maps/create-app-templates.htm)
-*   [Add configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm)
 
 # Settings & Configuration
 
@@ -233,6 +236,15 @@ Query a group by paraemters. `Boilerplate.queryGroupItems(options)`.
 ```
 
 # Setup
+
+## Getting Started
+
+Review the following ArcGIS.com help topics for details on Templates:
+
+*	[Writing your first application](https://developers.arcgis.com/en/javascript/jstutorials/intro_firstmap_amd.html)
+*   [Make your first app](http://doc.arcgis.com/en/arcgis-online/create-maps/make-your-first-app.htm)
+*   [Create apps from maps](http://doc.arcgis.com/en/arcgis-online/create-maps/create-app-templates.htm)
+*   [Add configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm)
 
 ## Instructions
 
