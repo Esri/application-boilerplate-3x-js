@@ -1,17 +1,17 @@
 # Application Boilerplate
 
-A starter Application for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.x. We hope it helps :)
+A starter Application for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.
+
+We hope it helps :)
 
 ## Purpose
 
-The purpose of the `Boilerplate.js` is to handle querying standard data used for configurable applications on ArcGIS Online.
-
-This includes:
+The purpose of the `Boilerplate.js` is to handle fetching and managing ArcGIS Online information used in configurable applications such as:
 
 - Portal information
 - User information
-- Item data (webscene, webmap, group)
-- Configured application data
+- Item data (webscene, webmap, group information, group items)
+- Configured application information
 - URL parameters
 
 The boilerplate will handle fetching this information, store it, and perform setup when necessary.
