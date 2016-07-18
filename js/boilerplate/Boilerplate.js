@@ -217,7 +217,7 @@ define([
 
     _queryWebmapItem: function () {
       var deferred;
-      // Get details about the specified web scene. If the web scene is not shared publicly users will
+      // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.webmap.fetch) {
@@ -225,9 +225,9 @@ define([
       }
       else {
         this.results.webmapItem = {};
-        // Use local web scene instead of portal web scene
+        // Use local web map instead of portal web map
         if (this.settings.webmap.useLocal) {
-          // get web scene js file
+          // get web map js file
           require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
             // return web scene json
             var json = JSON.parse(webmapText);
@@ -235,7 +235,7 @@ define([
             deferred.resolve(this.results.webmapItem);
           }.bind(this));
         }
-        // no web scene is set and we have organization's info
+        // no web map is set and we have organization's info
         else if (!this.config.webmap) {
           var defaultWebmap = {
             "item": {
@@ -287,7 +287,7 @@ define([
 
     _queryGroupInfo: function () {
       var deferred;
-      // Get details about the specified web scene. If the web scene is not shared publicly users will
+      // Get details about the specified group. If the group is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.group.fetchInfo || !this.config.group) {
