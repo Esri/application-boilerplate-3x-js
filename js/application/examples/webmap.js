@@ -73,6 +73,7 @@ define([
         this.direction = boilerplate.direction;
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
+        document.documentElement.lang = boilerplate.locale;
         this._setDirection();
         this._createWebmap();
       }

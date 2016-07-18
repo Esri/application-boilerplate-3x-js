@@ -78,6 +78,8 @@ define([
 
     direction: null,
 
+    locale: null,
+
     units: null,
 
     userPrivileges: null,
@@ -185,8 +187,8 @@ define([
       // The portalUrl defines where to search for the web map and application content. The
       // default value is arcgis.com.
       this._initializeApplication();
-      // determine application language direction
-      this._setDirection();
+      // determine boilerplate language properties
+      this._setLangProps();
       // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
       return this._checkSignIn().always(function () {
         // execute these tasks async
@@ -529,14 +531,17 @@ define([
     },
 
     // determine appropriate language direction for the application
-    _setDirection: function () {
+    _setLangProps: function () {
       var direction = LTR;
       RTL_LANGS.forEach(function (l) {
         if (kernel.locale.indexOf(l) !== -1) {
           direction = RTL;
         }
       });
+      // set boilerplate language direction
       this.direction = direction;
+      // set boilerplate langauge locale
+      this.locale = kernel.locale;
     },
 
     _mixinAllConfigs: function () {
