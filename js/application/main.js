@@ -15,6 +15,8 @@
  */
 define([
 
+  "boilerplate/UrlHelper",
+
   "dojo/i18n!./nls/resources",
 
   "dojo/_base/declare",
@@ -23,11 +25,6 @@ define([
   "dojo/dom-attr",
   "dojo/dom-class",
 
-  "esri/Camera",
-
-  "esri/geometry/Point",
-  "esri/geometry/SpatialReference",
-
   "esri/views/SceneView",
 
   "esri/WebScene",
@@ -35,11 +32,10 @@ define([
   "dojo/domReady!"
 
 ], function (
+  UrlHelper,
   i18n,
   declare,
   dom, domAttr, domClass,
-  Camera,
-  Point, SpatialReference,
   SceneView,
   WebScene
 ) {
@@ -56,7 +52,7 @@ define([
     errorIcon: "esri-icon-notice-round"
   };
 
-  return declare(null, {
+  return declare([UrlHelper], {
 
     //--------------------------------------------------------------------------
     //
@@ -145,7 +141,7 @@ define([
             components: this.config.components.split(",")
           };
         }
-        var camera = this._setCameraViewpoint();
+        var camera = this.cameraFromViewpoint(this.config.viewpoint);
         if (camera) {
           viewProperties.camera = camera;
         }
@@ -158,61 +154,7 @@ define([
           document.title = this.config.title;
         }.bind(this), this.reportError);
       }
-    },
-
-    // todo: move this into some kind of helper class
-    _setCameraViewpoint: function () {
-      var viewpointParamString = this.config.viewpoint;
-      var viewpointArray = viewpointParamString && viewpointParamString.split(";");
-      if (!viewpointArray || !viewpointArray.length) {
-        return;
-      }
-      else {
-        var cameraString = "";
-        var tiltHeading = "";
-        for (var i = 0; i < viewpointArray.length; i++) {
-          if (viewpointArray[i].indexOf("cam:") !== -1) {
-            cameraString = viewpointArray[i];
-          }
-          else {
-            tiltHeading = viewpointArray[i];
-          }
-        }
-        if (cameraString !== "") {
-          cameraString = cameraString.substr(4, cameraString.length - 4);
-          var positionArray = cameraString.split(",");
-          if (positionArray.length >= 3) {
-            var x = 0,
-              y = 0,
-              z = 0;
-            x = parseFloat(positionArray[0]);
-            y = parseFloat(positionArray[1]);
-            z = parseFloat(positionArray[2]);
-            var sr = SpatialReference.WGS84;
-            if (positionArray.length === 4) {
-              sr = new SpatialReference(parseInt(positionArray[3], 10));
-            }
-            var cameraPosition = new Point(x, y, z, sr);
-            var heading = 0,
-              tilt = 0;
-            if (tiltHeading !== "") {
-              var tiltHeadingArray = tiltHeading.split(",");
-              if (tiltHeadingArray.length >= 0) {
-                heading = parseFloat(tiltHeadingArray[0]);
-                if (tiltHeadingArray.length > 1) {
-                  tilt = parseFloat(tiltHeadingArray[1]);
-                }
-              }
-            }
-            var camera = new Camera({
-              position: cameraPosition,
-              heading: heading,
-              tilt: tilt
-            });
-            return camera;
-          }
-        }
-      }
     }
+
   });
 });
