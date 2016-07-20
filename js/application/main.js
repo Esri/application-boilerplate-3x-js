@@ -15,7 +15,7 @@
  */
 define([
 
-  "boilerplate/UrlHelper",
+  "boilerplate/UrlParamHelper",
 
   "dojo/i18n!./nls/resources",
 
@@ -32,7 +32,7 @@ define([
   "dojo/domReady!"
 
 ], function (
-  UrlHelper,
+  UrlParamHelper,
   i18n,
   declare,
   dom, domAttr, domClass,
@@ -52,7 +52,7 @@ define([
     errorIcon: "esri-icon-notice-round"
   };
 
-  return declare([UrlHelper], {
+  return declare(null, {
 
     //--------------------------------------------------------------------------
     //
@@ -78,6 +78,9 @@ define([
         this.config = boilerplate.config;
         this.boilerplateResults = boilerplate.results;
         document.documentElement.lang = boilerplate.locale;
+
+        this.urlParamHelper = new UrlParamHelper();
+
         this._setDirection();
         this._createWebscene();
       }
@@ -141,13 +144,16 @@ define([
             components: this.config.components.split(",")
           };
         }
-        var camera = this.cameraFromViewpoint(this.config.viewpoint);
+
+        var camera = this.urlParamHelper.viewPointStringToCamera(this.config.viewpoint);
         if (camera) {
           viewProperties.camera = camera;
         }
+
         if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
           this.config.title = webscene.portalItem.title;
         }
+
         var view = new SceneView(viewProperties);
         view.then(function (response) {
           domClass.remove(document.body, CSS.loading);
