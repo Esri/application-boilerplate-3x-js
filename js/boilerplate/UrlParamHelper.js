@@ -75,7 +75,7 @@ define([
     //--------------------------------------------------------------------------
 
     getViewProperties: function (config) {
-      var viewProperties;
+      var viewProperties = {};
 
       if (config.components) {
         viewProperties.ui = {
@@ -310,7 +310,7 @@ define([
       // ?marker=-117,34,,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
       // ?marker=-117,34,,,,My%20location&level=10
       // ?marker=-117,34&level=10
-      // ?marker=10406557.402,6590748.134,2526&level=10
+      // ?marker=10406557.402,6590748.134,2526
       if (markerString) {
         var markerArray = this._splitArray(markerString);
         if (markerArray.length >= 2 &&
@@ -318,10 +318,14 @@ define([
           !isNaN(markerArray[1])) {
           var x = parseFloat(markerArray[0]),
             y = parseFloat(markerArray[1]),
-            wkid = markerArray[2] || 4326,
-            content = markerArray[3] || null,
-            icon_url = markerArray[4] || null,
-            label = markerArray[5] || null;
+            content = markerArray[3],
+            icon_url = markerArray[4],
+            label = markerArray[5];
+
+          var wkid = 4326;
+          if (!isNaN(markerArray[2])) {
+            wkid = parseInt(markerArray[2], 10);
+          }
 
           var symbolOptions;
 
