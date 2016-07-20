@@ -20,6 +20,7 @@ define([
   "dojo/i18n!./nls/resources",
 
   "dojo/_base/declare",
+  "dojo/_base/lang",
 
   "dojo/dom",
   "dojo/dom-attr",
@@ -34,7 +35,7 @@ define([
 ], function (
   UrlParamHelper,
   i18n,
-  declare,
+  declare, lang,
   dom, domAttr, domClass,
   SceneView,
   WebScene
@@ -139,23 +140,19 @@ define([
           map: webscene,
           container: "viewDiv"
         };
-        if (this.config.components) {
-          viewProperties.ui = {
-            components: this.config.components.split(",")
-          };
-        }
-
-        var camera = this.urlParamHelper.viewPointStringToCamera(this.config.viewpoint);
-        if (camera) {
-          viewProperties.camera = camera;
-        }
 
         if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
           this.config.title = webscene.portalItem.title;
         }
 
+        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
+
         var view = new SceneView(viewProperties);
+
         view.then(function (response) {
+
+          this.urlParamHelper.addToView(view, this.config);
+
           domClass.remove(document.body, CSS.loading);
           document.title = this.config.title;
         }.bind(this), this.reportError);

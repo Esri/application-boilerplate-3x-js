@@ -680,7 +680,7 @@ define([
       var query = (window.location.search || "?").substr(1),
         map = {};
       query.replace(URL_RE, function (match, key, value) {
-        map[key] = value;
+        map[key] = decodeURIComponent(value);
       });
       return map;
     }
