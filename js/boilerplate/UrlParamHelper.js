@@ -89,7 +89,6 @@ define([
       this.addMarkerToView(view, config.marker);
       this.find(view, config.find, searchWidget);
       this.setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
-      this.addLayersToView(view, config.url, config.urls, config.layers, config.show);
     },
 
     find: function (view, findString, searchWidget) {
@@ -107,33 +106,6 @@ define([
         }
         return searchWidget;
       }
-    },
-
-    // todo: get this working
-    // todo: determine type of layers to create
-    addLayersToView: function (view, urlString, urlsString, layersString, showString) {
-      /*
-      var layersArray = [];
-      if (layersString) {
-        var layers = this._splitArray(layersString);
-        layers.forEach(function (layerId) {
-          Layer.fromPortalItem({
-            portalItem: {
-              id: layerId
-            }
-          }).then(function (layer) {
-
-          });
-        });
-      }
-      if (urlsString) {
-
-      }
-      if (urlString) {
-
-      }
-      return layersArray;
-      */
     },
 
     setBasemapOnView: function (view, basemapUrl, basemapReferenceUrl) {
