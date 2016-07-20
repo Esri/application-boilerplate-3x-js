@@ -50,6 +50,8 @@ define([
   require
 ) {
 
+  // todo: put required modules inside the functions that need them
+
   //--------------------------------------------------------------------------
   //
   //  Static Variables
@@ -111,6 +113,7 @@ define([
       this.addLayersToView(view, config.url, config.urls, config.layers, config.show);
     },
 
+    // todo: allow passing in search widget somehow
     find: function (view, findString, searchWidget) {
       if (findString) {
         if (searchWidget) {
@@ -126,7 +129,7 @@ define([
       }
     },
 
-    // todo
+    // todo: get this working
     addLayersToView: function (view, urlString, urlsString, layersString, showString) {
       /*
       var layersArray = [];
@@ -152,6 +155,7 @@ define([
       */
     },
 
+    // todo: determine type of layers to create
     setBasemapOnView: function (view, basemapUrl, basemapReferenceUrl) {
       if (basemapUrl && view) {
         var basemapOptions = {
