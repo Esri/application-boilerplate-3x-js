@@ -136,23 +136,28 @@ define([
       */
     },
 
-    // todo: determine type of layers to create
     setBasemapOnView: function (view, basemapUrl, basemapReferenceUrl) {
       if (basemapUrl && view) {
-        require(["esri/Basemap", "esri/layers/Layer", "esri/layers/TileLayer"], function (Basemap, Layer, TileLayer) {
-          var basemapOptions = {
-            baseLayers: [new TileLayer({
+        require(["esri/Basemap", "esri/layers/Layer", "esri/core/promiseList"], function (Basemap, Layer, promiseList) {
+          var pl = promiseList({
+            baseLayer: Layer.fromArcGISServerUrl({
               url: basemapUrl
-            })]
-          };
-          if (basemapReferenceUrl) {
-            basemapOptions.referenceLayers = [
-              new TileLayer({
-                url: basemapReferenceUrl
-              })
-            ];
-          }
-          view.map.basemap = new Basemap(basemapOptions);
+            }),
+            referenceLayer: Layer.fromArcGISServerUrl({
+              url: basemapReferenceUrl
+            })
+          });
+          pl.then(function (response) {
+            if (response.baseLayer) {
+              var basemapOptions = {
+                baseLayers: [response.baseLayer]
+              };
+              if (response.referenceLayer) {
+                basemapOptions.referenceLayers = [response.referenceLayer];
+              }
+              view.map.basemap = new Basemap(basemapOptions);
+            }
+          });
         }.bind(this));
       }
     },
