@@ -17,40 +17,19 @@ define([
 
   "dojo/_base/declare",
 
-  "esri/Basemap",
-
   "esri/Camera",
-
-  "esri/Graphic",
-
-  "esri/PopupTemplate",
 
   "esri/geometry/Extent",
   "esri/geometry/Point",
-
-  "esri/layers/Layer",
-  "esri/layers/TileLayer",
-
-  "esri/symbols/PictureMarkerSymbol",
-
-  "esri/widgets/Search",
 
   "require"
 
 ], function (
   declare,
-  Basemap,
   Camera,
-  Graphic,
-  PopupTemplate,
   Extent, Point,
-  Layer, TileLayer,
-  PictureMarkerSymbol,
-  Search,
   require
 ) {
-
-  // todo: put required modules inside the functions that need them
 
   //--------------------------------------------------------------------------
   //
@@ -106,30 +85,32 @@ define([
       return viewProperties;
     },
 
-    addToView: function (view, config) {
+    addToView: function (view, config, searchWidget) {
       this.addMarkerToView(view, config.marker);
-      this.find(view, config.find);
+      this.find(view, config.find, searchWidget);
       this.setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
       this.addLayersToView(view, config.url, config.urls, config.layers, config.show);
     },
 
-    // todo: allow passing in search widget somehow
     find: function (view, findString, searchWidget) {
       if (findString) {
         if (searchWidget) {
           searchWidget.search(findString);
         }
         else {
-          searchWidget = new Search({
-            view: view
-          });
-          searchWidget.search(findString);
+          require(["esri/widgets/Search"], function (Search) {
+            searchWidget = new Search({
+              view: view
+            });
+            searchWidget.search(findString);
+          }.bind(this));
         }
         return searchWidget;
       }
     },
 
     // todo: get this working
+    // todo: determine type of layers to create
     addLayersToView: function (view, urlString, urlsString, layersString, showString) {
       /*
       var layersArray = [];
@@ -158,19 +139,21 @@ define([
     // todo: determine type of layers to create
     setBasemapOnView: function (view, basemapUrl, basemapReferenceUrl) {
       if (basemapUrl && view) {
-        var basemapOptions = {
-          baseLayers: [new TileLayer({
-            url: basemapUrl
-          })]
-        };
-        if (basemapReferenceUrl) {
-          basemapOptions.referenceLayers = [
-            new TileLayer({
-              url: basemapReferenceUrl
-            })
-          ];
-        }
-        view.map.basemap = new Basemap(basemapOptions);
+        require(["esri/Basemap", "esri/layers/Layer", "esri/layers/TileLayer"], function (Basemap, Layer, TileLayer) {
+          var basemapOptions = {
+            baseLayers: [new TileLayer({
+              url: basemapUrl
+            })]
+          };
+          if (basemapReferenceUrl) {
+            basemapOptions.referenceLayers = [
+              new TileLayer({
+                url: basemapReferenceUrl
+              })
+            ];
+          }
+          view.map.basemap = new Basemap(basemapOptions);
+        }.bind(this));
       }
     },
 
@@ -312,62 +295,64 @@ define([
       // ?marker=-117,34&level=10
       // ?marker=10406557.402,6590748.134,2526
       if (markerString) {
-        var markerArray = this._splitArray(markerString);
-        if (markerArray.length >= 2 &&
-          !isNaN(markerArray[0]) &&
-          !isNaN(markerArray[1])) {
-          var x = parseFloat(markerArray[0]),
-            y = parseFloat(markerArray[1]),
-            content = markerArray[3],
-            icon_url = markerArray[4],
-            label = markerArray[5];
+        require(["esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol"], function (Graphic, PopupTemplate, PictureMarkerSymbol) {
+          var markerArray = this._splitArray(markerString);
+          if (markerArray.length >= 2 &&
+            !isNaN(markerArray[0]) &&
+            !isNaN(markerArray[1])) {
+            var x = parseFloat(markerArray[0]),
+              y = parseFloat(markerArray[1]),
+              content = markerArray[3],
+              icon_url = markerArray[4],
+              label = markerArray[5];
 
-          var wkid = 4326;
-          if (!isNaN(markerArray[2])) {
-            wkid = parseInt(markerArray[2], 10);
-          }
-
-          var symbolOptions;
-
-          if (icon_url) {
-            symbolOptions = {
-              url: icon_url,
-              height: "32px",
-              width: "32px"
-            };
-          }
-          else {
-            symbolOptions = DEFAULT_MARKER_SYMBOL;
-          }
-
-          var markerSymbol = new PictureMarkerSymbol(symbolOptions);
-
-          var point = new Point({
-            "x": x,
-            "y": y,
-            "spatialReference": {
-              "wkid": wkid
+            var wkid = 4326;
+            if (!isNaN(markerArray[2])) {
+              wkid = parseInt(markerArray[2], 10);
             }
-          });
 
-          var popupTemplate = null;
-          if (content || label) {
-            popupTemplate = new PopupTemplate({
-              "title": label || null,
-              "content": content || null
+            var symbolOptions;
+
+            if (icon_url) {
+              symbolOptions = {
+                url: icon_url,
+                height: "32px",
+                width: "32px"
+              };
+            }
+            else {
+              symbolOptions = DEFAULT_MARKER_SYMBOL;
+            }
+
+            var markerSymbol = new PictureMarkerSymbol(symbolOptions);
+
+            var point = new Point({
+              "x": x,
+              "y": y,
+              "spatialReference": {
+                "wkid": wkid
+              }
             });
-          }
 
-          var graphic = new Graphic({
-            geometry: point,
-            symbol: markerSymbol,
-            popupTemplate: popupTemplate
-          });
+            var popupTemplate = null;
+            if (content || label) {
+              popupTemplate = new PopupTemplate({
+                "title": label || null,
+                "content": content || null
+              });
+            }
 
-          if (graphic) {
-            view.graphics.add(graphic);
+            var graphic = new Graphic({
+              geometry: point,
+              symbol: markerSymbol,
+              popupTemplate: popupTemplate
+            });
+
+            if (graphic) {
+              view.graphics.add(graphic);
+            }
           }
-        }
+        }.bind(this));
       }
     },
 
