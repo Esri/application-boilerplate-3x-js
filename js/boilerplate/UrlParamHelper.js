@@ -106,7 +106,7 @@ define([
       return viewProperties;
     },
 
-    addToView: function (config, view) {
+    addToView: function (view, config) {
       this.addMarkerToView(view, config.marker);
       this.find(view, config.find);
       this.setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
