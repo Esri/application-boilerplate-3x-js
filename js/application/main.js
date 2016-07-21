@@ -86,8 +86,7 @@ define([
         var boilerplateResults = boilerplate.results;
         var webmapItem = boilerplateResults.webmapItem;
         var websceneItem = boilerplateResults.websceneItem;
-        var groupInfoData = boilerplateResults.group && boilerplateResults.group.infoData;
-        var groupItemsData = boilerplateResults.group && boilerplateResults.group.itemsData;
+        var groupData = boilerplateResults.group;
 
         document.documentElement.lang = boilerplate.locale;
 
@@ -101,8 +100,8 @@ define([
         else if (websceneItem) {
           this._createWebscene(websceneItem);
         }
-        else if (groupInfoData && groupItemsData) {
-          this._createGroupGallery(groupInfoData, groupItemsData);
+        else if (groupData) {
+          this._createGroupGallery(groupData);
         }
       }
       else {
@@ -213,7 +212,9 @@ define([
       }
     },
 
-    _createGroupGallery: function (groupInfoData, groupItemsData) {
+    _createGroupGallery: function (groupData) {
+      var groupInfoData = groupData.infoData;
+      var groupItemsData = groupData.itemsData;
 
       if (!groupInfoData || !groupItemsData) {
         var error = new Error("main:: group data does not exist.");
