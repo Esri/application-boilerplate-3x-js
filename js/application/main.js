@@ -95,8 +95,6 @@ define([
 
         this._setDirection();
 
-        console.log(webmapItem);
-
         if (webmapItem) {
           this._createWebmap(webmapItem);
         }
