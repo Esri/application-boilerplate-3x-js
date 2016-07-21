@@ -148,7 +148,7 @@ define([
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
           if (!error) {
-            error = new Error("Error retrieving group items.");
+            error = new Error("Boilerplate:: Error retrieving group items.");
           }
           if (!this.results.group) {
             this.results.group = {};
@@ -256,7 +256,7 @@ define([
             deferred.resolve(this.results.webmapItem);
           }.bind(this), function (error) {
             if (!error) {
-              error = new Error("Error retrieving webmap item.");
+              error = new Error("Boilerplate:: Error retrieving webmap item.");
             }
             this.results.webmapItem = {
               data: error
@@ -292,7 +292,7 @@ define([
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
           if (!error) {
-            error = new Error("Error retrieving group info.");
+            error = new Error("Boilerplate:: Error retrieving group info.");
           }
           if (!this.results.group) {
             this.results.group = {};
@@ -337,7 +337,7 @@ define([
             deferred.resolve(this.results.websceneItem);
           }.bind(this), function (error) {
             if (!error) {
-              error = new Error("Error retrieving webscene item.");
+              error = new Error("Boilerplate:: Error retrieving webscene item.");
             }
             this.results.websceneItem = {
               data: error
@@ -393,7 +393,7 @@ define([
           deferred.resolve(this.results.applicationItem);
         }.bind(this), function (error) {
           if (!error) {
-            error = new Error("Error retrieving application configuration.");
+            error = new Error("Boilerplate:: Error retrieving application configuration.");
           }
           this.results.applicationItem = {
             data: error,
@@ -460,7 +460,7 @@ define([
           deferred.resolve(this.results.portal);
         }.bind(this), function (error) {
           if (!error) {
-            error = new Error("Error retrieving organization information.");
+            error = new Error("Boilerplate:: Error retrieving organization information.");
           }
           this.results.portal = {
             data: error
