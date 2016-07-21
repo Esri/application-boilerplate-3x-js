@@ -36,7 +36,7 @@ define([
 
   "dojo/domReady!"
 
-], function (
+], function(
   UrlParamHelper,
   i18n,
   declare, lang,
@@ -77,7 +77,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    init: function (boilerplate) {
+    init: function(boilerplate) {
       if (boilerplate) {
         this.direction = boilerplate.direction;
         this.config = boilerplate.config;
@@ -110,7 +110,7 @@ define([
       }
     },
 
-    reportError: function (error) {
+    reportError: function(error) {
       // remove loading class from body
       domClass.remove(document.body, CSS.loading);
       domClass.add(document.body, CSS.error);
@@ -132,13 +132,13 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    _setDirection: function () {
+    _setDirection: function() {
       var direction = this.direction;
       var dirNode = document.getElementsByTagName("html")[0];
       domAttr.set(dirNode, "dir", direction);
     },
 
-    _createWebmap: function (webmapItem) {
+    _createWebmap: function(webmapItem) {
       var webmap;
 
       if (!webmapItem) {
@@ -169,15 +169,19 @@ define([
         if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
           this.config.title = webmap.portalItem.title;
         }
+        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
+
         var view = new MapView(viewProperties);
-        view.then(function (response) {
+        view.then(function(response) {
+          this.urlParamHelper.addToView(view, this.config);
+
           domClass.remove(document.body, CSS.loading);
           document.title = this.config.title;
         }.bind(this), this.reportError);
       }
     },
 
-    _createWebscene: function (websceneItem) {
+    _createWebscene: function(websceneItem) {
       var webscene;
       if (!websceneItem) {
         var error = new Error("main:: webscene data does not exist.");
@@ -212,7 +216,7 @@ define([
 
         var view = new SceneView(viewProperties);
 
-        view.then(function (response) {
+        view.then(function(response) {
 
           this.urlParamHelper.addToView(view, this.config);
 
@@ -222,7 +226,7 @@ define([
       }
     },
 
-    _createGroupGallery: function (groupData) {
+    _createGroupGallery: function(groupData) {
       var groupInfoData = groupData.infoData;
       var groupItemsData = groupData.itemsData;
 
@@ -240,7 +244,7 @@ define([
 
       html += "<ol>";
 
-      items.forEach(function (item) {
+      items.forEach(function(item) {
         html += "<li>" + item.title + "</li>";
       });
 
