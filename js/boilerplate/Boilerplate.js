@@ -150,8 +150,12 @@ define([
           if (!error) {
             error = new Error("Error retrieving group items.");
           }
+          if (!this.results.group) {
+            this.results.group = {};
+          }
+          this.results.group.itemsData = error;
           deferred.reject(error);
-        });
+        }.bind(this));
       }
       return deferred.promise;
     },
@@ -254,8 +258,11 @@ define([
             if (!error) {
               error = new Error("Error retrieving webmap item.");
             }
+            this.results.webmapItem = {
+              data: error
+            };
             deferred.reject(error);
-          });
+          }.bind(this));
         }
         else {
           deferred.resolve();
@@ -287,8 +294,12 @@ define([
           if (!error) {
             error = new Error("Error retrieving group info.");
           }
+          if (!this.results.group) {
+            this.results.group = {};
+          }
+          this.results.group.infoData = error;
           deferred.reject(error);
-        });
+        }.bind(this));
       }
       return deferred.promise;
     },
@@ -328,8 +339,11 @@ define([
             if (!error) {
               error = new Error("Error retrieving webscene item.");
             }
+            this.results.websceneItem = {
+              data: error
+            };
             deferred.reject(error);
-          });
+          }.bind(this));
         }
         else {
           deferred.resolve();
@@ -381,8 +395,12 @@ define([
           if (!error) {
             error = new Error("Error retrieving application configuration.");
           }
+          this.results.applicationItem = {
+            data: error,
+            config: null
+          };
           deferred.reject(error);
-        });
+        }.bind(this));
       }
       return deferred.promise;
     },
@@ -444,8 +462,11 @@ define([
           if (!error) {
             error = new Error("Error retrieving organization information.");
           }
+          this.results.portal = {
+            data: error
+          };
           deferred.reject(error);
-        });
+        }.bind(this));
       }
       return deferred.promise;
     },

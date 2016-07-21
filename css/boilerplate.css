@@ -31,12 +31,15 @@ body:lang(ja) {
   left: 0;
   overflow: hidden;
   background-color: #fff;
+}
+
+.boilerplate--loading .boilerplate-loading-indicator {
+  display: block;
   background-position: center center;
   background-repeat: no-repeat;
   background-image: url(../images/loading.gif);
 }
 
-.boilerplate--loading .boilerplate-loading-indicator,
 .boilerplate--error .boilerplate-loading-indicator {
   display: block;
 }

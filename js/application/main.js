@@ -101,10 +101,12 @@ define([
         else if (groupData) {
           this._createGroupGallery(groupData);
         }
+        else {
+          this.reportError(new Error("main:: Could not load an item to display"));
+        }
       }
       else {
-        var error = new Error("main:: Config is not defined");
-        this.reportError(error);
+        this.reportError(new Error("main:: Config is not defined"));
       }
     },
 
@@ -146,9 +148,14 @@ define([
       }
 
       if (webmapItem.data) {
-        webmap = new WebMap({
-          portalItem: webmapItem.data
-        });
+        if (webmapItem.data instanceof Error) {
+          this.reportError(webmapItem.data);
+        }
+        else {
+          webmap = new WebMap({
+            portalItem: webmapItem.data
+          });
+        }
       }
       else if (webmapItem.json) {
         webmap = WebMap.fromJSON(webmapItem.json.itemData);
@@ -178,9 +185,14 @@ define([
         return;
       }
       if (websceneItem.data) {
-        webscene = new WebScene({
-          portalItem: websceneItem.data
-        });
+        if (websceneItem.data instanceof Error) {
+          this.reportError(websceneItem.data);
+        }
+        else {
+          webscene = new WebScene({
+            portalItem: websceneItem.data
+          });
+        }
       }
       else if (websceneItem.json) {
         webscene = WebScene.fromJSON(websceneItem.json.itemData);
@@ -214,9 +226,8 @@ define([
       var groupInfoData = groupData.infoData;
       var groupItemsData = groupData.itemsData;
 
-      if (!groupInfoData || !groupItemsData) {
-        var error = new Error("main:: group data does not exist.");
-        this.reportError(error);
+      if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
+        this.reportError(new Error("main:: group data does not exist."));
         return;
       }
 
