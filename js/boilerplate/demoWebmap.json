@@ -1,20 +1,9 @@
 {
   "item": {
-    "id": "24e01ef45d40423f95300ad2abc5038a",
-    "owner": "khutchins_jsapi",
-    "orgId": "V6ZHFr6zdgNZuVG0",
-    "created": 1386962036000,
-    "modified": 1425412391000,
-    "guid": null,
-    "name": null,
     "title": "Farmers Markets",
     "type": "Web Map",
-    "typeKeywords": ["ArcGIS Online", "Explorer Web Map", "Map", "Online Map", "Web Map"],
     "description": "A heat map showing the concentration of farmers markets across the US. ",
-    "tags": ["map", "cities"],
     "snippet": "A heat map showing the concentration of farmers markets across the US.",
-    "thumbnail": "thumbnail/ago_downloaded.png",
-    "documentation": null,
     "extent": [
       [-123.4521, 46.9231],
       [-121.0021, 48.0258]
