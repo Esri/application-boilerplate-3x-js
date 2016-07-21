@@ -67,8 +67,6 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    boilerplateResults: null,
-
     config: null,
 
     direction: null,
