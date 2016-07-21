@@ -30,6 +30,10 @@ define([
 
   "esri/WebScene",
 
+  "esri/views/MapView",
+
+  "esri/WebMap",
+
   "dojo/domReady!"
 
 ], function (
@@ -38,7 +42,9 @@ define([
   declare, lang,
   dom, domAttr, domClass,
   SceneView,
-  WebScene
+  WebScene,
+  MapView,
+  WebMap
 ) {
 
   //--------------------------------------------------------------------------
@@ -77,13 +83,29 @@ define([
       if (boilerplate) {
         this.direction = boilerplate.direction;
         this.config = boilerplate.config;
-        this.boilerplateResults = boilerplate.results;
+        var boilerplateResults = boilerplate.results;
+        var webmapItem = boilerplateResults.webmapItem;
+        var websceneItem = boilerplateResults.websceneItem;
+        var groupInfoData = boilerplateResults.group && boilerplateResults.group.infoData;
+        var groupItemsData = boilerplateResults.group && boilerplateResults.group.itemsData;
+
         document.documentElement.lang = boilerplate.locale;
 
         this.urlParamHelper = new UrlParamHelper();
 
         this._setDirection();
-        this._createWebscene();
+
+        console.log(webmapItem);
+
+        if (webmapItem) {
+          this._createWebmap(webmapItem);
+        }
+        else if (websceneItem) {
+          this._createWebscene(websceneItem);
+        }
+        else if (groupInfoData && groupItemsData) {
+          this._createGroupGallery(groupInfoData, groupItemsData);
+        }
       }
       else {
         var error = new Error("main:: Config is not defined");
@@ -119,8 +141,42 @@ define([
       domAttr.set(dirNode, "dir", direction);
     },
 
-    _createWebscene: function () {
-      var webscene, websceneItem = this.boilerplateResults.websceneItem;
+    _createWebmap: function (webmapItem) {
+      var webmap;
+
+      if (!webmapItem) {
+        var error = new Error("main:: webmap data does not exist.");
+        this.reportError(error);
+        return;
+      }
+
+      if (webmapItem.data) {
+        webmap = new WebMap({
+          portalItem: webmapItem.data
+        });
+      }
+      else if (webmapItem.json) {
+        webmap = WebMap.fromJSON(webmapItem.json.itemData);
+        webmap.portalItem = webmapItem.json.item;
+      }
+      if (webmap) {
+        var viewProperties = {
+          map: webmap,
+          container: "viewDiv"
+        };
+        if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
+          this.config.title = webmap.portalItem.title;
+        }
+        var view = new MapView(viewProperties);
+        view.then(function (response) {
+          domClass.remove(document.body, CSS.loading);
+          document.title = this.config.title;
+        }.bind(this), this.reportError);
+      }
+    },
+
+    _createWebscene: function (websceneItem) {
+      var webscene;
       if (!websceneItem) {
         var error = new Error("main:: webscene data does not exist.");
         this.reportError(error);
@@ -157,6 +213,36 @@ define([
           document.title = this.config.title;
         }.bind(this), this.reportError);
       }
+    },
+
+    _createGroupGallery: function (groupInfoData, groupItemsData) {
+
+      if (!groupInfoData || !groupItemsData) {
+        var error = new Error("main:: group data does not exist.");
+        this.reportError(error);
+        return;
+      }
+
+      var info = groupInfoData.results[0];
+      var items = groupItemsData.results;
+
+      var html = "";
+
+      html += "<h1>" + info.title + "</h1>";
+
+      html += "<ol>";
+
+      items.forEach(function (item) {
+        html += "<li>" + item.title + "</li>";
+      });
+
+      html += "</ol>";
+
+      dom.byId("viewDiv").innerHTML = html;
+
+      domClass.remove(document.body, CSS.loading);
+      document.title = this.config.title;
+
     }
 
   });

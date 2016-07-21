@@ -5,13 +5,13 @@
     "localFile": "boilerplate/demoWebscene.json"
   },
   "webmap": {
-    "fetch": false,
+    "fetch": true,
     "useLocal": false,
     "localFile": "boilerplate/demoWebmap.json"
   },
   "group": {
-    "fetchInfo": false,
-    "fetchItems": false,
+    "fetchInfo": true,
+    "fetchItems": true,
     "itemParams": {
       "query": "group:\"{groupid}\" AND -type:\"Code Attachment\"",
       "sortField": "modified",

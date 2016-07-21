@@ -124,7 +124,6 @@ define([
         deferred.resolve();
       }
       else {
-        this.results.group = {};
         var defaultParams = {
           query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
           sortField: "modified",
@@ -142,6 +141,9 @@ define([
         // group params
         var params = new PortalQueryParams(paramOptions);
         this.portal.queryItems(params).then(function (response) {
+          if (!this.results.group) {
+            this.results.group = {};
+          }
           this.results.group.itemsData = response;
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
@@ -226,55 +228,27 @@ define([
         deferred.resolve();
       }
       else {
-        this.results.webmapItem = {};
         // Use local web map instead of portal web map
         if (this.settings.webmap.useLocal) {
           // get web map js file
           require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
             // return web scene json
             var json = JSON.parse(webmapText);
-            this.results.webmapItem.json = json;
+            this.results.webmapItem = {
+              json: json
+            };
             deferred.resolve(this.results.webmapItem);
           }.bind(this));
         }
-        // no web map is set and we have organization's info
-        else if (!this.config.webmap) {
-          var defaultWebmap = {
-            "item": {
-              "title": "Default Webmap",
-              "type": "Web Map",
-              "description": "A webmap with the default basemap and extent.",
-              "snippet": "A webmap with the default basemap and extent."
-            },
-            "itemData": {
-              "operationalLayers": [],
-              "baseMap": {
-                "baseMapLayers": [{
-                  "id": "defaultBasemap",
-                  "layerType": "ArcGISTiledMapServiceLayer",
-                  "opacity": 1,
-                  "visibility": true,
-                  "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
-                }],
-                "title": "Topographic"
-              },
-              "spatialReference": {
-                "wkid": 102100,
-                "latestWkid": 3857
-              },
-              "version": "2.1"
-            }
-          };
-          this.results.webmapItem.json = defaultWebmap;
-          deferred.resolve(this.results.webmapItem);
-        }
         // use webmap from id
-        else {
+        else if (this.config.webmap) {
           var mapItem = new PortalItem({
             id: this.config.webmap
           }).load();
           mapItem.then(function (itemData) {
-            this.results.webmapItem.data = itemData;
+            this.results.webmapItem = {
+              data: itemData
+            };
             deferred.resolve(this.results.webmapItem);
           }.bind(this), function (error) {
             if (!error) {
@@ -282,6 +256,9 @@ define([
             }
             deferred.reject(error);
           });
+        }
+        else {
+          deferred.resolve();
         }
       }
       return deferred.promise;
@@ -296,12 +273,14 @@ define([
         deferred.resolve();
       }
       else {
-        this.results.group = {};
         // group params
         var params = new PortalQueryParams({
           query: "id:\"" + this.config.group + "\""
         });
         this.portal.queryGroups(params).then(function (response) {
+          if (!this.results.group) {
+            this.results.group = {};
+          }
           this.results.group.infoData = response;
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
@@ -323,51 +302,27 @@ define([
         deferred.resolve();
       }
       else {
-        this.results.websceneItem = {};
         // Use local web scene instead of portal web scene
         if (this.settings.webscene.useLocal) {
           // get web scene js file
           require(["dojo/text!" + this.settings.webscene.localFile], function (websceneText) {
             // return web scene json
             var json = JSON.parse(websceneText);
-            this.results.websceneItem.json = json;
+            this.results.websceneItem = {
+              json: json
+            };
             deferred.resolve(this.results.websceneItem);
           }.bind(this));
         }
-        // no web scene is set and we have organization's info
-        else if (!this.config.webscene) {
-          var defaultWebscene = {
-            "item": {
-              "title": "Default Webscene",
-              "type": "Web Scene",
-              "description": "A web scene with the default basemap and extent.",
-              "snippet": "A web scene with the default basemap and extent."
-            },
-            "itemData": {
-              "operationalLayers": [],
-              "version": "1.3",
-              "baseMap": {
-                "baseMapLayers": [{
-                  "id": "defaultBasemap",
-                  "layerType": "ArcGISTiledMapServiceLayer",
-                  "opacity": 1,
-                  "visibility": true,
-                  "url": "http://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer"
-                }],
-                "title": "Topographic"
-              }
-            }
-          };
-          this.results.websceneItem.json = defaultWebscene;
-          deferred.resolve(this.results.websceneItem);
-        }
         // use webscene from id
-        else {
+        else if (this.config.webscene) {
           sceneItem = new PortalItem({
             id: this.config.webscene
           }).load();
           sceneItem.then(function (itemData) {
-            this.results.websceneItem.data = itemData;
+            this.results.websceneItem = {
+              data: itemData
+            };
             deferred.resolve(this.results.websceneItem);
           }.bind(this), function (error) {
             if (!error) {
@@ -375,6 +330,9 @@ define([
             }
             deferred.reject(error);
           });
+        }
+        else {
+          deferred.resolve();
         }
       }
       return deferred.promise;
