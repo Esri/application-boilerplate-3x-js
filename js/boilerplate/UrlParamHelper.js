@@ -327,6 +327,7 @@ define([
 
             if (graphic) {
               view.graphics.add(graphic);
+              view.goTo(graphic);
             }
           }
         }.bind(this));
