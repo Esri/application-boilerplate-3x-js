@@ -365,32 +365,44 @@ define([
           id: this.config.appid
         }).load();
         appItem.then(function (itemData) {
-          var cfg = {};
-          if (itemData && itemData.values) {
-            // get app config values - we'll merge them with config later.
-            cfg = itemData.values;
-          }
-          // get the extent for the application item. This can be used to override the default web map extent
-          if (itemData.item && itemData.item.extent) {
-            cfg.application_extent = itemData.item.extent;
-          }
-          // get any app proxies defined on the application item
-          if (itemData.item && itemData.item.appProxies) {
-            var layerMixins = itemData.item.appProxies.map(function (p) {
-              return {
-                "url": p.sourceUrl,
-                "mixin": {
-                  "url": p.proxyUrl
-                }
-              };
-            });
-            cfg.layerMixins = layerMixins;
-          }
-          this.results.applicationItem = {
-            data: itemData,
-            config: cfg
-          };
-          deferred.resolve(this.results.applicationItem);
+          itemData.fetchData().then(function(data){
+            var cfg = {};
+            if (data && data.values) {
+              // get app config values - we'll merge them with config later.
+              cfg = data.values;
+            }
+            // get the extent for the application item. This can be used to override the default web map extent
+            if (itemData.extent) {
+              cfg.application_extent = itemData.extent;
+            }
+            // get any app proxies defined on the application item
+            if (itemData.appProxies) {
+              var layerMixins = itemData.appProxies.map(function (p) {
+                return {
+                  "url": p.sourceUrl,
+                  "mixin": {
+                    "url": p.proxyUrl
+                  }
+                };
+              });
+              cfg.layerMixins = layerMixins;
+            }
+            this.results.applicationItem = {
+              data: itemData,
+              config: cfg
+            };
+            deferred.resolve(this.results.applicationItem);
+          }.bind(this), function (error) {
+            if (!error) {
+              error = new Error("Boilerplate:: Error retrieving application configuration data.");
+            }
+            this.results.applicationItem = {
+              data: error,
+              config: null
+            };
+            deferred.reject(error);
+          }.bind(this));
+
         }.bind(this), function (error) {
           if (!error) {
             error = new Error("Boilerplate:: Error retrieving application configuration.");
