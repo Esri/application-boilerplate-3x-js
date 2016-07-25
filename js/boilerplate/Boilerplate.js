@@ -365,7 +365,7 @@ define([
           id: this.config.appid
         }).load();
         appItem.then(function (itemData) {
-          itemData.fetchData().then(function(data){
+          itemData.fetchData().then(function (data) {
             var cfg = {};
             if (data && data.values) {
               // get app config values - we'll merge them with config later.
