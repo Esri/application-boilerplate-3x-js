@@ -15,3 +15,6 @@ dojoConfig = {
     location: package_path + "/config"
   }]
 };
+if (location.search.match(/locale=([\w-]+)/)) {
+  dojoConfig.locale = RegExp.$1;
+}
