@@ -194,7 +194,12 @@ define([
           document.title = this.config.title;
 
           // Launch the app specifics
-          this.main.start(this.config, dom.byId("viewDiv"), view, webmap, null, null);
+          this.main.start({
+            config: this.config,
+            viewDiv: dom.byId("viewDiv"),
+            view: view,
+            mapOrScene: webmap
+          });
         }.bind(this), this.reportError);
       }
     },
@@ -242,7 +247,12 @@ define([
           document.title = this.config.title;
 
           // Launch the app specifics
-          this.main.start(this.config, dom.byId("viewDiv"), view, webscene, null, null);
+          this.main.start({
+            config: this.config,
+            viewDiv: dom.byId("viewDiv"),
+            view: view,
+            mapOrScene: webscene
+          });
         }.bind(this), this.reportError);
       }
     },
@@ -263,7 +273,12 @@ define([
       document.title = this.config.title;
 
       // Launch the app specifics
-      this.main.start(this.config, dom.byId("viewDiv"), null, null, info, items);
+      this.main.start({
+        config: this.config,
+        viewDiv: dom.byId("viewDiv"),
+        groupInfo: info,
+        groupItems: items
+      });
     }
 
   });

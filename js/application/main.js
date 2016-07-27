@@ -44,31 +44,29 @@ define([
 
     /**
      * Runs the custom part of an application following boilerplate completion.
-     * @param {Object} config Configuration assembled by boilerplate
-     * @param {Object} view Dom div for main app display
-     * @param {MapView|SceneView} view View created by main after its creation deferred has been resolved
-     * @param {WebMap|WebScene} mapOrScene Map created by main
-     * @param {Object} groupInfo ArcGIS item groupInfo for group
-     * @param {Array} groupItems List of groupItems in group
+     * @param {Object} options Structure containing 'config' (configuration assembled by boilerplate), 'viewDiv'
+     * (dom div for main app display), and optional properties 'view' (resolved MapView or SceneView created in init),
+     * 'mapOrScene' (WebMap or WebScene created in init), 'groupInfo' (ArcGIS item groupInfo for group), 'groupItems'
+     * (list of groupItems in group)
      */
-    start: function (config, viewDiv, view, mapOrScene, groupInfo, groupItems) {
+    start: function (options) {
 
 
 
-      if (groupInfo && groupItems) {
+      if (options.groupInfo && options.groupItems) {
         var html = "";
 
-        html += "<h1>" + groupInfo.title + "</h1>";
+        html += "<h1>" + options.groupInfo.title + "</h1>";
 
         html += "<ol>";
 
-        groupItems.forEach(function (item) {
+        options.groupItems.forEach(function (item) {
           html += "<li>" + item.title + "</li>";
         });
 
         html += "</ol>";
 
-        viewDiv.innerHTML = html;
+        options.viewDiv.innerHTML = html;
       }
 
 
