@@ -194,7 +194,7 @@ define([
           document.title = this.config.title;
 
           // Launch the app specifics
-          this.main.runMap(this.config, webmap, view);
+          this.main.start(this.config, dom.byId("viewDiv"), view, webmap, null, null);
         }.bind(this), this.reportError);
       }
     },
@@ -242,7 +242,7 @@ define([
           document.title = this.config.title;
 
           // Launch the app specifics
-          this.main.runMap(this.config, webscene, view);
+          this.main.start(this.config, dom.byId("viewDiv"), view, webscene, null, null);
         }.bind(this), this.reportError);
       }
     },
@@ -263,7 +263,7 @@ define([
       document.title = this.config.title;
 
       // Launch the app specifics
-      this.main.runGroup(this.config, dom.byId("viewDiv"), info, items);
+      this.main.start(this.config, dom.byId("viewDiv"), null, null, info, items);
     }
 
   });

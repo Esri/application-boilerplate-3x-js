@@ -43,36 +43,35 @@ define([
     },*/
 
     /**
-     * Runs the custom part of a map-based application following boilerplate completion.
-     * @param {Object} config Configuration assembled by boilerplate
-     * @param {WebMap|WebScene} map Map created by main
-     * @param {MapView|SceneView} view View created by main after its creation deferred has been resolved
-     */
-    runMap: function (config, map, view) {
-
-    },
-
-    /**
-     * Runs the custom part of a group-based application following boilerplate completion.
+     * Runs the custom part of an application following boilerplate completion.
      * @param {Object} config Configuration assembled by boilerplate
      * @param {Object} view Dom div for main app display
-     * @param {Object} info ArcGIS item info for group
-     * @param {Array} items List of items in group
+     * @param {MapView|SceneView} view View created by main after its creation deferred has been resolved
+     * @param {WebMap|WebScene} mapOrScene Map created by main
+     * @param {Object} groupInfo ArcGIS item groupInfo for group
+     * @param {Array} groupItems List of groupItems in group
      */
-    runGroup: function (config, viewDiv, info, items) {
-      var html = "";
+    start: function (config, viewDiv, view, mapOrScene, groupInfo, groupItems) {
 
-      html += "<h1>" + info.title + "</h1>";
 
-      html += "<ol>";
 
-      items.forEach(function (item) {
-        html += "<li>" + item.title + "</li>";
-      });
+      if (groupInfo && groupItems) {
+        var html = "";
 
-      html += "</ol>";
+        html += "<h1>" + groupInfo.title + "</h1>";
 
-      viewDiv.innerHTML = html;
+        html += "<ol>";
+
+        groupItems.forEach(function (item) {
+          html += "<li>" + item.title + "</li>";
+        });
+
+        html += "</ol>";
+
+        viewDiv.innerHTML = html;
+      }
+
+
     }
 
   });
