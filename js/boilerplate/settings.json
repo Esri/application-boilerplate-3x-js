@@ -37,6 +37,7 @@
     "mapOnly",
     "marker",
     "oauthappid",
+    "portalUrl",
     "viewpoint",
     "webmap",
     "webscene"
