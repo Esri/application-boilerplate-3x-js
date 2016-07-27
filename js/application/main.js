@@ -15,11 +15,9 @@
  */
 define([
   "dojo/i18n!./nls/resources",
-  "dojo/_base/array",
   "dojo/_base/declare"
 ], function (
   i18n,
-  array,
   declare
 ) {
 
