@@ -196,7 +196,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
-            viewDiv: dom.byId("viewDiv"),
+            viewNode: dom.byId("viewDiv"),
             view: view,
             mapOrScene: webmap
           });
@@ -249,7 +249,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
-            viewDiv: dom.byId("viewDiv"),
+            viewNode: dom.byId("viewDiv"),
             view: view,
             mapOrScene: webscene
           });
@@ -275,7 +275,7 @@ define([
       // Launch the app specifics
       this.main.start({
         config: this.config,
-        viewDiv: dom.byId("viewDiv"),
+        viewNode: dom.byId("viewDiv"),
         groupInfo: info,
         groupItems: items
       });
