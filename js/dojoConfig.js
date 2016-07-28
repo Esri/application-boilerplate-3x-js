@@ -5,7 +5,7 @@ dojoConfig = {
   packages: [{
     name: "application",
     location: package_path + "/js/application",
-    main: "main"
+    main: "init"
   }, {
     name: "boilerplate",
     location: package_path + "/js/boilerplate",

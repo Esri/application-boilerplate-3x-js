@@ -14,246 +14,61 @@
  | limitations under the License.
  */
 define([
-
-  "boilerplate/UrlParamHelper",
-
   "dojo/i18n!./nls/resources",
-
-  "dojo/_base/declare",
-  "dojo/_base/lang",
-
-  "dojo/dom",
-  "dojo/dom-attr",
-  "dojo/dom-class",
-
-  "esri/views/SceneView",
-
-  "esri/WebScene",
-
-  "esri/views/MapView",
-
-  "esri/WebMap",
-
-  "dojo/domReady!"
-
+  "dojo/_base/declare"
 ], function (
-  UrlParamHelper,
   i18n,
-  declare, lang,
-  dom, domAttr, domClass,
-  SceneView,
-  WebScene,
-  MapView,
-  WebMap
+  declare
 ) {
-
-  //--------------------------------------------------------------------------
-  //
-  //  Static Variables
-  //
-  //--------------------------------------------------------------------------
-
-  var CSS = {
-    loading: "boilerplate--loading",
-    error: "boilerplate--error",
-    errorIcon: "esri-icon-notice-round"
-  };
 
   return declare(null, {
 
-    //--------------------------------------------------------------------------
-    //
-    //  Variables
-    //
-    //--------------------------------------------------------------------------
+    /**
+     * Provides a hook for adjusting the config before the boilerplate builds the webmap/webscene/group gallery.
+     * @param {Object} config Configuration assembled by boilerplate
+     */
+    /*adjustConfig: function (config) {
+      config.title = "Custom title";
 
-    config: null,
+    },*/
 
-    direction: null,
+    /**
+     * Provides a hook for an alternate boilerplate error display.
+     * @param {Object} node Dom node available for display
+     * @param {Error} error Description of error
+     */
+    /*reportError: function (node, error) {
+      node.innerHTML = "Custom error block<br>" + i18n.error + "<br>" + error.message;
 
-    //--------------------------------------------------------------------------
-    //
-    //  Public Methods
-    //
-    //--------------------------------------------------------------------------
+    },*/
 
-    init: function (boilerplate) {
-      if (boilerplate) {
-        this.direction = boilerplate.direction;
-        this.config = boilerplate.config;
-        var boilerplateResults = boilerplate.results;
-        var webmapItem = boilerplateResults.webmapItem;
-        var websceneItem = boilerplateResults.websceneItem;
-        var groupData = boilerplateResults.group;
+    /**
+     * Runs the custom part of an application following boilerplate completion.
+     * @param {Object} options Structure containing 'config' (configuration assembled by boilerplate), 'viewNode'
+     * (dom node for main app display), and optional properties 'view' (resolved MapView or SceneView created in init),
+     * 'webScene' (resolved WebScene created in init), 'webMap' (resolved WebMap created in init), 'groupInfo' (ArcGIS
+     * item groupInfo for group), 'groupItems' (list of groupItems in group)
+     */
+    start: function (options) {
 
-        document.documentElement.lang = boilerplate.locale;
 
-        this.urlParamHelper = new UrlParamHelper();
 
-        this._setDirection();
+      if (options.groupInfo && options.groupItems) {
+        var html = "";
 
-        if (webmapItem) {
-          this._createWebmap(webmapItem);
-        }
-        else if (websceneItem) {
-          this._createWebscene(websceneItem);
-        }
-        else if (groupData) {
-          this._createGroupGallery(groupData);
-        }
-        else {
-          this.reportError(new Error("main:: Could not load an item to display"));
-        }
-      }
-      else {
-        this.reportError(new Error("main:: Config is not defined"));
-      }
-    },
+        html += "<h1>" + options.groupInfo.title + "</h1>";
 
-    reportError: function (error) {
-      // remove loading class from body
-      domClass.remove(document.body, CSS.loading);
-      domClass.add(document.body, CSS.error);
-      // an error occurred - notify the user. In this example we pull the string from the
-      // resource.js file located in the nls folder because we've set the application up
-      // for localization. If you don't need to support multiple languages you can hardcode the
-      // strings here and comment out the call in index.html to get the localization strings.
-      // set message
-      var node = dom.byId("loading_message");
-      if (node) {
-        node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
-      }
-      return error;
-    },
+        html += "<ol>";
 
-    //--------------------------------------------------------------------------
-    //
-    //  Private Methods
-    //
-    //--------------------------------------------------------------------------
+        options.groupItems.forEach(function (item) {
+          html += "<li>" + item.title + "</li>";
+        });
 
-    _setDirection: function () {
-      var direction = this.direction;
-      var dirNode = document.getElementsByTagName("html")[0];
-      domAttr.set(dirNode, "dir", direction);
-    },
+        html += "</ol>";
 
-    _createWebmap: function (webmapItem) {
-      var webmap;
-
-      if (!webmapItem) {
-        var error = new Error("main:: webmap data does not exist.");
-        this.reportError(error);
-        return;
+        options.viewNode.innerHTML = html;
       }
 
-      if (webmapItem.data) {
-        if (webmapItem.data instanceof Error) {
-          this.reportError(webmapItem.data);
-        }
-        else {
-          webmap = new WebMap({
-            portalItem: webmapItem.data
-          });
-        }
-      }
-      else if (webmapItem.json) {
-        webmap = WebMap.fromJSON(webmapItem.json.itemData);
-        webmap.portalItem = webmapItem.json.item;
-      }
-      if (webmap) {
-        var viewProperties = {
-          map: webmap,
-          container: "viewDiv"
-        };
-        if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
-          this.config.title = webmap.portalItem.title;
-        }
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
-        var view = new MapView(viewProperties);
-        view.then(function (response) {
-          this.urlParamHelper.addToView(view, this.config);
-
-          domClass.remove(document.body, CSS.loading);
-          document.title = this.config.title;
-        }.bind(this), this.reportError);
-      }
-    },
-
-    _createWebscene: function (websceneItem) {
-      var webscene;
-      if (!websceneItem) {
-        var error = new Error("main:: webscene data does not exist.");
-        this.reportError(error);
-        return;
-      }
-      if (websceneItem.data) {
-        if (websceneItem.data instanceof Error) {
-          this.reportError(websceneItem.data);
-        }
-        else {
-          webscene = new WebScene({
-            portalItem: websceneItem.data
-          });
-        }
-      }
-      else if (websceneItem.json) {
-        webscene = WebScene.fromJSON(websceneItem.json.itemData);
-        webscene.portalItem = websceneItem.json.item;
-      }
-      if (webscene) {
-        var viewProperties = {
-          map: webscene,
-          container: "viewDiv"
-        };
-
-        if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
-          this.config.title = webscene.portalItem.title;
-        }
-
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
-        var view = new SceneView(viewProperties);
-
-        view.then(function (response) {
-
-          this.urlParamHelper.addToView(view, this.config);
-
-          domClass.remove(document.body, CSS.loading);
-          document.title = this.config.title;
-        }.bind(this), this.reportError);
-      }
-    },
-
-    _createGroupGallery: function (groupData) {
-      var groupInfoData = groupData.infoData;
-      var groupItemsData = groupData.itemsData;
-
-      if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
-        this.reportError(new Error("main:: group data does not exist."));
-        return;
-      }
-
-      var info = groupInfoData.results[0];
-      var items = groupItemsData.results;
-
-      var html = "";
-
-      html += "<h1>" + info.title + "</h1>";
-
-      html += "<ol>";
-
-      items.forEach(function (item) {
-        html += "<li>" + item.title + "</li>";
-      });
-
-      html += "</ol>";
-
-      dom.byId("viewDiv").innerHTML = html;
-
-      domClass.remove(document.body, CSS.loading);
-      document.title = this.config.title;
 
     }
 
