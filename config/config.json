@@ -1,9 +1,11 @@
 {
   "appid": "",
   "group": "",
-  "webscene": "",
-  "webmap": "",
   "title": "",
+  "webmap": "",
+  "mapViewDivId": "viewDiv",
+  "webscene": "",
+  "sceneViewDivId": "",
   "portalUrl": "https://www.arcgis.com",
   "oauthappid": "",
   "proxyUrl": "",
