@@ -134,7 +134,8 @@ define([
         // Does the app want to handle the report?
         if (this.main.reportError) {
           this.main.reportError(node, error);
-        } else {
+        }
+        else {
           node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
         }
       }
