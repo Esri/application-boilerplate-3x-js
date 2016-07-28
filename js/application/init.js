@@ -84,6 +84,7 @@ define([
       if (boilerplate) {
         this.direction = boilerplate.direction;
         this.config = boilerplate.config;
+        this.settings = boilerplate.settings;
         var boilerplateResults = boilerplate.results;
         var webmapItem = boilerplateResults.webmapItem;
         var websceneItem = boilerplateResults.websceneItem;
@@ -180,7 +181,7 @@ define([
       if (webmap) {
         var viewProperties = {
           map: webmap,
-          container: this.config.webmapNodeId
+          container: this.settings.webmap.containerId
         };
         if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
           this.config.title = webmap.portalItem.title;
@@ -228,7 +229,7 @@ define([
       if (webscene) {
         var viewProperties = {
           map: webscene,
-          container: this.config.websceneNodeId
+          container: this.settings.webscene.containerId
         };
 
         if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {

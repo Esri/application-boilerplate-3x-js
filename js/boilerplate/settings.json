@@ -1,10 +1,12 @@
 {
   "webscene": {
+    "containerId": "viewDiv",
     "fetch": true,
     "useLocal": false,
     "localFile": "boilerplate/demoWebscene.json"
   },
   "webmap": {
+    "containerId": "viewDiv",
     "fetch": true,
     "useLocal": false,
     "localFile": "boilerplate/demoWebmap.json"
