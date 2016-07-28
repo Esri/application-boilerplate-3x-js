@@ -198,7 +198,7 @@ define([
             config: this.config,
             viewNode: dom.byId("viewDiv"),
             view: view,
-            mapOrScene: webmap
+            webMap: webmap
           });
         }.bind(this), this.reportError);
       }
@@ -251,7 +251,7 @@ define([
             config: this.config,
             viewNode: dom.byId("viewDiv"),
             view: view,
-            mapOrScene: webscene
+            webScene: webscene
           });
         }.bind(this), this.reportError);
       }
