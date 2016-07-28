@@ -44,8 +44,7 @@ define([
 
     /**
      * Runs the custom part of an application following boilerplate completion.
-     * @param {Object} options Structure containing 'config' (configuration assembled by boilerplate), 'viewNode'
-     * (dom node for main app display), and optional properties 'view' (resolved MapView or SceneView created in init),
+     * @param {Object} options Structure containing 'config' (configuration assembled by boilerplate), and optional properties 'view' (resolved MapView or SceneView created in init),
      * 'webScene' (resolved WebScene created in init), 'webMap' (resolved WebMap created in init), 'groupInfo' (ArcGIS
      * item groupInfo for group), 'groupItems' (list of groupItems in group)
      */
@@ -66,7 +65,7 @@ define([
 
         html += "</ol>";
 
-        options.viewNode.innerHTML = html;
+        document.body.innerHTML = html;
       }
 
 
