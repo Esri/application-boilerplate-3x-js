@@ -179,7 +179,7 @@ define([
       if (webmap) {
         var viewProperties = {
           map: webmap,
-          container: "viewDiv"
+          container: this.config.mapViewDivId
         };
         if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
           this.config.title = webmap.portalItem.title;
@@ -196,7 +196,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
-            viewNode: dom.byId("viewDiv"),
+            viewNode: dom.byId(this.config.mapViewDivId),
             view: view,
             webMap: webmap
           });
@@ -228,7 +228,7 @@ define([
       if (webscene) {
         var viewProperties = {
           map: webscene,
-          container: "viewDiv"
+          container: this.config.sceneViewDivId
         };
 
         if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
@@ -249,7 +249,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
-            viewNode: dom.byId("viewDiv"),
+            viewNode: dom.byId(this.config.sceneViewDivId),
             view: view,
             webScene: webscene
           });
