@@ -198,6 +198,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
+            settings: this.settings,
             view: view,
             webMap: webmap
           });
@@ -250,6 +251,7 @@ define([
           // Launch the app specifics
           this.main.start({
             config: this.config,
+            settings: this.settings,
             view: view,
             webScene: webscene
           });
@@ -275,6 +277,7 @@ define([
       // Launch the app specifics
       this.main.start({
         config: this.config,
+        settings: this.settings,
         groupInfo: info,
         groupItems: items
       });
