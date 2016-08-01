@@ -145,14 +145,14 @@ define([
     },
 
     _createWebMap: function (webMapItem) {
-      this.itemHelper.createWebMap(webMapItem).then(function (webmap) {
+      this.itemHelper.createWebMap(webMapItem).then(function (map) {
         var viewProperties = {
-          map: webmap,
-          container: this.settings.webmap.containerId
+          map: map,
+          container: this.settings.map.containerId
         };
 
-        if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
-          this.config.title = webmap.portalItem.title;
+        if (!this.config.title && map.portalItem && map.portalItem.title) {
+          this.config.title = map.portalItem.title;
         }
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
@@ -170,14 +170,14 @@ define([
     },
 
     _createWebScene: function (webSceneItem) {
-      this.itemHelper.createWebScene(webSceneItem).then(function (webscene) {
+      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
         var viewProperties = {
-          map: webscene,
-          container: this.settings.webscene.containerId
+          map: map,
+          container: this.settings.map.containerId
         };
 
-        if (!this.config.title && webscene.portalItem && webscene.portalItem.title) {
-          this.config.title = webscene.portalItem.title;
+        if (!this.config.title && map.portalItem && map.portalItem.title) {
+          this.config.title = map.portalItem.title;
         }
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
@@ -210,7 +210,6 @@ define([
 
       domClass.remove(document.body, CSS.loading);
       document.title = this.config.title;
-
 
       if (info && items) {
         var html = "";
