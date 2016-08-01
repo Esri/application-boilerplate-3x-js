@@ -39,7 +39,11 @@
       var mainApp = new applicationMain();
 
       // create the template. This will take care of all the logic required for template applications. If unsuccessful, we're calling error on main. Otherwise, we call startup on main.
-      new Boilerplate(JSON.parse(boilerplateSettings)).then(mainApp.init.bind(mainApp), mainApp.reportError.bind(mainApp));
+      new Boilerplate(JSON.parse(boilerplateSettings)).then(function (boilerplate) {
+        mainApp.init(boilerplate);
+      }, function (error) {
+        mainApp.reportError(error);
+      });
 
     });
 
