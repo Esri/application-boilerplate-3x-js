@@ -20,12 +20,14 @@ The boilerplate will handle fetching this information, store it, and perform set
 
 This bare-bones app includes all the code you need to build an ArcGIS Online configurable application. It will save you time when:
 
-*	Making an ArcGIS Online compatible application.
-*	Using your ArcGIS Online webscene to power the application.
-*	Localizing your application in different languages.
-*	Capturing URL parameters and using them in your application.
-*	Using settings from your ArcGIS Online portal or configured application.
-*	Enabling your application to sign-in to ArcGIS Online using [OAuth 2.0](http://oauth.net/2/).
+- Making an ArcGIS Online compatible application.
+- Using your ArcGIS Online webscene to power the application.
+- Localizing your application in different languages.
+- Capturing URL parameters and using them in your application.
+- Using settings from your ArcGIS Online portal or configured application.
+- Enabling your application to sign-in to ArcGIS Online using [OAuth 2.0](http://oauth.net/2/).
+
+## Preview
 
 - [View it live: Webscene](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
 - [View it live: Webmap](http://esri.github.io/application-boilerplate-js/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
@@ -243,7 +245,7 @@ Query a group by parameters. `Boilerplate.queryGroupItems(options)`.
 
 Review the following ArcGIS.com help topics for details on Templates:
 
-*	[Writing your first application](https://developers.arcgis.com/en/javascript/jstutorials/intro_firstmap_amd.html)
+- [Writing your first application](https://developers.arcgis.com/en/javascript/jstutorials/intro_firstmap_amd.html)
 *   [Make your first app](http://doc.arcgis.com/en/arcgis-online/create-maps/make-your-first-app.htm)
 *   [Create apps from maps](http://doc.arcgis.com/en/arcgis-online/create-maps/create-app-templates.htm)
 *   [Add configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm)
