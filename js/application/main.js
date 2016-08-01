@@ -115,7 +115,7 @@ define([
         }
       }
       else {
-        this.reportError(new Error("main:: Config is not defined"));
+        this.reportError(new Error("main:: Boilerplate is not defined"));
       }
     },
 
