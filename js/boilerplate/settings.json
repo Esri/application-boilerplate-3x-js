@@ -3,13 +3,13 @@
     "containerId": "viewDiv",
     "fetch": true,
     "useLocal": false,
-    "localFile": "boilerplate/demoWebscene.json"
+    "localFile": "boilerplate/demoWebScene.json"
   },
   "webmap": {
     "containerId": "viewDiv",
     "fetch": true,
     "useLocal": false,
-    "localFile": "boilerplate/demoWebmap.json"
+    "localFile": "boilerplate/demoWebMap.json"
   },
   "group": {
     "fetchInfo": true,

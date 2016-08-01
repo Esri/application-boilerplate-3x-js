@@ -15,6 +15,8 @@
  */
 define([
 
+  "boilerplate/ItemHelper",
+
   "boilerplate/UrlParamHelper",
 
   "dojo/i18n!./nls/resources",
@@ -28,23 +30,17 @@ define([
 
   "esri/views/SceneView",
 
-  "esri/WebScene",
-
   "esri/views/MapView",
-
-  "esri/WebMap",
 
   "dojo/domReady!"
 
 ], function (
-  UrlParamHelper,
+  ItemHelper, UrlParamHelper,
   i18n,
   declare, lang,
   dom, domAttr, domClass,
   SceneView,
-  WebScene,
-  MapView,
-  WebMap
+  MapView
 ) {
 
   //--------------------------------------------------------------------------
@@ -91,21 +87,22 @@ define([
         this.config = boilerplate.config;
         this.settings = boilerplate.settings;
         var boilerplateResults = boilerplate.results;
-        var webmapItem = boilerplateResults.webmapItem;
-        var websceneItem = boilerplateResults.websceneItem;
+        var webMapItem = boilerplateResults.webMapItem;
+        var webSceneItem = boilerplateResults.webSceneItem;
         var groupData = boilerplateResults.group;
 
         document.documentElement.lang = boilerplate.locale;
 
         this.urlParamHelper = new UrlParamHelper();
+        this.itemHelper = new ItemHelper();
 
         this._setDirection();
 
-        if (webmapItem) {
-          this._createWebmap(webmapItem);
+        if (webMapItem) {
+          this._createWebMap(webMapItem);
         }
-        else if (websceneItem) {
-          this._createWebscene(websceneItem);
+        else if (webSceneItem) {
+          this._createWebScene(webSceneItem);
         }
         else if (groupData) {
           this._createGroupGallery(groupData);
@@ -147,37 +144,17 @@ define([
       domAttr.set(dirNode, "dir", direction);
     },
 
-    _createWebmap: function (webmapItem) {
-      var webmap;
-
-      if (!webmapItem) {
-        var error = new Error("main:: webmap data does not exist.");
-        this.reportError(error);
-        return;
-      }
-
-      if (webmapItem.data) {
-        if (webmapItem.data instanceof Error) {
-          this.reportError(webmapItem.data);
-        }
-        else {
-          webmap = new WebMap({
-            portalItem: webmapItem.data
-          });
-        }
-      }
-      else if (webmapItem.json) {
-        webmap = WebMap.fromJSON(webmapItem.json.itemData);
-        webmap.portalItem = webmapItem.json.item;
-      }
-      if (webmap) {
+    _createWebMap: function (webMapItem) {
+      this.itemHelper.createWebMap(webMapItem).then(function (webmap) {
         var viewProperties = {
           map: webmap,
           container: this.settings.webmap.containerId
         };
+
         if (!this.config.title && webmap.portalItem && webmap.portalItem.title) {
           this.config.title = webmap.portalItem.title;
         }
+
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
         var view = new MapView(viewProperties);
@@ -188,31 +165,12 @@ define([
           document.title = this.config.title;
 
         }.bind(this), this.reportError);
-      }
+
+      }.bind(this), this.reportError);
     },
 
-    _createWebscene: function (websceneItem) {
-      var webscene;
-      if (!websceneItem) {
-        var error = new Error("main:: webscene data does not exist.");
-        this.reportError(error);
-        return;
-      }
-      if (websceneItem.data) {
-        if (websceneItem.data instanceof Error) {
-          this.reportError(websceneItem.data);
-        }
-        else {
-          webscene = new WebScene({
-            portalItem: websceneItem.data
-          });
-        }
-      }
-      else if (websceneItem.json) {
-        webscene = WebScene.fromJSON(websceneItem.json.itemData);
-        webscene.portalItem = websceneItem.json.item;
-      }
-      if (webscene) {
+    _createWebScene: function (webSceneItem) {
+      this.itemHelper.createWebScene(webSceneItem).then(function (webscene) {
         var viewProperties = {
           map: webscene,
           container: this.settings.webscene.containerId
@@ -234,7 +192,8 @@ define([
           document.title = this.config.title;
 
         }.bind(this), this.reportError);
-      }
+
+      }.bind(this), this.reportError);
     },
 
     _createGroupGallery: function (groupData) {

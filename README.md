@@ -29,8 +29,8 @@ This bare-bones app includes all the code you need to build an ArcGIS Online con
 
 # Preview examples
 
-- [Webscene](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
-- [Webmap](http://esri.github.io/application-boilerplate-js/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
+- [WebScene](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
+- [WebMap](http://esri.github.io/application-boilerplate-js/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
 - [Group](http://esri.github.io/application-boilerplate-js/?group=908dd46e749d4565a17d2b646ace7b1a)
 
 [![App](https://raw.github.com/Esri/application-boilerplate-js/4master/images/thumb.png)](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
@@ -45,8 +45,8 @@ This is the configuration options for the application. `config.json`
 |---|---|---|---|
 |appid|Application ID for querying application configuration|String|""|
 |group|Group ID for querying a portal group|String|""|
-|webscene|Webscene ID for querying a webscene|String|"19faa71a3bf6468cae35b4fce9393a7d"|
-|webmap|Webmap ID for querying a webmap|String|""|
+|webscene|WebScene ID for querying a webscene|String|"19faa71a3bf6468cae35b4fce9393a7d"|
+|webmap|WebMap ID for querying a webmap|String|""|
 |title|Title of the application|String|""|
 |portalUrl|URL to the ArcGIS Portal|String|"https://www.arcgis.com"|
 |oauthappid|oAuth authentication ID|String|""|
@@ -90,14 +90,14 @@ These are the configuration options for the Boilerplate. `settings.json`
 
 |property|description|type|default|
 |---|---|---|---|
-|webscene|Webscene related settings|Object|See below|
+|webscene|WebScene related settings|Object|See below|
 |webscene.fetch|When true the application will query for a webscene|Boolean|true|
 |webscene.useLocal|Use a local hosted web scene instead of a web scene on ArcGIS or portal|Boolean|false|
-|webscene.localFile|Webscene file to use for the local web scene|String|"boilerplate/demoWebscene.json"|
-|webmap|Webmap related settings|Object|See below|
+|webscene.localFile|WebScene file to use for the local web scene|String|"boilerplate/demoWebScene.json"|
+|webmap|WebMap related settings|Object|See below|
 |webmap.fetch|When true the application will query for a webmap|Boolean|false|
 |webmap.useLocal|Use a local hosted web map instead of a web map on ArcGIS or portal|Boolean|false|
-|webmap.localFile|Webmap file to use for the local web map|String|"boilerplate/demoWebmap.json"|
+|webmap.localFile|WebMap file to use for the local web map|String|"boilerplate/demoWebMap.json"|
 |group|Group related settings|Object|See below|
 |group.fetchInfo|When true the application will query for a group's information|Boolean|false|
 |group.fetchItems|When true the application will query for a group's items|Boolean|false|
@@ -114,12 +114,12 @@ These are the configuration options for the Boilerplate. `settings.json`
   "webscene": {
     "fetch": true,
     "useLocal": false,
-    "localFile": "boilerplate/demoWebscene.json"
+    "localFile": "boilerplate/demoWebScene.json"
   },
   "webmap": {
     "fetch": false,
     "useLocal": false,
-    "localFile": "boilerplate/demoWebmap.json"
+    "localFile": "boilerplate/demoWebMap.json"
   },
   "group": {
     "fetchInfo": false,
@@ -176,8 +176,8 @@ The template consists of the following folders and files:
             - webmap
             - helperServices: geometry, print, locator service urls
             - proxy url
-        - **demoWebmap.json:** An example local webmap JSON file. Can be turned on in the boilerplate `settings.json`.
-        - **demoWebscene.json:** An example local webscene JSON file. Can be turned on in the boilerplate `settings.json`.
+        - **demoWebMap.json:** An example local webmap JSON file. Can be turned on in the boilerplate `settings.json`.
+        - **demoWebScene.json:** An example local webscene JSON file. Can be turned on in the boilerplate `settings.json`.
         - **settings.json:** Customize how the boilerplate operates by editing this file.
 - **/resources/:** Contains helpful files for your application.
     - **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
