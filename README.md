@@ -179,6 +179,8 @@ The template consists of the following folders and files:
         - **demoWebMap.json:** An example local webmap JSON file. Can be turned on in the boilerplate `settings.json`.
         - **demoWebScene.json:** An example local webscene JSON file. Can be turned on in the boilerplate `settings.json`.
         - **settings.json:** Customize how the boilerplate operates by editing this file.
+        - **ItemHelper.js:** Contains common methods to create a WebScene or WebMap from an item.
+        - **UrlParamHelper.js:** Contains common methods to convert string URL parameter values into API classes.
 - **/resources/:** Contains helpful files for your application.
     - **resources/configurationPanel.js** Default configuration panel settings for the template. This is only applicable to configurable templates. This example will create a configuration panel with one dropdown list that contains three template color choices (seaside, chrome, pavement). When the templateConfig.js module retrieves any configurable settings you'll get the theme name back in a parameter named theme. Then you can apply the necessary css to your application to apply the new colors - like change the border color etc. See the [Adding configurable parameters to templates](http://doc.arcgis.com/en/arcgis-online/create-maps/configurable-templates.htm) help topic for more details.
 - **index.html**: The default html file for the application.
