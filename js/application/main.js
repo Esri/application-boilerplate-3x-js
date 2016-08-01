@@ -148,7 +148,7 @@ define([
       this.itemHelper.createWebMap(webMapItem).then(function (map) {
         var viewProperties = {
           map: map,
-          container: this.settings.map.containerId
+          container: this.settings.webmap.containerId
         };
 
         if (!this.config.title && map.portalItem && map.portalItem.title) {
@@ -173,7 +173,7 @@ define([
       this.itemHelper.createWebScene(webSceneItem).then(function (map) {
         var viewProperties = {
           map: map,
-          container: this.settings.map.containerId
+          container: this.settings.webscene.containerId
         };
 
         if (!this.config.title && map.portalItem && map.portalItem.title) {
