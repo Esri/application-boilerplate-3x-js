@@ -28,19 +28,13 @@ define([
   "dojo/dom-attr",
   "dojo/dom-class",
 
-  "esri/views/SceneView",
-
-  "esri/views/MapView",
-
   "dojo/domReady!"
 
 ], function (
   ItemHelper, UrlParamHelper,
   i18n,
   declare, lang,
-  dom, domAttr, domClass,
-  SceneView,
-  MapView
+  dom, domAttr, domClass
 ) {
 
   //--------------------------------------------------------------------------
@@ -146,6 +140,7 @@ define([
 
     _createWebMap: function (webMapItem) {
       this.itemHelper.createWebMap(webMapItem).then(function (map) {
+
         var viewProperties = {
           map: map,
           container: this.settings.webmap.containerId
@@ -157,20 +152,26 @@ define([
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        var view = new MapView(viewProperties);
-        view.then(function (response) {
-          this.urlParamHelper.addToView(view, this.config);
+        require(["esri/views/MapView"], function (MapView) {
 
-          domClass.remove(document.body, CSS.loading);
-          document.title = this.config.title;
+          var view = new MapView(viewProperties);
 
-        }.bind(this), this.reportError);
+          view.then(function (response) {
+            this.urlParamHelper.addToView(view, this.config);
+
+            domClass.remove(document.body, CSS.loading);
+            document.title = this.config.title;
+
+          }.bind(this), this.reportError);
+
+        }.bind(this));
 
       }.bind(this), this.reportError);
     },
 
     _createWebScene: function (webSceneItem) {
       this.itemHelper.createWebScene(webSceneItem).then(function (map) {
+
         var viewProperties = {
           map: map,
           container: this.settings.webscene.containerId
@@ -182,16 +183,20 @@ define([
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        var view = new SceneView(viewProperties);
+        require(["esri/views/SceneView"], function (SceneView) {
 
-        view.then(function (response) {
+          var view = new SceneView(viewProperties);
 
-          this.urlParamHelper.addToView(view, this.config);
+          view.then(function (response) {
 
-          domClass.remove(document.body, CSS.loading);
-          document.title = this.config.title;
+            this.urlParamHelper.addToView(view, this.config);
 
-        }.bind(this), this.reportError);
+            domClass.remove(document.body, CSS.loading);
+            document.title = this.config.title;
+
+          }.bind(this), this.reportError);
+
+        }.bind(this));
 
       }.bind(this), this.reportError);
     },
