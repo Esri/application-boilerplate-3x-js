@@ -13,18 +13,17 @@
     <script type="text/javascript" src="//js.arcgis.com/4.0/"></script>
     <script type="text/javascript">
       require([
-        "boilerplate",
+        "arcgis-devtools",
+        "dojo/ready",
         "application"
-      ], function (Boilerplate, applicationMain) {
-
-        // create my main application. Start placing your logic in the main.js file.
-        var mainApp = new applicationMain();
-
-        // create the template. This will take care of all the logic required for template applications.
-        new Boilerplate().always(function (boilerplate) {
-          mainApp.init(boilerplate);
+      ], function (arcgisDevTools, ready, applicationMain) {
+        // ARCGIS DEV TOOLS //
+        arcgisDevTools.install();
+        // MAKE SURE HTML AND DIJITS AREA READY... //
+        ready(function () {
+          // create my main application. Start placing your logic in the main.js file.
+          var mainApp = new applicationMain();
         });
-
       });
     </script>
   </head>

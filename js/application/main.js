@@ -14,6 +14,7 @@
  | limitations under the License.
  */
 define([
+  "boilerplate",
   "boilerplate/ItemHelper",
   "boilerplate/UrlParamHelper",
   "dojo/i18n!./nls/resources",
@@ -21,15 +22,9 @@ define([
   "dojo/_base/lang",
   "dojo/dom",
   "dojo/dom-attr",
-  "dojo/dom-class",
-  "dojo/domReady!"
-], function (ItemHelper, UrlParamHelper, i18n, declare, lang, dom, domAttr, domClass) {
-
-  //--------------------------------------------------------------------------
-  //
-  //  Static Variables
-  //
-  //--------------------------------------------------------------------------
+  "dojo/dom-class"
+], function (Boilerplate, ItemHelper, UrlParamHelper, i18n,
+             declare, lang, dom, domAttr, domClass) {
 
   var CSS = {
     loading: "boilerplate--loading",
@@ -37,52 +32,42 @@ define([
     errorIcon: "esri-icon-notice-round"
   };
 
-  return declare(null, {
+  //return declare(null, {
+  return Boilerplate.createSubclass({
 
     /**
-     *
+     *  CONSTRUCTOR
      */
     constructor: function () {
-      /*...*/
+      this.always(this.init.bind(this));
     },
 
     config: null,
     direction: null,
 
-
     /**
      *
-     * @param boilerplate
      */
-    init: function (boilerplate) {
-      if(boilerplate) {
-        this.direction = boilerplate.direction;
-        this.config = boilerplate.config;
-        this.settings = boilerplate.settings;
-        var boilerplateResults = boilerplate.results;
-        var webMapItem = boilerplateResults.webMapItem;
-        var webSceneItem = boilerplateResults.webSceneItem;
-        var groupData = boilerplateResults.group;
+    init: function () {
 
-        document.documentElement.lang = boilerplate.locale;
+      // SET LOCALE AND DIRECTION //
+      this._setLocaleAndDirection();
 
-        this.urlParamHelper = new UrlParamHelper();
-        this.itemHelper = new ItemHelper();
+      // HELPERS //
+      this.urlParamHelper = new UrlParamHelper();
+      this.itemHelper = new ItemHelper();
 
-        this._setDirection();
 
-        if(webMapItem) {
-          this._createWebMap(webMapItem);
-        } else if(webSceneItem) {
-          this._createWebScene(webSceneItem);
-        } else if(groupData) {
-          this._createGroupGallery(groupData);
-        } else {
-          this.reportError(new Error("main:: Could not load an item to display"));
-        }
+      if(this.results.webMapItem) {
+        this._createWebMap(this.results.webMapItem);
+      } else if(this.results.webSceneItem) {
+        this._createWebScene(this.results.webSceneItem);
+      } else if(this.results.groupData) {
+        this._createGroupGallery(this.results.groupData);
       } else {
-        this.reportError(new Error("main:: Boilerplate is not defined"));
+        this.reportError(new Error("main:: Could not load an item to display"));
       }
+
     },
 
     /**
@@ -107,81 +92,17 @@ define([
     },
 
     /**
+     * SET LOCALE AND DIRECTION
      *
      * @private
      */
-    _setDirection: function () {
+    _setLocaleAndDirection: function () {
+      // LOCALE //
+      document.documentElement.lang = this.locale;
+      // DIRECTION //
       var direction = this.direction;
       var dirNode = document.getElementsByTagName("html")[0];
       domAttr.set(dirNode, "dir", direction);
-    },
-
-    /**
-     *
-     * @param webMapItem
-     * @private
-     */
-    _createWebMap: function (webMapItem) {
-      this.itemHelper.createWebMap(webMapItem).then(function (map) {
-
-        var viewProperties = {
-          map: map,
-          container: this.settings.webmap.containerId
-        };
-
-        if(!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
-
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
-        require(["esri/views/MapView"], function (MapView) {
-
-          var view = new MapView(viewProperties);
-          view.then(function (response) {
-            this.urlParamHelper.addToView(view, this.config);
-
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
-
-          }.bind(this), this.reportError);
-        }.bind(this));
-      }.bind(this), this.reportError);
-    },
-
-    /**
-     *
-     * @param webSceneItem
-     * @private
-     */
-    _createWebScene: function (webSceneItem) {
-      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
-
-        var viewProperties = {
-          map: map,
-          container: this.settings.webscene.containerId
-        };
-
-        if(!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
-
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
-        require(["esri/views/SceneView"], function (SceneView) {
-
-          var view = new SceneView(viewProperties);
-          view.then(function (response) {
-
-            this.urlParamHelper.addToView(view, this.config);
-
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
-
-          }.bind(this), this.reportError);
-        }.bind(this));
-      }.bind(this), this.reportError);
-
     },
 
     /**
@@ -216,7 +137,121 @@ define([
         document.body.innerHTML = html;
       }
 
+    },
+
+    /**
+     *
+     * @param item
+     * @private
+     */
+    _createView: function (item) {
+
+      var type = (item.type === "Web Map") ? "Map" : "Scene";
+      var actionType = lang.replace("createWeb{type}", { type: type });
+      var viewType = lang.replace("esri/views/{type}View", { type: type });
+      var settingType = lang.replace("web{type}", { type: type.toLowerCase() });
+
+      this.itemHelper[actionType](item).then(function (map) {
+
+        // TITLE //
+        if(!this.config.title && map.portalItem && map.portalItem.title) {
+          this.config.title = map.portalItem.title;
+        }
+
+        // GET VIEW //
+        require([viewType], function (MapOrSceneView) {
+
+          // VIEW PROPERTIES //
+          var viewProperties = lang.mixin({
+            map: map,
+            container: this.settings[settingType].containerId
+          }, this.urlParamHelper.getViewProperties(this.config));
+
+          var view = new MapOrSceneView(viewProperties);
+          view.then(function (response) {
+            this.urlParamHelper.addToView(view, this.config);
+
+            domClass.remove(document.body, CSS.loading);
+            document.title = this.config.title;
+
+          }.bind(this), this.reportError);
+        }.bind(this));
+      }.bind(this), this.reportError);
+    },
+
+    /**
+     *
+     * @param webMapItem
+     * @private
+     */
+    _createWebMap: function (webMapItem) {
+
+      this.itemHelper.createWebMap(webMapItem).then(function (map) {
+
+        // TITLE //
+        if(!this.config.title && map.portalItem && map.portalItem.title) {
+          this.config.title = map.portalItem.title;
+        }
+
+        // GET VIEW //
+        require(["esri/views/MapView"], function (MapView) {
+
+          // VIEW PROPERTIES //
+          var viewProperties = lang.mixin({
+            map: map,
+            container: this.settings.webmap.containerId
+          }, this.urlParamHelper.getViewProperties(this.config));
+
+          var view = new MapView(viewProperties);
+          view.then(function (response) {
+            this.urlParamHelper.addToView(view, this.config);
+
+            domClass.remove(document.body, CSS.loading);
+            document.title = this.config.title;
+
+          }.bind(this), this.reportError);
+        }.bind(this));
+      }.bind(this), this.reportError);
+    },
+
+    /**
+     *
+     * @param webSceneItem
+     * @private
+     */
+    _createWebScene: function (webSceneItem) {
+
+      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
+
+        // TITLE //
+        if(!this.config.title && map.portalItem && map.portalItem.title) {
+          this.config.title = map.portalItem.title;
+        }
+
+        // SCENE VIEW //
+        require(["esri/views/SceneView"], function (SceneView) {
+
+          // VIEW PROPERTIES //
+          var viewProperties = lang.mixin({
+            map: map,
+            container: this.settings.webscene.containerId
+          }, this.urlParamHelper.getViewProperties(this.config));
+
+          // CREATE VIEW //
+          var view = new SceneView(viewProperties);
+          view.then(function (response) {
+
+            this.urlParamHelper.addToView(view, this.config);
+
+            domClass.remove(document.body, CSS.loading);
+            document.title = this.config.title;
+
+          }.bind(this), this.reportError);
+        }.bind(this));
+      }.bind(this), this.reportError);
+
     }
+
 
   });
 });

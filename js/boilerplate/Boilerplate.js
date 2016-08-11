@@ -73,6 +73,9 @@ define([
 
     constructor: function () {
 
+      // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
+      this.config = JSON.parse(applicationConfig);
+
       // mixin defaults with boilerplate configuration
       this.settings = lang.mixin({
         "webscene": {},
@@ -81,9 +84,6 @@ define([
         "portal": {},
         "urlItems": []
       }, JSON.parse(boilerplateSettings));
-
-      // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
-      this.config = JSON.parse(applicationConfig);
 
       // stores results from queries
       this.results = {};

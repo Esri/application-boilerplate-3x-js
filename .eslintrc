@@ -27,9 +27,11 @@
     "no-unreachable": 2,
     "use-isnan": 2,
     "valid-typeof": 2,
-
     // Best Practices
-    "curly": [2, "multi-line"],
+    "curly": [
+      2,
+      "multi-line"
+    ],
     "no-alert": 2,
     "no-caller": 2,
     "no-eval": 2,
@@ -39,14 +41,20 @@
     "no-proto": 2,
     "no-redeclare": 2,
     "no-with": 2,
-    "wrap-iife": [2, "any"],
-
+    "wrap-iife": [
+      2,
+      "any"
+    ],
     // Variables
     "no-delete-var": 2,
     "no-shadow-restricted-names": 2,
     "no-undef": 2,
-    "no-unused-vars": [1, { "args": "none" }],
-
+    "no-unused-vars": [
+      1,
+      {
+        "args": "none"
+      }
+    ],
     // Stylistic Issues
     "no-new-object": 1,
     "semi": 2

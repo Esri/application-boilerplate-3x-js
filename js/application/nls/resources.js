@@ -1,6 +1,6 @@
 define({
-  root: ({
+  root: {
     error: "Error"
-  }),
+  },
   "fr": 1
 });
