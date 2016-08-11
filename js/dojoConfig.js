@@ -6,7 +6,7 @@ dojoConfig = {
   packages: [
     { name: "arcgis-devtools", location: "https://rawgit.com/ycabon/arcgis-js-api-devtools/master/dist" },
     { name: "widgets", location: "//maps.esri.com/AGSJS_Demos/support/widgets" },
-    { name: "put-selector", location: "//maps.esri.com/AGSJS_Demos/support/put-selector/" },
+    { name: "put-selector", location: "//maps.esri.com/AGSJS_Demos/support/put-selector" },
     { name: "application", location: package_path + "/js/application", main: "main" },
     { name: "boilerplate", location: package_path + "/js/boilerplate", main: "Boilerplate" },
     { name: "config", location: package_path + "/config" }

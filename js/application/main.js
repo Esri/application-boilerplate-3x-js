@@ -20,11 +20,12 @@ define([
   "dojo/i18n!./nls/resources",
   "dojo/_base/declare",
   "dojo/_base/lang",
+  "dojo/Deferred",
   "dojo/dom",
   "dojo/dom-attr",
   "dojo/dom-class"
 ], function (Boilerplate, ItemHelper, UrlParamHelper, i18n,
-             declare, lang, dom, domAttr, domClass) {
+             declare, lang, Deferred, dom, domAttr, domClass) {
 
   var CSS = {
     loading: "boilerplate--loading",
@@ -57,13 +58,13 @@ define([
       this.urlParamHelper = new UrlParamHelper();
       this.itemHelper = new ItemHelper();
 
-
       if(this.results.webMapItem) {
-        this._createWebMap(this.results.webMapItem);
+        this._createView(this.results.webMapItem).then(this.applicationReady.bind(this));
       } else if(this.results.webSceneItem) {
-        this._createWebScene(this.results.webSceneItem);
+        this._createView(this.results.webSceneItem).then(this.applicationReady.bind(this));
       } else if(this.results.groupData) {
         this._createGroupGallery(this.results.groupData);
+        this.applicationReady();
       } else {
         this.reportError(new Error("main:: Could not load an item to display"));
       }
@@ -145,6 +146,7 @@ define([
      * @private
      */
     _createView: function (item) {
+      var deferred = new Deferred();
 
       var type = (item.type === "Web Map") ? "Map" : "Scene";
       var actionType = lang.replace("createWeb{type}", { type: type });
@@ -174,81 +176,22 @@ define([
             domClass.remove(document.body, CSS.loading);
             document.title = this.config.title;
 
+            deferred.resolve({ map: map, view: view });
+
           }.bind(this), this.reportError);
         }.bind(this));
       }.bind(this), this.reportError);
+
+      return deferred.promise;
     },
+
 
     /**
      *
-     * @param webMapItem
-     * @private
      */
-    _createWebMap: function (webMapItem) {
+    applicationReady: function () {
 
-      this.itemHelper.createWebMap(webMapItem).then(function (map) {
-
-        // TITLE //
-        if(!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
-
-        // GET VIEW //
-        require(["esri/views/MapView"], function (MapView) {
-
-          // VIEW PROPERTIES //
-          var viewProperties = lang.mixin({
-            map: map,
-            container: this.settings.webmap.containerId
-          }, this.urlParamHelper.getViewProperties(this.config));
-
-          var view = new MapView(viewProperties);
-          view.then(function (response) {
-            this.urlParamHelper.addToView(view, this.config);
-
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
-
-          }.bind(this), this.reportError);
-        }.bind(this));
-      }.bind(this), this.reportError);
-    },
-
-    /**
-     *
-     * @param webSceneItem
-     * @private
-     */
-    _createWebScene: function (webSceneItem) {
-
-      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
-
-        // TITLE //
-        if(!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
-
-        // SCENE VIEW //
-        require(["esri/views/SceneView"], function (SceneView) {
-
-          // VIEW PROPERTIES //
-          var viewProperties = lang.mixin({
-            map: map,
-            container: this.settings.webscene.containerId
-          }, this.urlParamHelper.getViewProperties(this.config));
-
-          // CREATE VIEW //
-          var view = new SceneView(viewProperties);
-          view.then(function (response) {
-
-            this.urlParamHelper.addToView(view, this.config);
-
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
-
-          }.bind(this), this.reportError);
-        }.bind(this));
-      }.bind(this), this.reportError);
+      alert("We can finally do what we need...");
 
     }
 
