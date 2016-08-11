@@ -14,28 +14,16 @@
  | limitations under the License.
  */
 define([
-
   "boilerplate/ItemHelper",
-
   "boilerplate/UrlParamHelper",
-
   "dojo/i18n!./nls/resources",
-
   "dojo/_base/declare",
   "dojo/_base/lang",
-
   "dojo/dom",
   "dojo/dom-attr",
   "dojo/dom-class",
-
   "dojo/domReady!"
-
-], function (
-  ItemHelper, UrlParamHelper,
-  i18n,
-  declare, lang,
-  dom, domAttr, domClass
-) {
+], function (ItemHelper, UrlParamHelper, i18n, declare, lang, dom, domAttr, domClass) {
 
   //--------------------------------------------------------------------------
   //
@@ -51,32 +39,23 @@ define([
 
   return declare(null, {
 
-    //--------------------------------------------------------------------------
-    //
-    //  Lifecycle
-    //
-    //--------------------------------------------------------------------------
-
-    constructor: function () {},
-
-    //--------------------------------------------------------------------------
-    //
-    //  Variables
-    //
-    //--------------------------------------------------------------------------
+    /**
+     *
+     */
+    constructor: function () {
+      /*...*/
+    },
 
     config: null,
-
     direction: null,
 
-    //--------------------------------------------------------------------------
-    //
-    //  Public Methods
-    //
-    //--------------------------------------------------------------------------
 
+    /**
+     *
+     * @param boilerplate
+     */
     init: function (boilerplate) {
-      if (boilerplate) {
+      if(boilerplate) {
         this.direction = boilerplate.direction;
         this.config = boilerplate.config;
         this.settings = boilerplate.settings;
@@ -92,24 +71,25 @@ define([
 
         this._setDirection();
 
-        if (webMapItem) {
+        if(webMapItem) {
           this._createWebMap(webMapItem);
-        }
-        else if (webSceneItem) {
+        } else if(webSceneItem) {
           this._createWebScene(webSceneItem);
-        }
-        else if (groupData) {
+        } else if(groupData) {
           this._createGroupGallery(groupData);
-        }
-        else {
+        } else {
           this.reportError(new Error("main:: Could not load an item to display"));
         }
-      }
-      else {
+      } else {
         this.reportError(new Error("main:: Boilerplate is not defined"));
       }
     },
 
+    /**
+     *
+     * @param error
+     * @returns {*}
+     */
     reportError: function (error) {
       // remove loading class from body
       domClass.remove(document.body, CSS.loading);
@@ -120,24 +100,27 @@ define([
       // strings here and comment out the call in index.html to get the localization strings.
       // set message
       var node = dom.byId("loading_message");
-      if (node) {
+      if(node) {
         node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
       }
       return error;
     },
 
-    //--------------------------------------------------------------------------
-    //
-    //  Private Methods
-    //
-    //--------------------------------------------------------------------------
-
+    /**
+     *
+     * @private
+     */
     _setDirection: function () {
       var direction = this.direction;
       var dirNode = document.getElementsByTagName("html")[0];
       domAttr.set(dirNode, "dir", direction);
     },
 
+    /**
+     *
+     * @param webMapItem
+     * @private
+     */
     _createWebMap: function (webMapItem) {
       this.itemHelper.createWebMap(webMapItem).then(function (map) {
 
@@ -146,7 +129,7 @@ define([
           container: this.settings.webmap.containerId
         };
 
-        if (!this.config.title && map.portalItem && map.portalItem.title) {
+        if(!this.config.title && map.portalItem && map.portalItem.title) {
           this.config.title = map.portalItem.title;
         }
 
@@ -155,7 +138,6 @@ define([
         require(["esri/views/MapView"], function (MapView) {
 
           var view = new MapView(viewProperties);
-
           view.then(function (response) {
             this.urlParamHelper.addToView(view, this.config);
 
@@ -163,12 +145,15 @@ define([
             document.title = this.config.title;
 
           }.bind(this), this.reportError);
-
         }.bind(this));
-
       }.bind(this), this.reportError);
     },
 
+    /**
+     *
+     * @param webSceneItem
+     * @private
+     */
     _createWebScene: function (webSceneItem) {
       this.itemHelper.createWebScene(webSceneItem).then(function (map) {
 
@@ -177,7 +162,7 @@ define([
           container: this.settings.webscene.containerId
         };
 
-        if (!this.config.title && map.portalItem && map.portalItem.title) {
+        if(!this.config.title && map.portalItem && map.portalItem.title) {
           this.config.title = map.portalItem.title;
         }
 
@@ -186,7 +171,6 @@ define([
         require(["esri/views/SceneView"], function (SceneView) {
 
           var view = new SceneView(viewProperties);
-
           view.then(function (response) {
 
             this.urlParamHelper.addToView(view, this.config);
@@ -195,17 +179,21 @@ define([
             document.title = this.config.title;
 
           }.bind(this), this.reportError);
-
         }.bind(this));
-
       }.bind(this), this.reportError);
+
     },
 
+    /**
+     *
+     * @param groupData
+     * @private
+     */
     _createGroupGallery: function (groupData) {
       var groupInfoData = groupData.infoData;
       var groupItemsData = groupData.itemsData;
 
-      if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
+      if(!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
         this.reportError(new Error("main:: group data does not exist."));
         return;
       }
@@ -216,17 +204,13 @@ define([
       domClass.remove(document.body, CSS.loading);
       document.title = this.config.title;
 
-      if (info && items) {
+      if(info && items) {
         var html = "";
-
         html += "<h1>" + info.title + "</h1>";
-
         html += "<ol>";
-
         items.forEach(function (item) {
           html += "<li>" + item.title + "</li>";
         });
-
         html += "</ol>";
 
         document.body.innerHTML = html;
