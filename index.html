@@ -8,10 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="icon" href="//www.esri.com/favicon.ico">
-    <link rel="stylesheet" href="//js.arcgis.com/4.0/dijit/themes/claro/claro.css">
     <link rel="stylesheet" href="//js.arcgis.com/4.0/esri/css/main.css">
     <link rel="stylesheet" href="css/boilerplate.css">
-    <link rel="stylesheet" href="css/application.css">
     <script type="text/javascript" src="js/dojoConfig.js"></script>
     <script type="text/javascript" src="//js.arcgis.com/4.0/"></script>
     <script type="text/javascript">
@@ -30,20 +28,10 @@
       });
     </script>
   </head>
-  <body class="claro boilerplate--loading">
+  <body class="boilerplate--loading">
     <div class="boilerplate-loading-indicator">
       <div class="boilerplate-loading-message" id="loading_message"></div>
     </div>
-
-    <div id="main-container" data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="gutters:true">
-      <div id="main-top-pane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'top'">
-        <span id="app-title"></span>
-      </div>
-      <div id="main-left-pane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'left'"></div>
-      <div id="viewDiv" class="view-pane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
-      <!--<div id="main-right-pane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'right'"></div>-->
-      <!--<div id="main-bottom-pane" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom'"></div>-->
-    </div>
-
+    <div id="viewDiv" class="boilerplate-view"></div>
   </body>
 </html>

@@ -23,11 +23,9 @@ define([
   "dojo/Deferred",
   "dojo/dom",
   "dojo/dom-attr",
-  "dojo/dom-class",
-  "dijit/registry"
+  "dojo/dom-class"
 ], function (Boilerplate, ItemHelper, UrlParamHelper, i18n,
-             declare, lang, Deferred, dom, domAttr, domClass,
-             registry) {
+             declare, lang, Deferred, dom, domAttr, domClass) {
 
   var CSS = {
     loading: "boilerplate--loading",
@@ -45,8 +43,11 @@ define([
       this.always(this.init.bind(this));
     },
 
+    config: null,
+    direction: null,
+
     /**
-     * INITIALIZE APPLICATION
+     *
      */
     init: function () {
 
@@ -136,6 +137,7 @@ define([
 
         document.body.innerHTML = html;
       }
+
     },
 
     /**
@@ -172,8 +174,7 @@ define([
             this.urlParamHelper.addToView(view, this.config);
 
             domClass.remove(document.body, CSS.loading);
-            dom.byId("app-title").innerHTML = document.title = this.config.title;
-            registry.byId("main-container").layout();
+            document.title = this.config.title;
 
             deferred.resolve({ map: map, view: view });
 
@@ -191,7 +192,8 @@ define([
      *  - {map:Map, view:View }
      */
     applicationReady: function (evt) {
-      console.info("Application Ready: ", evt.map, evt.view);
+      console.info("Application Ready: ", evt);
+
 
 
     }
