@@ -148,7 +148,7 @@ define([
     _createView: function (item) {
       var deferred = new Deferred();
 
-      var type = item.data.type.replace(/Web /, "");
+      var type = (item.type === "Web Map") ? "Map" : "Scene";
       var actionType = lang.replace("createWeb{type}", { type: type });
       var viewType = lang.replace("esri/views/{type}View", { type: type });
       var settingType = lang.replace("web{type}", { type: type.toLowerCase() });
@@ -188,15 +188,13 @@ define([
 
     /**
      *
-     * @param evt
-     *  - {map:Map, view:View }
      */
-    applicationReady: function (evt) {
-      console.info("Application Ready: ", evt);
+    applicationReady: function () {
 
-
+      alert("We can finally do what we need...");
 
     }
+
 
   });
 });
