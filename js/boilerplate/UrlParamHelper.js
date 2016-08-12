@@ -85,7 +85,8 @@ define([
       if(findString) {
         if(searchWidget) {
           searchWidget.search(findString);
-        } else {
+        }
+        else {
           require(["esri/widgets/Search"], function (Search) {
             searchWidget = new Search({
               view: view
@@ -99,11 +100,7 @@ define([
 
     setBasemapOnView: function (view, basemapUrl, basemapReferenceUrl) {
       if(basemapUrl && view) {
-        require([
-          "esri/Basemap",
-          "esri/layers/Layer",
-          "esri/core/promiseList"
-        ], function (Basemap, Layer, promiseList) {
+        require(["esri/Basemap", "esri/layers/Layer", "esri/core/promiseList"], function (Basemap, Layer, promiseList) {
           var pl = promiseList({
             baseLayer: Layer.fromArcGISServerUrl({
               url: basemapUrl
@@ -265,11 +262,7 @@ define([
       // ?marker=-117,34&level=10
       // ?marker=10406557.402,6590748.134,2526
       if(markerString) {
-        require([
-          "esri/Graphic",
-          "esri/PopupTemplate",
-          "esri/symbols/PictureMarkerSymbol"
-        ], function (Graphic, PopupTemplate, PictureMarkerSymbol) {
+        require(["esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol"], function (Graphic, PopupTemplate, PictureMarkerSymbol) {
           var markerArray = this._splitArray(markerString);
           if(markerArray.length >= 2 && !isNaN(markerArray[0]) && !isNaN(markerArray[1])) {
             var x = parseFloat(markerArray[0]),
@@ -291,7 +284,8 @@ define([
                 height: "32px",
                 width: "32px"
               };
-            } else {
+            }
+            else {
               symbolOptions = DEFAULT_MARKER_SYMBOL;
             }
 
