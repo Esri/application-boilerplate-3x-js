@@ -59,6 +59,7 @@ define([
   var RTL_LANGS = ["ar", "he"];
   var LTR = "ltr";
   var RTL = "rtl";
+  var LOCALSTORAGE_PREFIX = "boilerplate_config_";
 
   return Promise.createSubclass({
 
@@ -204,6 +205,8 @@ define([
           // get org data
           portal: this._queryPortal()
         }).always(function () {
+          // gets a temporary config from the users local storage
+          this.results.localStorageConfig = this._getLocalConfig();
           // mixin all new settings from org and app
           this._mixinAllConfigs();
           // let's set up a few things
@@ -221,6 +224,19 @@ define([
           });
         }.bind(this));
       }.bind(this));
+    },
+
+    _getLocalConfig: function () {
+      var appid = this.config.appid;
+      if (window.localStorage && appid && this.settings.localConfig.fetch) {
+        var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
+        if (lsItem) {
+          var config = JSON.parse(lsItem);
+          if (config) {
+            return config;
+          }
+        }
+      }
     },
 
     _queryWebMapItem: function () {
@@ -543,6 +559,7 @@ define([
       lang.mixin(
         this.config,
         this.results.applicationItem ? this.results.applicationItem.config : null,
+        this.results.localStorageConfig,
         this.results.urlParams ? this.results.urlParams.config : null
       );
     },

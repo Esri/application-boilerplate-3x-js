@@ -1,4 +1,7 @@
 {
+  "localConfig": {
+    "fetch": true
+  },
   "webscene": {
     "containerId": "viewDiv",
     "fetch": true,
