@@ -10,26 +10,21 @@
     "baseMap": {
       "id": "basemap_5",
       "title": "Dark Gray Canvas",
-      "baseMapLayers": [
-        {
-          "id": "15121c02bc3-layer-14",
-          "url": "http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer",
-          "layerType": "ArcGISTiledMapServiceLayer"
-        },
-        {
-          "id": "15121c02bcf-layer-15",
-          "url": "http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer",
-          "layerType": "ArcGISTiledMapServiceLayer",
-          "isReference": true
-        }
-      ],
-      "elevationLayers": [
-        {
-          "id": "globalElevation",
-          "url": "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
-          "layerType": "ArcGISTiledElevationServiceLayer"
-        }
-      ]
+      "baseMapLayers": [{
+        "id": "15121c02bc3-layer-14",
+        "url": "http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer",
+        "layerType": "ArcGISTiledMapServiceLayer"
+      }, {
+        "id": "15121c02bcf-layer-15",
+        "url": "http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer",
+        "layerType": "ArcGISTiledMapServiceLayer",
+        "isReference": true
+      }],
+      "elevationLayers": [{
+        "id": "globalElevation",
+        "url": "http://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",
+        "layerType": "ArcGISTiledElevationServiceLayer"
+      }]
     },
     "version": "1.3",
     "authoringApp": "WebSceneViewer",

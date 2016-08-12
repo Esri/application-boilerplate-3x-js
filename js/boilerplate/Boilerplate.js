@@ -14,23 +14,35 @@
  | limitations under the License.
  */
 define([
+
   "dojo/text!config/config.json",
-  "dojo/text!boilerplate/settings.json",
+
   "dojo/_base/kernel",
   "dojo/_base/lang",
+
   "dojo/Deferred",
+
   "esri/config",
+
   "esri/core/Promise",
   "esri/core/promiseList",
+
   "esri/identity/IdentityManager",
   "esri/identity/OAuthInfo",
+
   "esri/portal/Portal",
   "esri/portal/PortalItem",
   "esri/portal/PortalQueryParams"
-], function (applicationConfig, boilerplateSettings,
-             kernel, lang, Deferred, esriConfig,
-             Promise, promiseList, IdentityManager, OAuthInfo,
-             Portal, PortalItem, PortalQueryParams) {
+
+], function (
+  applicationConfig,
+  kernel, lang,
+  Deferred,
+  esriConfig,
+  Promise, promiseList,
+  IdentityManager, OAuthInfo,
+  Portal, PortalItem, PortalQueryParams
+) {
 
   //--------------------------------------------------------------------------
   //
@@ -57,12 +69,19 @@ define([
     //--------------------------------------------------------------------------
 
     settings: null,
+
     config: null,
+
     results: null,
+
     portal: null,
+
     direction: null,
+
     locale: null,
+
     units: null,
+
     userPrivileges: null,
 
     //--------------------------------------------------------------------------
@@ -71,8 +90,8 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function () {
-
+    constructor: function (boilerplateSettings) {
+      var applicationConfigJSON = JSON.parse(applicationConfig);
       // mixin defaults with boilerplate configuration
       this.settings = lang.mixin({
         "webscene": {},
@@ -80,14 +99,11 @@ define([
         "group": {},
         "portal": {},
         "urlItems": []
-      }, JSON.parse(boilerplateSettings));
-
+      }, boilerplateSettings);
       // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
-      this.config = JSON.parse(applicationConfig);
-
+      this.config = applicationConfigJSON;
       // stores results from queries
       this.results = {};
-
       // initialization
       var initPromise = this._init();
       this.addResolvingPromise(initPromise);
@@ -104,7 +120,7 @@ define([
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if(!this.settings.group.fetchItems || !this.config.group) {
+      if (!this.settings.group.fetchItems || !this.config.group) {
         deferred.resolve();
       }
       else {
@@ -117,7 +133,7 @@ define([
         };
         var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams, options);
         // place group ID
-        if(paramOptions.query) {
+        if (paramOptions.query) {
           paramOptions.query = lang.replace(paramOptions.query, {
             groupid: this.config.group
           });
@@ -125,16 +141,16 @@ define([
         // group params
         var params = new PortalQueryParams(paramOptions);
         this.portal.queryItems(params).then(function (response) {
-          if(!this.results.group) {
+          if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.itemsData = response;
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
-          if(!error) {
+          if (!error) {
             error = new Error("Boilerplate:: Error retrieving group items.");
           }
-          if(!this.results.group) {
+          if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.itemsData = error;
@@ -212,12 +228,12 @@ define([
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if(!this.settings.webmap.fetch) {
+      if (!this.settings.webmap.fetch) {
         deferred.resolve();
       }
       else {
         // Use local web map instead of portal web map
-        if(this.settings.webmap.useLocal) {
+        if (this.settings.webmap.useLocal) {
           // get web map js file
           require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
             // return web scene json
@@ -229,7 +245,7 @@ define([
           }.bind(this));
         }
         // use webmap from id
-        else if(this.config.webmap) {
+        else if (this.config.webmap) {
           var mapItem = new PortalItem({
             id: this.config.webmap
           }).load();
@@ -239,7 +255,7 @@ define([
             };
             deferred.resolve(this.results.webMapItem);
           }.bind(this), function (error) {
-            if(!error) {
+            if (!error) {
               error = new Error("Boilerplate:: Error retrieving webmap item.");
             }
             this.results.webMapItem = {
@@ -260,7 +276,7 @@ define([
       // Get details about the specified group. If the group is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if(!this.settings.group.fetchInfo || !this.config.group) {
+      if (!this.settings.group.fetchInfo || !this.config.group) {
         deferred.resolve();
       }
       else {
@@ -269,16 +285,16 @@ define([
           query: "id:\"" + this.config.group + "\""
         });
         this.portal.queryGroups(params).then(function (response) {
-          if(!this.results.group) {
+          if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.infoData = response;
           deferred.resolve(this.results.group);
         }.bind(this), function (error) {
-          if(!error) {
+          if (!error) {
             error = new Error("Boilerplate:: Error retrieving group info.");
           }
-          if(!this.results.group) {
+          if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.infoData = error;
@@ -293,12 +309,12 @@ define([
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
-      if(!this.settings.webscene.fetch) {
+      if (!this.settings.webscene.fetch) {
         deferred.resolve();
       }
       else {
         // Use local web scene instead of portal web scene
-        if(this.settings.webscene.useLocal) {
+        if (this.settings.webscene.useLocal) {
           // get web scene js file
           require(["dojo/text!" + this.settings.webscene.localFile], function (websceneText) {
             // return web scene json
@@ -310,7 +326,7 @@ define([
           }.bind(this));
         }
         // use webscene from id
-        else if(this.config.webscene) {
+        else if (this.config.webscene) {
           sceneItem = new PortalItem({
             id: this.config.webscene
           }).load();
@@ -320,7 +336,7 @@ define([
             };
             deferred.resolve(this.results.webSceneItem);
           }.bind(this), function (error) {
-            if(!error) {
+            if (!error) {
               error = new Error("Boilerplate:: Error retrieving webscene item.");
             }
             this.results.webSceneItem = {
@@ -341,7 +357,7 @@ define([
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
       var deferred = new Deferred();
-      if(!this.config.appid) {
+      if (!this.config.appid) {
         deferred.resolve();
       }
       else {
@@ -351,16 +367,16 @@ define([
         appItem.then(function (itemData) {
           itemData.fetchData().then(function (data) {
             var cfg = {};
-            if(data && data.values) {
+            if (data && data.values) {
               // get app config values - we'll merge them with config later.
               cfg = data.values;
             }
             // get the extent for the application item. This can be used to override the default web map extent
-            if(itemData.extent) {
+            if (itemData.extent) {
               cfg.application_extent = itemData.extent;
             }
             // get any app proxies defined on the application item
-            if(itemData.appProxies) {
+            if (itemData.appProxies) {
               var layerMixins = itemData.appProxies.map(function (p) {
                 return {
                   "url": p.sourceUrl,
@@ -377,7 +393,7 @@ define([
             };
             deferred.resolve(this.results.applicationItem);
           }.bind(this), function (error) {
-            if(!error) {
+            if (!error) {
               error = new Error("Boilerplate:: Error retrieving application configuration data.");
             }
             this.results.applicationItem = {
@@ -388,7 +404,7 @@ define([
           }.bind(this));
 
         }.bind(this), function (error) {
-          if(!error) {
+          if (!error) {
             error = new Error("Boilerplate:: Error retrieving application configuration.");
           }
           this.results.applicationItem = {
@@ -403,7 +419,7 @@ define([
 
     _queryPortal: function () {
       var deferred = new Deferred();
-      if(!this.settings.portal.fetch) {
+      if (!this.settings.portal.fetch) {
         deferred.resolve();
       }
       else {
@@ -415,13 +431,13 @@ define([
         var portal = new Portal().load();
         this.portal = portal;
         portal.then(function (response) {
-          if(this.settings.webTierSecurity) {
+          if (this.settings.webTierSecurity) {
             var trustedHost;
-            if(response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
+            if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
               for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
                 trustedHost = response.authorizedCrossOriginDomains[i];
                 // add if trusted host is not null, undefined, or empty string
-                if(this._isDefined(trustedHost) && trustedHost.length > 0) {
+                if (this._isDefined(trustedHost) && trustedHost.length > 0) {
                   esriConfig.request.corsEnabledServers.push({
                     host: trustedHost,
                     withCredentials: true
@@ -432,20 +448,20 @@ define([
           }
           // set boilerplate units
           var units = "metric";
-          if(response.user && response.user.units) { //user defined units
+          if (response.user && response.user.units) { //user defined units
             units = response.user.units;
           }
-          else if(response.units) { //org level units
+          else if (response.units) { //org level units
             units = response.units;
           }
-          else if((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
+          else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
             // use feet/miles only for the US and if nothing is set for a user
             units = "english";
           }
           this.units = units;
           // are any custom roles defined in the organization?
-          if(response.user && this._isDefined(response.user.roleId)) {
-            if(response.user.privileges) {
+          if (response.user && this._isDefined(response.user.roleId)) {
+            if (response.user.privileges) {
               this.userPrivileges = response.user.privileges;
             }
           }
@@ -455,7 +471,7 @@ define([
           };
           deferred.resolve(this.results.portal);
         }.bind(this), function (error) {
-          if(!error) {
+          if (!error) {
             error = new Error("Boilerplate:: Error retrieving organization information.");
           }
           this.results.portal = {
@@ -469,7 +485,7 @@ define([
 
     _overwriteExtent: function (itemInfo, extent) {
       var item = itemInfo && itemInfo.item;
-      if(item && item.extent) {
+      if (item && item.extent) {
         item.extent = [
           [
             parseFloat(extent[0][0]), parseFloat(extent[0][1])
@@ -486,7 +502,7 @@ define([
       // existing extents with the application item extent when set.
       var applicationExtent = this.config.application_extent;
       var results = this.results;
-      if(this.config.appid && applicationExtent && applicationExtent.length > 0) {
+      if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
         this._overwriteExtent(results.webSceneItem.data, applicationExtent);
         this._overwriteExtent(results.webMapItem.data, applicationExtent);
       }
@@ -499,7 +515,7 @@ define([
       var portalGeometryUrl = portalHelperServices && portalHelperServices.geometry && portalHelperServices.geometry.url;
       // use the portal geometry service or config geometry service
       var geometryUrl = portalGeometryUrl || configGeometryUrl;
-      if(geometryUrl) {
+      if (geometryUrl) {
         // set the esri config to use the geometry service
         esriConfig.geometryServiceUrl = geometryUrl;
       }
@@ -509,7 +525,7 @@ define([
     _setLangProps: function () {
       var direction = LTR;
       RTL_LANGS.forEach(function (l) {
-        if(kernel.locale.indexOf(l) !== -1) {
+        if (kernel.locale.indexOf(l) !== -1) {
           direction = RTL;
         }
       });
@@ -521,13 +537,13 @@ define([
 
     _mixinAllConfigs: function () {
       /*
-       mix in all the settings we got!
-       config <- application settings <- url params
-       */
+      mix in all the settings we got!
+      config <- application settings <- url params
+      */
       lang.mixin(
-          this.config,
-          this.results.applicationItem ? this.results.applicationItem.config : null,
-          this.results.urlParams ? this.results.urlParams.config : null
+        this.config,
+        this.results.applicationItem ? this.results.applicationItem.config : null,
+        this.results.urlParams ? this.results.urlParams.config : null
       );
     },
 
@@ -536,11 +552,11 @@ define([
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       var urlObject = this._createUrlParamsObject();
       var obj = {};
-      if(urlObject && items && items.length) {
+      if (urlObject && items && items.length) {
         for (var i = 0; i < items.length; i++) {
           var item = urlObject[items[i]];
-          if(item) {
-            if(typeof item === "string") {
+          if (item) {
+            if (typeof item === "string") {
               switch (item.toLowerCase()) {
                 case "true":
                   obj[items[i]] = true;
@@ -574,17 +590,17 @@ define([
 
     _initializeApplication: function () {
       // If this app is hosted on an Esri environment.
-      if(this.settings.esriEnvironment) {
+      if (this.settings.esriEnvironment) {
         var appLocation, instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
         // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
         // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
         appLocation = location.pathname.indexOf(ESRI_APPS_PATH);
-        if(appLocation === -1) {
+        if (appLocation === -1) {
           appLocation = location.pathname.indexOf(ESRI_HOME_PATH);
         }
         // app is hosted and no portalUrl is defined so let's figure it out.
-        if(appLocation !== -1) {
+        if (appLocation !== -1) {
           // hosted or portal
           instance = location.pathname.substr(0, appLocation); //get the portal instance name
           this.config.portalUrl = "https://" + location.host + instance;
@@ -593,7 +609,7 @@ define([
       }
       esriConfig.portalUrl = this.config.portalUrl;
       // Define the proxy url for the app
-      if(this.config.proxyUrl) {
+      if (this.config.proxyUrl) {
         esriConfig.request.proxyUrl = this.config.proxyUrl;
       }
     },
@@ -603,7 +619,7 @@ define([
       var deferred, signedIn, oAuthInfo;
       deferred = new Deferred();
       //If there's an oauth appid specified register it
-      if(this.config.oauthappid) {
+      if (this.config.oauthappid) {
         oAuthInfo = new OAuthInfo({
           appId: this.config.oauthappid,
           portalUrl: this.config.portalUrl,
@@ -625,19 +641,19 @@ define([
 
     // remove HTML tags from values
     _stripTags: function (data) {
-      if(data) {
+      if (data) {
         // get type of data
         var t = typeof data;
-        if(t === "string") {
+        if (t === "string") {
           // remove tags from a string
           data = data.replace(TAGS_RE, "");
         }
-        else if(t === "object") {
+        else if (t === "object") {
           // remove tags from an object
           for (var item in data) {
-            if(data[item]) {
+            if (data[item]) {
               var currentItem = data[item];
-              if(typeof currentItem === "string") {
+              if (typeof currentItem === "string") {
                 //strip html tags
                 currentItem = currentItem.replace(TAGS_RE, "");
               }
@@ -653,7 +669,7 @@ define([
     // capture all url params to an object with values
     _urlToObject: function () {
       var query = (window.location.search || "?").substr(1),
-          map = {};
+        map = {};
       query.replace(URL_RE, function (match, key, value) {
         map[key] = decodeURIComponent(value);
       });
