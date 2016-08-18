@@ -91,23 +91,24 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function (boilerplateSettings) {
-      var applicationConfigJSON = JSON.parse(applicationConfig);
-      // mixin defaults with boilerplate configuration
-      this.settings = lang.mixin({
-        "webscene": {},
-        "webmap": {},
-        "group": {},
-        "portal": {},
-        "urlItems": []
-      }, boilerplateSettings);
-      // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
-      this.config = applicationConfigJSON;
-      // stores results from queries
-      this.results = {};
-      // initialization
-      var initPromise = this._init();
-      this.addResolvingPromise(initPromise);
+    constructor: function (applicationConfigJSON, boilerplateSettings) {
+      if (applicationConfigJSON && boilerplateSettings) {
+        // mixin defaults with boilerplate configuration
+        this.settings = lang.mixin({
+          "webscene": {},
+          "webmap": {},
+          "group": {},
+          "portal": {},
+          "urlItems": []
+        }, boilerplateSettings);
+        // config will contain application and user defined info for the application such as the web scene id and application id, any url parameters and any application specific configuration information.
+        this.config = applicationConfigJSON;
+        // stores results from queries
+        this.results = {};
+        // initialization
+        var initPromise = this._init();
+        this.addResolvingPromise(initPromise);
+      }
     },
 
     //--------------------------------------------------------------------------
