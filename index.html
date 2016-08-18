@@ -27,20 +27,26 @@
   <script type="text/javascript">
     require([
       "boilerplate",
+      "dojo/text!config/config.json",
       "dojo/text!boilerplate/settings.json",
-      "application"
+      "application/app"
     ], function (
       Boilerplate,
+      configSettings,
       boilerplateSettings,
-      applicationMain
+      exampleApp
     ) {
 
-      // create my main application. Start placing your logic in the main.js file.
-      var mainApp = new applicationMain();
+      // This is an example app. It uses the portalItemInfo returned to create a webmap, webscene or show group info. 
+      // You can edit the logic directly in the app.js file or you can create your own class e.g. myApp.js.
+      // NOTE: We recommend creating your own class as it will be easier to merge future Boilerplate updates.
+      var app = new exampleApp();
 
-      // create the template. This will take care of all the logic required for template applications.
-      new Boilerplate(JSON.parse(boilerplateSettings)).always(function (boilerplate) {
-        mainApp.init(boilerplate);
+      // The Boilderplate uses the JSON setting parameters (and URL parameters) to fetch and create items from 
+      // ArcGIS.com or your portal. The portalItemInfo returned contains item, webmap, webscene and/or group info.
+      // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the settings files.
+      new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).always(function (portalItemInfo) {
+        app.init(portalItemInfo);
       });
 
     });
