@@ -102,11 +102,11 @@ define([
           this._createGroupGallery(groupData);
         }
         else {
-          this.reportError(new Error("main:: Could not load an item to display"));
+          this.reportError(new Error("app:: Could not load an item to display"));
         }
       }
       else {
-        this.reportError(new Error("main:: Boilerplate is not defined"));
+        this.reportError(new Error("app:: Boilerplate is not defined"));
       }
     },
 
@@ -206,7 +206,7 @@ define([
       var groupItemsData = groupData.itemsData;
 
       if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
-        this.reportError(new Error("main:: group data does not exist."));
+        this.reportError(new Error("app:: group data does not exist."));
         return;
       }
 
