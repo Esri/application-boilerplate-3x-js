@@ -42,9 +42,9 @@
       // NOTE: We recommend creating your own class as it will be easier to merge future Boilerplate updates.
       var app = new exampleApp();
 
-      // The Boilderplate uses the JSON setting parameters (and URL parameters) to fetch and create items from 
+      // The Boilerplate uses the JSON setting parameters (and URL parameters) to fetch and create items from 
       // ArcGIS.com or your portal. The portalItemInfo returned contains item, webmap, webscene and/or group info.
-      // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the settings files.
+      // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the settings JSON files.
       new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).always(function (portalItemInfo) {
         app.init(portalItemInfo);
       });
