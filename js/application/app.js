@@ -75,17 +75,17 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    init: function (boilerplate) {
-      if (boilerplate) {
-        this.direction = boilerplate.direction;
-        this.config = boilerplate.config;
-        this.settings = boilerplate.settings;
-        var boilerplateResults = boilerplate.results;
+    init: function (boilerplateResponse) {
+      if (boilerplateResponse) {
+        this.direction = boilerplateResponse.direction;
+        this.config = boilerplateResponse.config;
+        this.settings = boilerplateResponse.settings;
+        var boilerplateResults = boilerplateResponse.results;
         var webMapItem = boilerplateResults.webMapItem;
         var webSceneItem = boilerplateResults.webSceneItem;
         var groupData = boilerplateResults.group;
 
-        document.documentElement.lang = boilerplate.locale;
+        document.documentElement.lang = boilerplateResponse.locale;
 
         this.urlParamHelper = new UrlParamHelper();
         this.itemHelper = new ItemHelper();
@@ -138,6 +138,11 @@ define([
       domAttr.set(dirNode, "dir", direction);
     },
 
+    _ready: function () {
+      domClass.remove(document.body, CSS.loading);
+      document.title = this.config.title;
+    },
+
     _createWebMap: function (webMapItem) {
       this.itemHelper.createWebMap(webMapItem).then(function (map) {
 
@@ -159,8 +164,7 @@ define([
           view.then(function (response) {
             this.urlParamHelper.addToView(view, this.config);
 
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
+            this._ready();
 
           }.bind(this), this.reportError);
 
@@ -191,8 +195,7 @@ define([
 
             this.urlParamHelper.addToView(view, this.config);
 
-            domClass.remove(document.body, CSS.loading);
-            document.title = this.config.title;
+            this._ready();
 
           }.bind(this), this.reportError);
 
@@ -213,8 +216,7 @@ define([
       var info = groupInfoData.results[0];
       var items = groupItemsData.results;
 
-      domClass.remove(document.body, CSS.loading);
-      document.title = this.config.title;
+      this._ready();
 
       if (info && items) {
         var html = "";

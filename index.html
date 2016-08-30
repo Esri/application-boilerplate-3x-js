@@ -37,16 +37,16 @@
       app
     ) {
 
-      // This is an example template app. It uses the portalItemInfo returned to create a webmap, webscene or show group info. 
+      // This is an example template app. It uses the boilerplateResponse returned to create a webmap, webscene or show group info.
       // You can edit the logic directly in the app.js file or you can just follow the pattern to create your own myApp.js class.
       // NOTE: We recommend creating your own myApp.js class as it will be easier to merge future Boilerplate updates.
       var exampleApp = new app();
 
-      // The Boilerplate uses the config and boilterplate JSON settings, and the URL parameters to fetch and create items from 
-      // ArcGIS.com or your portal. The portalItemInfo returned contains item, webmap, webscene and/or group info.
+      // The Boilerplate uses the config and boilterplate JSON settings, and the URL parameters to fetch and create items from
+      // ArcGIS.com or your portal. The boilerplateResponse returned contains item, webmap, webscene and/or group info.
       // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the JSON settings files.
-      new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).always(function (portalItemInfo) {
-        exampleApp.init(portalItemInfo);
+      new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).always(function (boilerplateResponse) {
+        exampleApp.init(boilerplateResponse);
       });
 
     });
