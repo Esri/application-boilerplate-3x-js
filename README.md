@@ -259,7 +259,7 @@ Review the following ArcGIS.com help topics for details on Templates:
 3. Access the .html page.
 4. Start writing your template!
 
-[New to Github? Get started here.](https://github.com/)
+[New to GitHub? Get started here.](https://github.com/)
 
 ## Deploying
 
