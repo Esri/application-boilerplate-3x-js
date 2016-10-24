@@ -536,6 +536,15 @@ define([
         // set the esri config to use the geometry service
         esriConfig.geometryServiceUrl = geometryUrl;
       }
+      if (!this.config.webmap && this.settings.defaultWebmap) {
+        this.config.webmap = this.settings.defaultWebmap;
+      }
+      if (!this.config.webscene && this.settings.defaultWebscene) {
+        this.config.webscene = this.settings.defaultWebscene;
+      }
+      if (!this.config.group && this.settings.defaultGroup) {
+        this.config.group = this.settings.defaultGroup;
+      }
     },
 
     // determine appropriate language direction for the application
