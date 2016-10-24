@@ -535,11 +535,17 @@ define([
       if (geometryUrl) {
         // set the esri config to use the geometry service
         esriConfig.geometryServiceUrl = geometryUrl;
-      }
-      if (!this.config.webmap && this.settings.defaultWebmap) {
+      } 
+      // Default to webmap or webscene
+      if (!this.config.webmap && !this.config.webscene) {
+        if (this.settings.defaultWebmap) {
+          this.config.webmap = this.settings.defaultWebmap;
+        } else if (this.settings.defaultWebscene) {
+          this.config.webscene = this.settings.defaultWebscene;
+        }
+      } else if (this.config.webmap === "default" && this.settings.defaultWebmap) {
         this.config.webmap = this.settings.defaultWebmap;
-      }
-      if (!this.config.webscene && this.settings.defaultWebscene) {
+      } else if (this.config.webscene === "default"  && this.settings.defaultWebscene) {
         this.config.webscene = this.settings.defaultWebscene;
       }
       if (!this.config.group && this.settings.defaultGroup) {
