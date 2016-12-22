@@ -43,6 +43,9 @@ module.exports = function(grunt) {
     },
     cssmin: {
       target: {
+        options: {
+          sourceMap: true,
+        },
         files: [{
           expand: true,
           cwd: 'src/css/',
@@ -53,6 +56,7 @@ module.exports = function(grunt) {
     },
     uglify: {
       options: {
+        sourceMap: true,
         mangle: false
       },
       target: {
