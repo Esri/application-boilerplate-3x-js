@@ -274,7 +274,7 @@ Review the following ArcGIS.com help topics for details on Templates:
 
  **Note:** If your application edits features in a feature service, contains secure services or web maps that aren't shared publicly, or generate requests that exceed 200 characters, you may need to set up and use a proxy page. Common situations where you may exceed the URL length are using complex polygons as input to a task or specifying a spatial reference using well-known text (WKT). For details on installing and configuring a proxy page see [Using the proxy](https://developers.arcgis.com/javascript/jshelp/ags_proxy.html). If you do not have an Internet connection, you will need to access and deploy the ArcGIS API for JavaScript documentation from [developers.arcgis.com](https://developers.arcgis.com/).
 
-## Build 
+## Build
 1. To build a production version of the application, you first need to install [Node.js](https://nodejs.org/en/).
 
 2. Then initialize the environment by running the following commands in the application folder:
@@ -284,9 +284,9 @@ npm install
 npm install -g grunt-cli
 ```
 
-3. Next open a terminal and navigate to the app root folder and run the `grunt build` command. This command and minifies the css and Javascript and copies the necessary app files into a build folder that you can deploy to your web server. 
+3. Next open a terminal and navigate to the app root folder and run the `grunt build` command. This command and minifies the css and Javascript and copies the necessary app files into a dist folder that you can deploy to your web server.
 
-4. This creates a new node-modules folder in your poject root with all the tools used to build the project. If you have trouble running the second command, see this [documentation](https://github.com/gruntjs/grunt-cli#installing-grunt-cli-locally) on how to install grunt-cli locally.
+4. This creates a new node-modules folder in your project root with all the tools used to build the project. If you have trouble running the second command, see this [documentation](https://github.com/gruntjs/grunt-cli#installing-grunt-cli-locally) on how to install grunt-cli locally.
 
 
 ## Requirements
