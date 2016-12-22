@@ -5,35 +5,39 @@ module.exports = function(grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     clean: {
-      build: ['build/*']
+      dist: ['dist/*']
     },
     copy: {
       html: {
         files: [{
           expand: true,
+          cwd: 'src/',
           src: ['*.html'],
-          dest: 'build/'
+          dest: 'dist/'
         }]
       },
       images: {
         files: [{
           expand: true,
-          src: ['images/**'],
-          dest: 'build/'
+          cwd: 'src/images/',
+          src: ['**'],
+          dest: 'dist/images/'
         }]
       },
       resources: {
         files: [{
           expand: true,
-          src: ['js/**'],
-          dest: 'build/'
+          cwd: 'src/js/',
+          src: ['**'],
+          dest: 'dist/js/'
         }]
       },
       config: {
         files: [{
           expand: true,
-          src: ['config/**'],
-          dest: 'build/'
+          cwd: 'src/config/',
+          src: ['**'],
+          dest: 'dist/config/'
         }]
       }
     },
@@ -41,9 +45,9 @@ module.exports = function(grunt) {
       target: {
         files: [{
           expand: true,
-          cwd: 'css/',
+          cwd: 'src/css/',
           src: ['*.css'],
-          dest: 'build/css'
+          dest: 'dist/css'
         }]
       }
     },
@@ -54,26 +58,21 @@ module.exports = function(grunt) {
       target: {
         files: [{
           expand: true,
-          cwd: 'js/application',
+          cwd: 'src/js',
           src: ['**/*.js'],
-          dest: 'build/js/application'
-        }, {
-          expand: true,
-          cwd: 'js/boilerplate',
-          src: ['**/*.js'],
-          dest: 'build/js/boilerplate'
+          dest: 'dist/js'
         }]
       }
     },
     jshint: {
-      files: ['js/application/*.js', 'js/boilerplate/*.js'],
+      files: ['src/js/application/*.js', 'src/js/boilerplate/*.js'],
       options: {
         jshintrc: true,
         force: true // report errors without failing
       }
     }
   });
-  // Alias a group of tasks. 
+  // Alias a group of tasks.
   grunt.registerTask('default', ['jshint']);
   grunt.registerTask('build', ['clean', 'copy', 'cssmin', 'uglify', 'jshint']);
 };
