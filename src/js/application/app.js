@@ -30,7 +30,7 @@ define([
 
   "dojo/domReady!"
 
-], function (
+], function(
   ItemHelper, UrlParamHelper,
   i18n,
   declare, lang,
@@ -57,7 +57,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function () {},
+    constructor: function() {},
 
     //--------------------------------------------------------------------------
     //
@@ -75,7 +75,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    init: function (boilerplateResponse) {
+    init: function(boilerplateResponse) {
       if (boilerplateResponse) {
         this.direction = boilerplateResponse.direction;
         this.config = boilerplateResponse.config;
@@ -94,23 +94,19 @@ define([
 
         if (webMapItem) {
           this._createWebMap(webMapItem);
-        }
-        else if (webSceneItem) {
+        } else if (webSceneItem) {
           this._createWebScene(webSceneItem);
-        }
-        else if (groupData) {
+        } else if (groupData) {
           this._createGroupGallery(groupData);
-        }
-        else {
+        } else {
           this.reportError(new Error("app:: Could not load an item to display"));
         }
-      }
-      else {
+      } else {
         this.reportError(new Error("app:: Boilerplate is not defined"));
       }
     },
 
-    reportError: function (error) {
+    reportError: function(error) {
       // remove loading class from body
       domClass.remove(document.body, CSS.loading);
       domClass.add(document.body, CSS.error);
@@ -132,19 +128,19 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    _setDirection: function () {
+    _setDirection: function() {
       var direction = this.direction;
       var dirNode = document.getElementsByTagName("html")[0];
       domAttr.set(dirNode, "dir", direction);
     },
 
-    _ready: function () {
+    _ready: function() {
       domClass.remove(document.body, CSS.loading);
       document.title = this.config.title;
     },
 
-    _createWebMap: function (webMapItem) {
-      this.itemHelper.createWebMap(webMapItem).then(function (map) {
+    _createWebMap: function(webMapItem) {
+      this.itemHelper.createWebMap(webMapItem).then(function(map) {
 
         var viewProperties = {
           map: map,
@@ -157,11 +153,11 @@ define([
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        require(["esri/views/MapView"], function (MapView) {
+        require(["esri/views/MapView"], function(MapView) {
 
           var view = new MapView(viewProperties);
 
-          view.then(function (response) {
+          view.then(function(response) {
             this.urlParamHelper.addToView(view, this.config);
 
             this._ready();
@@ -173,8 +169,8 @@ define([
       }.bind(this), this.reportError);
     },
 
-    _createWebScene: function (webSceneItem) {
-      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
+    _createWebScene: function(webSceneItem) {
+      this.itemHelper.createWebScene(webSceneItem).then(function(map) {
 
         var viewProperties = {
           map: map,
@@ -187,11 +183,11 @@ define([
 
         lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        require(["esri/views/SceneView"], function (SceneView) {
+        require(["esri/views/SceneView"], function(SceneView) {
 
           var view = new SceneView(viewProperties);
 
-          view.then(function (response) {
+          view.then(function(response) {
 
             this.urlParamHelper.addToView(view, this.config);
 
@@ -204,7 +200,7 @@ define([
       }.bind(this), this.reportError);
     },
 
-    _createGroupGallery: function (groupData) {
+    _createGroupGallery: function(groupData) {
       var groupInfoData = groupData.infoData;
       var groupItemsData = groupData.itemsData;
 
@@ -225,7 +221,7 @@ define([
 
         html += "<ol>";
 
-        items.forEach(function (item) {
+        items.forEach(function(item) {
           html += "<li>" + item.title + "</li>";
         });
 

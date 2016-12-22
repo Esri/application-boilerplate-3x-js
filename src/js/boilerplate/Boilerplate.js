@@ -34,7 +34,7 @@ define([
   "esri/portal/PortalItem",
   "esri/portal/PortalQueryParams"
 
-], function (
+], function(
   applicationConfig,
   kernel, lang,
   Deferred,
@@ -92,7 +92,7 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    constructor: function (applicationConfigJSON, boilerplateSettings) {
+    constructor: function(applicationConfigJSON, boilerplateSettings) {
       if (applicationConfigJSON && boilerplateSettings) {
         // mixin defaults with boilerplate configuration
         this.settings = lang.mixin({
@@ -118,15 +118,14 @@ define([
     //
     //--------------------------------------------------------------------------
 
-    queryGroupItems: function (options) {
+    queryGroupItems: function(options) {
       var deferred;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.group.fetchItems || !this.config.group) {
         deferred.resolve();
-      }
-      else {
+      } else {
         var defaultParams = {
           query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
           sortField: "modified",
@@ -143,13 +142,13 @@ define([
         }
         // group params
         var params = new PortalQueryParams(paramOptions);
-        this.portal.queryItems(params).then(function (response) {
+        this.portal.queryItems(params).then(function(response) {
           if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.itemsData = response;
           deferred.resolve(this.results.group);
-        }.bind(this), function (error) {
+        }.bind(this), function(error) {
           if (!error) {
             error = new Error("Boilerplate:: Error retrieving group items.");
           }
@@ -171,7 +170,7 @@ define([
 
     // Get URL parameters and set application defaults needed to query arcgis.com for
     // an application and to see if the app is running in Portal or an Org
-    _init: function () {
+    _init: function() {
       // Set the web scene and appid if they exist but ignore other url params.
       // Additional url parameters may be defined by the application but they need to be mixed in
       // to the config object after we retrieve the application configuration info. As an example,
@@ -199,14 +198,14 @@ define([
       // determine boilerplate language properties
       this._setLangProps();
       // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-      return this._checkSignIn().always(function () {
+      return this._checkSignIn().always(function() {
         // execute these tasks async
         return promiseList({
           // get application data
           applicationItem: this._queryApplicationItem(),
           // get org data
           portal: this._queryPortal()
-        }).always(function () {
+        }).always(function() {
           // gets a temporary config from the users local storage
           this.results.localStorageConfig = this._getLocalConfig();
           // mixin all new settings from org and app
@@ -228,7 +227,7 @@ define([
       }.bind(this));
     },
 
-    _getLocalConfig: function () {
+    _getLocalConfig: function() {
       var appid = this.config.appid;
       if (window.localStorage && appid && this.settings.localConfig.fetch) {
         var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
@@ -241,19 +240,18 @@ define([
       }
     },
 
-    _queryWebMapItem: function () {
+    _queryWebMapItem: function() {
       var deferred;
       // Get details about the specified web map. If the web map is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.webmap.fetch) {
         deferred.resolve();
-      }
-      else {
+      } else {
         // Use local web map instead of portal web map
         if (this.settings.webmap.useLocal) {
           // get web map js file
-          require(["dojo/text!" + this.settings.webmap.localFile], function (webmapText) {
+          require(["dojo/text!" + this.settings.webmap.localFile], function(webmapText) {
             // return web scene json
             var json = JSON.parse(webmapText);
             this.results.webMapItem = {
@@ -267,12 +265,12 @@ define([
           var mapItem = new PortalItem({
             id: this.config.webmap
           }).load();
-          mapItem.then(function (itemData) {
+          mapItem.then(function(itemData) {
             this.results.webMapItem = {
               data: itemData
             };
             deferred.resolve(this.results.webMapItem);
-          }.bind(this), function (error) {
+          }.bind(this), function(error) {
             if (!error) {
               error = new Error("Boilerplate:: Error retrieving webmap item.");
             }
@@ -281,34 +279,32 @@ define([
             };
             deferred.reject(error);
           }.bind(this));
-        }
-        else {
+        } else {
           deferred.resolve();
         }
       }
       return deferred.promise;
     },
 
-    _queryGroupInfo: function () {
+    _queryGroupInfo: function() {
       var deferred;
       // Get details about the specified group. If the group is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.group.fetchInfo || !this.config.group) {
         deferred.resolve();
-      }
-      else {
+      } else {
         // group params
         var params = new PortalQueryParams({
           query: "id:\"" + this.config.group + "\""
         });
-        this.portal.queryGroups(params).then(function (response) {
+        this.portal.queryGroups(params).then(function(response) {
           if (!this.results.group) {
             this.results.group = {};
           }
           this.results.group.infoData = response;
           deferred.resolve(this.results.group);
-        }.bind(this), function (error) {
+        }.bind(this), function(error) {
           if (!error) {
             error = new Error("Boilerplate:: Error retrieving group info.");
           }
@@ -322,19 +318,19 @@ define([
       return deferred.promise;
     },
 
-    _queryWebSceneItem: function () {
-      var deferred, sceneItem;
+    _queryWebSceneItem: function() {
+      var deferred,
+        sceneItem;
       // Get details about the specified web scene. If the web scene is not shared publicly users will
       // be prompted to log-in by the Identity Manager.
       deferred = new Deferred();
       if (!this.settings.webscene.fetch) {
         deferred.resolve();
-      }
-      else {
+      } else {
         // Use local web scene instead of portal web scene
         if (this.settings.webscene.useLocal) {
           // get web scene js file
-          require(["dojo/text!" + this.settings.webscene.localFile], function (websceneText) {
+          require(["dojo/text!" + this.settings.webscene.localFile], function(websceneText) {
             // return web scene json
             var json = JSON.parse(websceneText);
             this.results.webSceneItem = {
@@ -348,12 +344,12 @@ define([
           sceneItem = new PortalItem({
             id: this.config.webscene
           }).load();
-          sceneItem.then(function (itemData) {
+          sceneItem.then(function(itemData) {
             this.results.webSceneItem = {
               data: itemData
             };
             deferred.resolve(this.results.webSceneItem);
-          }.bind(this), function (error) {
+          }.bind(this), function(error) {
             if (!error) {
               error = new Error("Boilerplate:: Error retrieving webscene item.");
             }
@@ -362,28 +358,26 @@ define([
             };
             deferred.reject(error);
           }.bind(this));
-        }
-        else {
+        } else {
           deferred.resolve();
         }
       }
       return deferred.promise;
     },
 
-    _queryApplicationItem: function () {
+    _queryApplicationItem: function() {
       // Get the application configuration details using the application id. When the response contains
       // itemData.values then we know the app contains configuration information. We'll use these values
       // to overwrite the application defaults.
       var deferred = new Deferred();
       if (!this.config.appid) {
         deferred.resolve();
-      }
-      else {
+      } else {
         var appItem = new PortalItem({
           id: this.config.appid
         }).load();
-        appItem.then(function (itemData) {
-          itemData.fetchData().then(function (data) {
+        appItem.then(function(itemData) {
+          itemData.fetchData().then(function(data) {
             var cfg = {};
             if (data && data.values) {
               // get app config values - we'll merge them with config later.
@@ -395,7 +389,7 @@ define([
             }
             // get any app proxies defined on the application item
             if (itemData.appProxies) {
-              var layerMixins = itemData.appProxies.map(function (p) {
+              var layerMixins = itemData.appProxies.map(function(p) {
                 return {
                   "url": p.sourceUrl,
                   "mixin": {
@@ -410,7 +404,7 @@ define([
               config: cfg
             };
             deferred.resolve(this.results.applicationItem);
-          }.bind(this), function (error) {
+          }.bind(this), function(error) {
             if (!error) {
               error = new Error("Boilerplate:: Error retrieving application configuration data.");
             }
@@ -421,7 +415,7 @@ define([
             deferred.reject(error);
           }.bind(this));
 
-        }.bind(this), function (error) {
+        }.bind(this), function(error) {
           if (!error) {
             error = new Error("Boilerplate:: Error retrieving application configuration.");
           }
@@ -435,12 +429,11 @@ define([
       return deferred.promise;
     },
 
-    _queryPortal: function () {
+    _queryPortal: function() {
       var deferred = new Deferred();
       if (!this.settings.portal.fetch) {
         deferred.resolve();
-      }
-      else {
+      } else {
         // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
         // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
         // the organization by making a self request to the org url which returns details specific to that organization.
@@ -448,7 +441,7 @@ define([
         // If this fails, the application will continue to function
         var portal = new Portal().load();
         this.portal = portal;
-        portal.then(function (response) {
+        portal.then(function(response) {
           if (this.settings.webTierSecurity) {
             var trustedHost;
             if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
@@ -468,11 +461,9 @@ define([
           var units = "metric";
           if (response.user && response.user.units) { //user defined units
             units = response.user.units;
-          }
-          else if (response.units) { //org level units
+          } else if (response.units) { //org level units
             units = response.units;
-          }
-          else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
+          } else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
             // use feet/miles only for the US and if nothing is set for a user
             units = "english";
           }
@@ -488,7 +479,7 @@ define([
             data: response
           };
           deferred.resolve(this.results.portal);
-        }.bind(this), function (error) {
+        }.bind(this), function(error) {
           if (!error) {
             error = new Error("Boilerplate:: Error retrieving organization information.");
           }
@@ -501,7 +492,7 @@ define([
       return deferred.promise;
     },
 
-    _overwriteExtent: function (itemInfo, extent) {
+    _overwriteExtent: function(itemInfo, extent) {
       var item = itemInfo && itemInfo.item;
       if (item && item.extent) {
         item.extent = [
@@ -515,7 +506,7 @@ define([
       }
     },
 
-    _completeApplication: function () {
+    _completeApplication: function() {
       // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
       // existing extents with the application item extent when set.
       var applicationExtent = this.config.application_extent;
@@ -549,9 +540,9 @@ define([
     },
 
     // determine appropriate language direction for the application
-    _setLangProps: function () {
+    _setLangProps: function() {
       var direction = LTR;
-      RTL_LANGS.forEach(function (l) {
+      RTL_LANGS.forEach(function(l) {
         if (kernel.locale.indexOf(l) !== -1) {
           direction = RTL;
         }
@@ -562,7 +553,7 @@ define([
       this.locale = kernel.locale;
     },
 
-    _mixinAllConfigs: function () {
+    _mixinAllConfigs: function() {
       /*
       mix in all the settings we got!
       config <- application settings <- url params
@@ -575,7 +566,7 @@ define([
       );
     },
 
-    _getUrlParamValues: function (items) {
+    _getUrlParamValues: function(items) {
       // retrieves only the items specified from the URL object.
       // Gets parameters from the URL, convert them to an object and remove HTML tags.
       var urlObject = this._createUrlParamsObject();
@@ -595,8 +586,7 @@ define([
                 default:
                   obj[items[i]] = item;
               }
-            }
-            else {
+            } else {
               obj[items[i]] = item;
             }
           }
@@ -605,7 +595,7 @@ define([
       return obj;
     },
 
-    _createUrlParamsObject: function () {
+    _createUrlParamsObject: function() {
       // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
       // resource to work with.
       // Scene templates use the webscene param to define the scene to display
@@ -616,10 +606,11 @@ define([
       return this._stripTags(this._urlToObject());
     },
 
-    _initializeApplication: function () {
+    _initializeApplication: function() {
       // If this app is hosted on an Esri environment.
       if (this.settings.esriEnvironment) {
-        var appLocation, instance;
+        var appLocation,
+          instance;
         // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
         // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
         // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
@@ -643,8 +634,10 @@ define([
     },
 
     // check if user is signed into a portal
-    _checkSignIn: function () {
-      var deferred, signedIn, oAuthInfo;
+    _checkSignIn: function() {
+      var deferred,
+        signedIn,
+        oAuthInfo;
       deferred = new Deferred();
       //If there's an oauth appid specified register it
       if (this.config.oauthappid) {
@@ -663,20 +656,19 @@ define([
     },
 
     // helper function for determining if a value is defined
-    _isDefined: function (value) {
+    _isDefined: function(value) {
       return (value !== undefined) && (value !== null);
     },
 
     // remove HTML tags from values
-    _stripTags: function (data) {
+    _stripTags: function(data) {
       if (data) {
         // get type of data
         var t = typeof data;
         if (t === "string") {
           // remove tags from a string
           data = data.replace(TAGS_RE, "");
-        }
-        else if (t === "object") {
+        } else if (t === "object") {
           // remove tags from an object
           for (var item in data) {
             if (data[item]) {
@@ -695,10 +687,10 @@ define([
     },
 
     // capture all url params to an object with values
-    _urlToObject: function () {
+    _urlToObject: function() {
       var query = (window.location.search || "?").substr(1),
         map = {};
-      query.replace(URL_RE, function (match, key, value) {
+      query.replace(URL_RE, function(match, key, value) {
         map[key] = decodeURIComponent(value);
       });
       return map;
