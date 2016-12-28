@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
-  <link rel="stylesheet" href="//js.arcgis.com/4.0/esri/css/main.css">
+  <link rel="stylesheet" href="//js.arcgis.com/4.2/esri/css/main.css">
   <!-- Load any application specific styles -->
   <link rel="stylesheet" href="css/boilerplate.css">
 </head>
@@ -23,7 +23,7 @@
   </div>
   <div id="viewDiv" class="boilerplate-view"></div>
   <script type="text/javascript" src="js/dojoConfig.js"></script>
-  <script type="text/javascript" src="//js.arcgis.com/4.0/"></script>
+  <script type="text/javascript" src="//js.arcgis.com/4.2/"></script>
   <script type="text/javascript">
     require([
       "boilerplate",
@@ -37,19 +37,19 @@
       app
     ) {
 
-      // This is an example template app. It uses the boilerplateResponse returned to create a webmap, webscene or show group info.
-      // You can edit the logic directly in the app.js file or you can just follow the pattern to create your own myApp.js class.
-      // NOTE: We recommend creating your own myApp.js class as it will be easier to merge future Boilerplate updates.
-      var exampleApp = new app();
+        // This is an example template app. It uses the boilerplateResponse returned to create a webmap, webscene or show group info.
+        // You can edit the logic directly in the app.js file or you can just follow the pattern to create your own myApp.js class.
+        // NOTE: We recommend creating your own myApp.js class as it will be easier to merge future Boilerplate updates.
+        var exampleApp = new app();
 
-      // The Boilerplate uses the config and boilterplate JSON settings, and the URL parameters to fetch and create items from
-      // ArcGIS.com or your portal. The boilerplateResponse returned contains item, webmap, webscene and/or group info.
-      // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the JSON settings files.
-      new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).always(function (boilerplateResponse) {
-        exampleApp.init(boilerplateResponse);
+        // The Boilerplate uses the config and boilterplate JSON settings, and the URL parameters to fetch and create items from
+        // ArcGIS.com or your portal. The boilerplateResponse returned contains item, webmap, webscene and/or group info.
+        // NOTE: You shouldn't need to edit the Boilerplate code, but you will need to edit the JSON settings files.
+        new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings)).then(function (boilerplateResponse) {
+          exampleApp.init(boilerplateResponse);
+        });
+
       });
-
-    });
 
   </script>
 </body>
