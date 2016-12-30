@@ -8,6 +8,7 @@
   "devDependencies": {
     "dojo-typings": "^1.11.5",
     "grunt": "^1.0.1",
+    "grunt-banner": "^0.6.0",
     "grunt-contrib-sass": "^1.0.0",
     "grunt-ts": "^6.0.0-beta.3",
     "grunt-tslint": "^4.0.0",

@@ -7,12 +7,6 @@ function mixin(destination) {
   }
   return destination;
 }
-var banner = '/* <%= packageJson.name %> - v<%= packageJson.version %> - <%= grunt.template.to' +
-  '' +
-  '' +
-  'day("yyyy-mm-dd") %>\n*  <%= packageJson.homepage %>\n*  Copyr' +
-  'ight (c) <%= grunt.template.today("yyyy") %> Environmental Systems Research Inst' +
-  'itute, Inc.\n*  Apache 2.0 License */\n';
 module.exports = function (grunt) {
   //Load all depenedencies
   require('matchdep')
@@ -33,6 +27,14 @@ module.exports = function (grunt) {
 
   // Project configuration
   grunt.initConfig({
+
+    banner: '/* <%= packageJson.name %> - v<%= packageJson.version %> - <%= grunt.template.to' +
+    '' +
+    '' +
+    'day("yyyy-mm-dd") %>\n*  <%= packageJson.homepage %>\n*  Copyr' +
+    'ight (c) <%= grunt.template.today("yyyy") %> Environmental Systems Research Inst' +
+    'itute, Inc.\n*  Apache 2.0 License */\n',
+
     name: packageJson.name,
     version: packageJson.version,
     packageJson: packageJson,
@@ -65,6 +67,16 @@ module.exports = function (grunt) {
         }]
       }
     },
+    usebanner: {
+      dist: {
+        options: {
+          position: 'top',
+          banner: '<%= banner %>'
+        }, files: {
+          src: ['src/js/**/*.js', 'src/css/**/*.css']
+        }
+      }
+    },
     watch: {
       grunt: {
         options: {
@@ -83,10 +95,5 @@ module.exports = function (grunt) {
     }
   });
   // Alias a group of tasks.
-  grunt.registerTask('dev', ['tslint', 'ts', 'sass']);
-  grunt.registerTask('build', [
-    'tslint',
-    'ts',
-    'sass'
-  ]);
+  grunt.registerTask('default', ['tslint', 'ts', 'sass', 'usebanner']);
 };
