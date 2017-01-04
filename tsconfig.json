@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "module": "umd",
+    "moduleResolution": "classic",
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "target": "es5"
+  },
+  "include": [
+    "./src/js/**/*.ts",
+    "./node_modules/dojo-typings/dojo/**/*.ts",
+    "./node_modules/dojo-typings/dijit/**/*.ts",
+    "./node_modules/dojo-typings/dojox/**/*.ts",
+    "./node_modules/dojo-typings/doh/**/*.ts",
+    "./node_modules/dojo-typings/tests/dojox/**/*.ts",
+    "./typings/index.d.ts",
+    "./typings/plugins.d.ts"
+  ]
+}

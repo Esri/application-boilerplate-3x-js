@@ -1,0 +1,23 @@
+{
+  "name": "application-boilerplate-js",
+  "version": "1.0.0",
+  "description": "A starter Application for building ArcGIS Online configurable applications with the ArcGIS API for JavaScript version 4.",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "dojo-typings": "^1.11.5",
+    "grunt": "^1.0.1",
+    "grunt-banner": "^0.6.0",
+    "grunt-contrib-sass": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.3",
+    "grunt-tslint": "^4.0.0",
+    "matchdep": "^1.0.1",
+    "tslint": "^4.2.0",
+    "typescript": "^2.1.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Esri/application-boilerplate-js"
+  }
+}

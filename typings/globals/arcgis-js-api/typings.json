@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/Esri/jsapi-resources/master/4.x/typescript/arcgis-js-api.d.ts",
+    "raw": "github:Esri/jsapi-resources/4.x/typescript/arcgis-js-api.d.ts",
+    "typings": "https://raw.githubusercontent.com/Esri/jsapi-resources/master/4.x/typescript/arcgis-js-api.d.ts"
+  }
+}

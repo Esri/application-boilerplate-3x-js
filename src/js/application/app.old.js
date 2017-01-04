@@ -1,18 +1,3 @@
-/*
- | Copyright 2016 Esri
- |
- | Licensed under the Apache License, Version 2.0 (the "License");
- | you may not use this file except in compliance with the License.
- | You may obtain a copy of the License at
- |
- |    http://www.apache.org/licenses/LICENSE-2.0
- |
- | Unless required by applicable law or agreed to in writing, software
- | distributed under the License is distributed on an "AS IS" BASIS,
- | WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- | See the License for the specific language governing permissions and
- | limitations under the License.
- */
 define([
 
   "boilerplate/ItemHelper",
@@ -30,12 +15,7 @@ define([
 
   "dojo/domReady!"
 
-], function (
-  ItemHelper, UrlParamHelper,
-  i18n,
-  declare, lang,
-  dom, domAttr, domClass
-) {
+], function (ItemHelper, UrlParamHelper, i18n, declare, lang, dom, domAttr, domClass) {
 
   //--------------------------------------------------------------------------
   //
@@ -94,18 +74,14 @@ define([
 
         if (webMapItem) {
           this._createWebMap(webMapItem);
-        }
-        else if (webSceneItem) {
+        } else if (webSceneItem) {
           this._createWebScene(webSceneItem);
-        }
-        else if (groupData) {
+        } else if (groupData) {
           this._createGroupGallery(groupData);
-        }
-        else {
+        } else {
           this.reportError(new Error("app:: Could not load an item to display"));
         }
-      }
-      else {
+      } else {
         this.reportError(new Error("app:: Boilerplate is not defined"));
       }
     },
@@ -114,11 +90,11 @@ define([
       // remove loading class from body
       domClass.remove(document.body, CSS.loading);
       domClass.add(document.body, CSS.error);
-      // an error occurred - notify the user. In this example we pull the string from the
-      // resource.js file located in the nls folder because we've set the application up
-      // for localization. If you don't need to support multiple languages you can hardcode the
-      // strings here and comment out the call in index.html to get the localization strings.
-      // set message
+      // an error occurred - notify the user. In this example we pull the string from
+      // the resource.js file located in the nls folder because we've set the
+      // application up for localization. If you don't need to support multiple
+      // languages you can hardcode the strings here and comment out the call in
+      // index.html to get the localization strings. set message
       var node = dom.byId("loading_message");
       if (node) {
         node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
@@ -144,64 +120,74 @@ define([
     },
 
     _createWebMap: function (webMapItem) {
-      this.itemHelper.createWebMap(webMapItem).then(function (map) {
+      this
+        .itemHelper
+        .createWebMap(webMapItem)
+        .then(function (map) {
 
-        var viewProperties = {
-          map: map,
-          container: this.settings.webmap.containerId
-        };
+          var viewProperties = {
+            map: map,
+            container: this.settings.webmap.containerId
+          };
 
-        if (!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
+          if (!this.config.title && map.portalItem && map.portalItem.title) {
+            this.config.title = map.portalItem.title;
+          }
 
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
+          lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        require(["esri/views/MapView"], function (MapView) {
+          require(["esri/views/MapView"], function (MapView) {
 
-          var view = new MapView(viewProperties);
+            var view = new MapView(viewProperties);
 
-          view.then(function (response) {
-            this.urlParamHelper.addToView(view, this.config);
+            view.then(function (response) {
+              this
+                .urlParamHelper
+                .addToView(view, this.config);
 
-            this._ready();
+              this._ready();
 
-          }.bind(this), this.reportError);
+            }.bind(this), this.reportError);
 
-        }.bind(this));
+          }.bind(this));
 
-      }.bind(this), this.reportError);
+        }.bind(this), this.reportError);
     },
 
     _createWebScene: function (webSceneItem) {
-      this.itemHelper.createWebScene(webSceneItem).then(function (map) {
+      this
+        .itemHelper
+        .createWebScene(webSceneItem)
+        .then(function (map) {
 
-        var viewProperties = {
-          map: map,
-          container: this.settings.webscene.containerId
-        };
+          var viewProperties = {
+            map: map,
+            container: this.settings.webscene.containerId
+          };
 
-        if (!this.config.title && map.portalItem && map.portalItem.title) {
-          this.config.title = map.portalItem.title;
-        }
+          if (!this.config.title && map.portalItem && map.portalItem.title) {
+            this.config.title = map.portalItem.title;
+          }
 
-        lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
+          lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        require(["esri/views/SceneView"], function (SceneView) {
+          require(["esri/views/SceneView"], function (SceneView) {
 
-          var view = new SceneView(viewProperties);
+            var view = new SceneView(viewProperties);
 
-          view.then(function (response) {
+            view.then(function (response) {
 
-            this.urlParamHelper.addToView(view, this.config);
+              this
+                .urlParamHelper
+                .addToView(view, this.config);
 
-            this._ready();
+              this._ready();
 
-          }.bind(this), this.reportError);
+            }.bind(this), this.reportError);
 
-        }.bind(this));
+          }.bind(this));
 
-      }.bind(this), this.reportError);
+        }.bind(this), this.reportError);
     },
 
     _createGroupGallery: function (groupData) {
