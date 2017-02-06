@@ -14,9 +14,6 @@
  | limitations under the License.
  */
 define([
-
-  "dojo/text!config/config.json",
-
   "dojo/_base/declare",
   "dojo/_base/kernel",
   "dojo/_base/lang",
@@ -35,7 +32,6 @@ define([
   "esri/portal/PortalQueryParams"
 
 ], function (
-  applicationConfig,
   declare, kernel, lang,
   Deferred,
   esriConfig,
