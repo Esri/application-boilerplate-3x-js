@@ -1,23 +1,17 @@
 {
-  "name": "esri-boilerplate-ts",
+  "name": "arcgis-boilerplate-ts",
   "version": "0.0.1",
   "description": "TypeScript boilerplate for building ArcGIS JS API 4.x Applications",
   "main": "entrypoint.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nicksenger/esri-boilerplate-ts.git"
+    "url": "git+https://github.com/Esri/application-boilerplate-js.git"
   },
   "keywords": [
     "Esri",
     "ArcGIS",
     "TypeScript"
   ],
-  "author": "Nick Senger",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nicksenger/esri-boilerplate-ts/issues"
-  },
-  "homepage": "https://github.com/nicksenger/esri-boilerplate-ts#readme",
   "devDependencies": {
     "@types/arcgis-js-api": "^4.3.0",
     "dojo-typings": "^1.11.6",
