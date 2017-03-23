@@ -4,8 +4,8 @@ declare const webmapText: string;
 declare const websceneText: string;
 
 import kernel = require('dojo/_base/kernel');
-import lang = require('dojo/_base/lang');
-import Deferred = require('dojo/Deferred');
+import lang = require('dojo/_base/lang'); // todo: replace with es6 templates and Object.assign()?
+import Deferred = require('dojo/Deferred'); // todo: try to replace with promiseUtils.
 import esriConfig = require('esri/config');
 import promiseUtils = require('esri/core/promiseUtils');
 import IdentityManager = require('esri/identity/IdentityManager');

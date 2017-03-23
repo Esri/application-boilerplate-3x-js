@@ -63,33 +63,33 @@ export interface Settings {
 }
 
 export interface GroupData {
-    itemsData?: any,
-    infoData?: any
+  itemsData?: any,
+  infoData?: any
 }
 
 export interface BoilerplateResults {
-    group?: GroupData,
-    urlParams?: {
-        config: any
-    },
-    localStorageConfig?: {
-        [propName: string]: any
-    },
-    webMapItem?: {
-        data?: any,
-        [propName: string]: any
-    },
-    webSceneItem?: {
-        data?: any,
-        [propName: string]: any
-    },
-    applicationItem?: {
-        data: any,
-        config: any
-    },
-    portal?: {
-        data: any
-    }
+  group?: GroupData,
+  urlParams?: {
+    config: any
+  },
+  localStorageConfig?: {
+    [propName: string]: any
+  },
+  webMapItem?: {
+    data?: any,
+    [propName: string]: any
+  },
+  webSceneItem?: {
+    data?: any,
+    [propName: string]: any
+  },
+  applicationItem?: {
+    data: any,
+    config: any
+  },
+  portal?: {
+    data: any
+  }
 }
 
 export interface BoilerplateResponse {

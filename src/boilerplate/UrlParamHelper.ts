@@ -91,7 +91,7 @@ class UrlParamHelper {
     }
   }
 
-  public setBasemapOnView (view: MapView | SceneView, basemapUrl, basemapReferenceUrl) {
+  public setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferenceUrl) {
     if (basemapUrl && view) {
       const pl = promiseList.eachAlways({
         baseLayer: Layer.fromArcGISServerUrl({
@@ -183,7 +183,7 @@ class UrlParamHelper {
     if (extentString) {
       //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
       //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
-      const extentArray = this._splitArray(extentString);
+      const extentArray = this._splitURLString(extentString);
       if (extentArray.length === 4 || extentArray.length === 5) {
         const xmin = parseFloat(extentArray[0]),
           ymin = parseFloat(extentArray[1]),
@@ -213,7 +213,7 @@ class UrlParamHelper {
     //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
     //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
     if (centerString) {
-      const centerArray = this._splitArray(centerString);
+      const centerArray = this._splitURLString(centerString);
       if (centerArray.length === 2 || centerArray.length === 3) {
         let x = parseFloat(centerArray[0]);
         let y = parseFloat(centerArray[1]);
@@ -227,15 +227,13 @@ class UrlParamHelper {
             wkid = parseInt(centerArray[2], 10);
           }
 
-          const point = new Point({
+          return new Point({
             x: x,
             y: y,
             spatialReference: {
               wkid: wkid
             }
           });
-
-          return point;
         }
       }
     }
@@ -254,7 +252,7 @@ class UrlParamHelper {
     // ?marker=-117,34&level=10
     // ?marker=10406557.402,6590748.134,2526
     if (markerString) {
-      const markerArray = this._splitArray(markerString);
+      const markerArray = this._splitURLString(markerString);
       if (markerArray.length >= 2 &&
         !isNaN(markerArray[0]) &&
         !isNaN(markerArray[1])) {
@@ -292,13 +290,12 @@ class UrlParamHelper {
           }
         });
 
-        let popupTemplate = null;
-        if (content || label) {
-          popupTemplate = new PopupTemplate({
+        const hasPopupDetails = content || label;
+        const popupTemplate = hasPopupDetails ?
+          new PopupTemplate({
             "title": label || null,
             "content": content || null
-          });
-        }
+          }) : null;
 
         const graphic = new Graphic({
           geometry: point,
@@ -308,14 +305,20 @@ class UrlParamHelper {
 
         if (graphic) {
           view.graphics.add(graphic);
-          const graphicGoto = view.goTo as (graphic: __esri.Graphic) => IPromise<any>;
-          graphicGoto(graphic);
+          // todo: will be cleaned up in next JS API release.
+          if (view instanceof SceneView) {
+            view.goTo(graphic);
+          }
+          else {
+            view.goTo(graphic);
+          }
         }
       }
     }
   }
 
-  private _splitArray(value: string) {
+  // todo: cleanup function
+  private _splitURLString(value: string) {
     let splitValues;
     if (value) {
       splitValues = value.split(";");

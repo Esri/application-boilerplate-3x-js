@@ -1,6 +1,7 @@
 define(["require", "exports", "dojo/Deferred", "esri/WebMap", "esri/WebScene"], function (require, exports, Deferred, WebMap, WebScene) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    // todo: try to remove Dojo/deferred and promise.
     var ItemHelper = (function () {
         function ItemHelper() {
         }

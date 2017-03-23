@@ -1,18 +1,16 @@
 /// <amd-dependency path='dojo/i18n!config/nls/resources.js' name='i18n' />
 declare const i18n: any;
 
-import lang = require('dojo/_base/lang');
-import dom = require('dojo/dom');
-import domAttr = require('dojo/dom-attr');
-import domClass = require('dojo/domReady!');
+import lang = require('dojo/_base/lang'); // todo: replace with es6 templates and Object.assign()?
+import dom = require('dojo/dom'); // todo: replace with document.getElementById()
+import domAttr = require('dojo/dom-attr'); // todo: replace native JS
 
 import MapView = require('esri/views/MapView');
 import SceneView = require('esri/views/SceneView');
-import Search = require('esri/widgets/Search');
 import WebMap = require('esri/WebMap');
 import WebScene = require('esri/WebScene');
 
-import { BoilerplateResults, BoilerplateResponse, Settings, GroupData, Config } from 'boilerplate/interfaces';
+import { BoilerplateResponse, Settings, GroupData, Config } from 'boilerplate/interfaces';
 import ItemHelper from "boilerplate/ItemHelper";
 import UrlParamHelper from "boilerplate/UrlParamHelper";
 
@@ -131,14 +129,14 @@ class Application {
 
       lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
 
-        const view = new SceneView(viewProperties);
+      const view = new SceneView(viewProperties);
 
-        view.then((response) => {
-          this.urlParamHelper.addToView(view, this.config);
+      view.then((response) => {
+        this.urlParamHelper.addToView(view, this.config);
 
-          this._ready();
+        this._ready();
 
-        }, this.reportError);
+      }, this.reportError);
 
     }, this.reportError);
   }

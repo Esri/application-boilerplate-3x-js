@@ -1,5 +1,5 @@
-import Deferred = require('dojo/Deferred');
-import DojoPromise = require('dojo/promise/Promise');
+import Deferred = require('dojo/Deferred'); // todo: replace with es6 promise
+import DojoPromise = require('dojo/promise/Promise'); // todo: replace with es6 promise
 import WebMap = require('esri/WebMap');
 import WebScene = require('esri/WebScene');
 import PortalItem = require('esri/portal/PortalItem');
@@ -11,6 +11,9 @@ interface Item {
     item: any
   }
 }
+
+
+// todo: try to remove Dojo/deferred and promise.
 
 class ItemHelper {
   public createWebMap(item: Item): DojoPromise<WebMap> {

@@ -1,4 +1,4 @@
-define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol"], function (require, exports, Camera, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol) {
+define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Camera, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -144,7 +144,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             if (extentString) {
                 //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
                 //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
-                var extentArray = this._splitArray(extentString);
+                var extentArray = this._splitURLString(extentString);
                 if (extentArray.length === 4 || extentArray.length === 5) {
                     var xmin = parseFloat(extentArray[0]), ymin = parseFloat(extentArray[1]), xmax = parseFloat(extentArray[2]), ymax = parseFloat(extentArray[3]);
                     if (!isNaN(xmin) && !isNaN(ymin) && !isNaN(xmax) && !isNaN(ymax)) {
@@ -170,7 +170,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
             //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
             if (centerString) {
-                var centerArray = this._splitArray(centerString);
+                var centerArray = this._splitURLString(centerString);
                 if (centerArray.length === 2 || centerArray.length === 3) {
                     var x = parseFloat(centerArray[0]);
                     var y = parseFloat(centerArray[1]);
@@ -183,14 +183,13 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                         if (centerArray.length === 3 && !isNaN(centerArray[2])) {
                             wkid = parseInt(centerArray[2], 10);
                         }
-                        var point = new Point({
+                        return new Point({
                             x: x,
                             y: y,
                             spatialReference: {
                                 wkid: wkid
                             }
                         });
-                        return point;
                     }
                 }
             }
@@ -207,7 +206,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             // ?marker=-117,34&level=10
             // ?marker=10406557.402,6590748.134,2526
             if (markerString) {
-                var markerArray = this._splitArray(markerString);
+                var markerArray = this._splitURLString(markerString);
                 if (markerArray.length >= 2 &&
                     !isNaN(markerArray[0]) &&
                     !isNaN(markerArray[1])) {
@@ -235,13 +234,12 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                             "wkid": wkid
                         }
                     });
-                    var popupTemplate = null;
-                    if (content || label) {
-                        popupTemplate = new PopupTemplate({
+                    var hasPopupDetails = content || label;
+                    var popupTemplate = hasPopupDetails ?
+                        new PopupTemplate({
                             "title": label || null,
                             "content": content || null
-                        });
-                    }
+                        }) : null;
                     var graphic = new Graphic({
                         geometry: point,
                         symbol: markerSymbol,
@@ -249,13 +247,19 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                     });
                     if (graphic) {
                         view.graphics.add(graphic);
-                        var graphicGoto = view.goTo;
-                        graphicGoto(graphic);
+                        // todo: will be cleaned up in next JS API release.
+                        if (view instanceof SceneView) {
+                            view.goTo(graphic);
+                        }
+                        else {
+                            view.goTo(graphic);
+                        }
                     }
                 }
             }
         };
-        UrlParamHelper.prototype._splitArray = function (value) {
+        // todo: cleanup function
+        UrlParamHelper.prototype._splitURLString = function (value) {
             var splitValues;
             if (value) {
                 splitValues = value.split(";");
