@@ -140,11 +140,12 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
                 //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
                 var extentArray = this._splitURLString(extentString);
-                if (extentArray.length === 4 || extentArray.length === 5) {
+                var extentLength = extentArray.length;
+                if (extentLength === 4 || extentLength === 5) {
                     var xmin = parseFloat(extentArray[0]), ymin = parseFloat(extentArray[1]), xmax = parseFloat(extentArray[2]), ymax = parseFloat(extentArray[3]);
                     if (!isNaN(xmin) && !isNaN(ymin) && !isNaN(xmax) && !isNaN(ymax)) {
                         var wkid = 4326;
-                        if (extentArray.length === 5 && !isNaN(extentArray[4])) {
+                        if (extentLength === 5) {
                             wkid = parseInt(extentArray[4], 10);
                         }
                         var ext = new Extent({
@@ -166,7 +167,8 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
             if (centerString) {
                 var centerArray = this._splitURLString(centerString);
-                if (centerArray.length === 2 || centerArray.length === 3) {
+                var centerLength = centerArray.length;
+                if (centerLength === 2 || centerLength === 3) {
                     var x = parseFloat(centerArray[0]);
                     var y = parseFloat(centerArray[1]);
                     if (isNaN(x) || isNaN(y)) {
@@ -175,7 +177,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                     }
                     if (!isNaN(x) && !isNaN(y)) {
                         var wkid = 4326;
-                        if (centerArray.length === 3 && !isNaN(centerArray[2])) {
+                        if (centerLength === 3) {
                             wkid = parseInt(centerArray[2], 10);
                         }
                         return new Point({
@@ -202,12 +204,11 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             // ?marker=10406557.402,6590748.134,2526
             if (markerString) {
                 var markerArray = this._splitURLString(markerString);
-                if (markerArray.length >= 2 &&
-                    !isNaN(markerArray[0]) &&
-                    !isNaN(markerArray[1])) {
+                var markerLength = markerArray.length;
+                if (markerLength >= 2) {
                     var x = parseFloat(markerArray[0]), y = parseFloat(markerArray[1]), content = markerArray[3], icon_url = markerArray[4], label = markerArray[5];
                     var wkid = 4326;
-                    if (!isNaN(markerArray[2])) {
+                    if (markerArray[2]) {
                         wkid = parseInt(markerArray[2], 10);
                     }
                     var symbolOptions = void 0;
@@ -253,16 +254,14 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 }
             }
         };
-        // todo: cleanup function
         UrlParamHelper.prototype._splitURLString = function (value) {
-            var splitValues;
-            if (value) {
-                splitValues = value.split(";");
-                if (splitValues.length === 1) {
-                    splitValues = value.split(",");
-                }
+            if (!value) {
+                return;
             }
-            return splitValues;
+            var splitValues = value.split(";");
+            if (splitValues.length === 1) {
+                return value.split(",");
+            }
         };
         return UrlParamHelper;
     }());

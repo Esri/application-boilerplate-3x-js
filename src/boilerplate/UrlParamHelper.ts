@@ -38,6 +38,7 @@ const DEFAULT_MARKER_SYMBOL = {
 };
 
 class UrlParamHelper {
+
   public getViewProperties(config: Config): ViewProperties {
     const viewProperties: ViewProperties = {};
 
@@ -70,13 +71,13 @@ class UrlParamHelper {
     return viewProperties;
   }
 
-  public addToView(view: MapView | SceneView, config, searchWidget?: Search) {
+  public addToView(view: MapView | SceneView, config, searchWidget?: Search): void {
     this.addMarkerToView(view, config.marker);
     this.find(view, config.find, searchWidget);
     this.setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
   }
 
-  public find(view: MapView | SceneView, findString, searchWidget?: Search) {
+  public find(view: MapView | SceneView, findString, searchWidget?: Search): Search {
     if (!findString) {
       return;
     }
@@ -90,7 +91,6 @@ class UrlParamHelper {
       searchWidget.search(findString);
     }
     return searchWidget;
-
   }
 
   public setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferenceUrl): void {
@@ -185,14 +185,15 @@ class UrlParamHelper {
       //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
       //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
       const extentArray = this._splitURLString(extentString);
-      if (extentArray.length === 4 || extentArray.length === 5) {
+      const extentLength = extentArray.length;
+      if (extentLength === 4 || extentLength === 5) {
         const xmin = parseFloat(extentArray[0]),
           ymin = parseFloat(extentArray[1]),
           xmax = parseFloat(extentArray[2]),
           ymax = parseFloat(extentArray[3]);
         if (!isNaN(xmin) && !isNaN(ymin) && !isNaN(xmax) && !isNaN(ymax)) {
           let wkid = 4326;
-          if (extentArray.length === 5 && !isNaN(extentArray[4])) {
+          if (extentLength === 5) {
             wkid = parseInt(extentArray[4], 10);
           }
           const ext = new Extent({
@@ -215,7 +216,8 @@ class UrlParamHelper {
     //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
     if (centerString) {
       const centerArray = this._splitURLString(centerString);
-      if (centerArray.length === 2 || centerArray.length === 3) {
+      const centerLength = centerArray.length;
+      if (centerLength === 2 || centerLength === 3) {
         let x = parseFloat(centerArray[0]);
         let y = parseFloat(centerArray[1]);
         if (isNaN(x) || isNaN(y)) {
@@ -224,7 +226,7 @@ class UrlParamHelper {
         }
         if (!isNaN(x) && !isNaN(y)) {
           let wkid = 4326;
-          if (centerArray.length === 3 && !isNaN(centerArray[2])) {
+          if (centerLength === 3) {
             wkid = parseInt(centerArray[2], 10);
           }
 
@@ -254,9 +256,8 @@ class UrlParamHelper {
     // ?marker=10406557.402,6590748.134,2526
     if (markerString) {
       const markerArray = this._splitURLString(markerString);
-      if (markerArray.length >= 2 &&
-        !isNaN(markerArray[0]) &&
-        !isNaN(markerArray[1])) {
+      const markerLength = markerArray.length;
+      if (markerLength >= 2) {
         const x = parseFloat(markerArray[0]),
           y = parseFloat(markerArray[1]),
           content = markerArray[3],
@@ -264,7 +265,7 @@ class UrlParamHelper {
           label = markerArray[5];
 
         let wkid = 4326;
-        if (!isNaN(markerArray[2])) {
+        if (markerArray[2]) {
           wkid = parseInt(markerArray[2], 10);
         }
 
@@ -318,17 +319,16 @@ class UrlParamHelper {
     }
   }
 
-  // todo: cleanup function
-  private _splitURLString(value: string) {
-    let splitValues;
-    if (value) {
-      splitValues = value.split(";");
-      if (splitValues.length === 1) {
-        splitValues = value.split(",");
-      }
+  private _splitURLString(value: string): string[] {
+    if (!value) {
+      return;
     }
-    return splitValues;
+    const splitValues = value.split(";");
+    if (splitValues.length === 1) {
+      return value.split(",");
+    }
   }
+
 }
 
 export default UrlParamHelper;

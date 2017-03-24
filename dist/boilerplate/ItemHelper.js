@@ -1,61 +1,53 @@
-define(["require", "exports", "dojo/Deferred", "esri/WebMap", "esri/WebScene"], function (require, exports, Deferred, WebMap, WebScene) {
+define(["require", "exports", "esri/core/promiseUtils", "esri/WebMap", "esri/WebScene"], function (require, exports, promiseUtils, WebMap, WebScene) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    // todo: try to remove Dojo/deferred and promise.
     var ItemHelper = (function () {
         function ItemHelper() {
         }
         ItemHelper.prototype.createWebMap = function (item) {
-            var deferred = new Deferred();
             if (!item) {
-                deferred.reject(new Error("ItemHelper:: WebMap data does not exist."));
+                return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
             }
-            else if (item.data instanceof Error) {
-                deferred.reject(item.data);
+            if (item.data instanceof Error) {
+                return promiseUtils.reject(item.data);
             }
-            else {
-                var wm = void 0;
-                if (item.data) {
-                    wm = new WebMap({
-                        portalItem: item.data
-                    });
-                }
-                if (!wm) {
-                    deferred.reject(new Error("ItemHelper:: WebMap does not have usable data."));
-                }
-                else {
-                    deferred.resolve(wm);
-                }
-            }
-            return deferred.promise;
+            var wm = this._createWebMap(item);
+            return wm ? promiseUtils.resolve(wm) : promiseUtils.reject(new Error("ItemHelper:: WebMap does not have usable data."));
         };
         ItemHelper.prototype.createWebScene = function (item) {
-            var deferred = new Deferred();
             if (!item) {
-                deferred.reject(new Error("ItemHelper:: WebScene data does not exist."));
+                return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
             }
-            else if (item.data instanceof Error) {
-                deferred.reject(item.data);
+            if (item.data instanceof Error) {
+                return promiseUtils.reject(item.data);
             }
-            else {
-                var ws = void 0;
-                if (item.data) {
-                    ws = new WebScene({
-                        portalItem: item.data
-                    });
-                }
-                else if (item.json) {
-                    ws = WebScene.fromJSON(item.json.itemData);
-                    ws.portalItem = item.json.item;
-                }
-                if (!ws) {
-                    deferred.reject(new Error("ItemHelper:: WebScene does not have usable data."));
-                }
-                else {
-                    deferred.resolve(ws);
-                }
+            var ws = this._createWebScene(item);
+            return ws ? promiseUtils.resolve(ws) : promiseUtils.reject(new Error("ItemHelper:: WebScene does not have usable data."));
+        };
+        ItemHelper.prototype._createWebMap = function (item) {
+            if (item.data) {
+                return new WebMap({
+                    portalItem: item.data
+                });
             }
-            return deferred.promise;
+            // todo: fix
+            // if (item.json) {
+            //   const wm = WebMap.fromJSON(item.json.itemData);
+            //   wm.portalItem = item.json.item;
+            //   return wm;
+            // }
+        };
+        ItemHelper.prototype._createWebScene = function (item) {
+            if (item.data) {
+                return new WebScene({
+                    portalItem: item.data
+                });
+            }
+            if (item.json) {
+                var ws = WebScene.fromJSON(item.json.itemData);
+                ws.portalItem = item.json.item;
+                return ws;
+            }
         };
         return ItemHelper;
     }());
