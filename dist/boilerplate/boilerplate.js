@@ -42,19 +42,14 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 return promiseUtils.resolve();
             }
             var defaultParams = {
-                query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+                query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
                 sortField: "modified",
                 sortOrder: "desc",
                 num: 9,
                 start: 1
             };
+            //Object.assign(defaultParams, this.settings.group.itemParams);
             var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
-            // place group ID
-            if (paramOptions.query) {
-                paramOptions.query = lang.replace(paramOptions.query, {
-                    groupid: this.config.group
-                });
-            }
             // group params
             var params = new PortalQueryParams(paramOptions);
             return this.portal.queryItems(params).then(function (response) {

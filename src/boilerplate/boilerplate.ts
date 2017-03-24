@@ -59,19 +59,13 @@ class Boilerplate {
     }
 
     const defaultParams = {
-      query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+      query: `group:"${this.config.group}" AND -type:"Code Attachment"`,
       sortField: "modified",
       sortOrder: "desc",
       num: 9,
       start: 1
     };
     const paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
-    // place group ID
-    if (paramOptions.query) {
-      paramOptions.query = lang.replace(paramOptions.query, {
-        groupid: this.config.group
-      });
-    }
     // group params
     const params = new PortalQueryParams(paramOptions);
     return this.portal.queryItems(params).then((response) => {
