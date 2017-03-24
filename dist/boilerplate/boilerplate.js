@@ -1,4 +1,4 @@
-define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "dojo/_base/lang", "dojo/Deferred", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, webmapText, websceneText, kernel, lang, Deferred, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
+define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "dojo/_base/lang", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, webmapText, websceneText, kernel, lang, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path='dojo/text!config/demoWebMap.json' name='webmapText' />
@@ -36,48 +36,43 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         }
         Boilerplate.prototype.queryGroupItems = function () {
             var _this = this;
-            var deferred;
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
-            deferred = new Deferred();
             if (!this.settings.group.fetchItems || !this.config.group) {
-                deferred.resolve();
+                return promiseUtils.resolve();
             }
-            else {
-                var defaultParams = {
-                    query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
-                    sortField: "modified",
-                    sortOrder: "desc",
-                    num: 9,
-                    start: 1
-                };
-                var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
-                // place group ID
-                if (paramOptions.query) {
-                    paramOptions.query = lang.replace(paramOptions.query, {
-                        groupid: this.config.group
-                    });
-                }
-                // group params
-                var params = new PortalQueryParams(paramOptions);
-                this.portal.queryItems(params).then(function (response) {
-                    if (!_this.results.group) {
-                        _this.results.group = {};
-                    }
-                    _this.results.group.itemsData = response;
-                    deferred.resolve(_this.results.group);
-                }, function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving group items.");
-                    }
-                    if (!_this.results.group) {
-                        _this.results.group = {};
-                    }
-                    _this.results.group.itemsData = error;
-                    deferred.reject(error);
+            var defaultParams = {
+                query: "group:\"{groupid}\" AND -type:\"Code Attachment\"",
+                sortField: "modified",
+                sortOrder: "desc",
+                num: 9,
+                start: 1
+            };
+            var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
+            // place group ID
+            if (paramOptions.query) {
+                paramOptions.query = lang.replace(paramOptions.query, {
+                    groupid: this.config.group
                 });
             }
-            return deferred.promise;
+            // group params
+            var params = new PortalQueryParams(paramOptions);
+            return this.portal.queryItems(params).then(function (response) {
+                if (!_this.results.group) {
+                    _this.results.group = {};
+                }
+                _this.results.group.itemsData = response;
+                return _this.results.group;
+            }).otherwise(function (error) {
+                if (!error) {
+                    error = new Error("Boilerplate:: Error retrieving group items.");
+                }
+                if (!_this.results.group) {
+                    _this.results.group = {};
+                }
+                _this.results.group.itemsData = error;
+                return error;
+            });
         };
         Boilerplate.prototype.init = function () {
             var _this = this;
@@ -161,253 +156,231 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         };
         Boilerplate.prototype._queryWebMapItem = function () {
             var _this = this;
-            var deferred;
             // Get details about the specified web map. If the web map is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
-            deferred = new Deferred();
             if (!this.settings.webmap.fetch) {
-                deferred.resolve();
+                return promiseUtils.resolve();
+            }
+            // Use local web map instead of portal web map
+            if (this.settings.webmap.useLocal) {
+                var json = JSON.parse(webmapText);
+                this.results.webMapItem = {
+                    json: json
+                };
+                return promiseUtils.resolve(this.results.webMapItem);
+            }
+            else if (this.config.webmap) {
+                var mapItem = new PortalItem({
+                    id: this.config.webmap
+                }).load();
+                return mapItem.then(function (itemData) {
+                    _this.results.webMapItem = {
+                        data: itemData
+                    };
+                    return _this.results.webMapItem;
+                }).otherwise(function (error) {
+                    if (!error) {
+                        error = new Error("Boilerplate:: Error retrieving webmap item.");
+                    }
+                    _this.results.webMapItem = {
+                        data: error
+                    };
+                    return error;
+                });
             }
             else {
-                // Use local web map instead of portal web map
-                if (this.settings.webmap.useLocal) {
-                    var json = JSON.parse(webmapText);
-                    this.results.webMapItem = {
-                        json: json
-                    };
-                    deferred.resolve(this.results.webMapItem);
-                }
-                else if (this.config.webmap) {
-                    var mapItem = new PortalItem({
-                        id: this.config.webmap
-                    }).load();
-                    mapItem.then(function (itemData) {
-                        _this.results.webMapItem = {
-                            data: itemData
-                        };
-                        deferred.resolve(_this.results.webMapItem);
-                    }, function (error) {
-                        if (!error) {
-                            error = new Error("Boilerplate:: Error retrieving webmap item.");
-                        }
-                        _this.results.webMapItem = {
-                            data: error
-                        };
-                        deferred.reject(error);
-                    });
-                }
-                else {
-                    deferred.resolve();
-                }
+                return promiseUtils.resolve();
             }
-            return deferred.promise;
         };
         Boilerplate.prototype._queryGroupInfo = function () {
             var _this = this;
-            var deferred;
             // Get details about the specified group. If the group is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
-            deferred = new Deferred();
             if (!this.settings.group.fetchInfo || !this.config.group) {
-                deferred.resolve();
+                return promiseUtils.resolve();
             }
-            else {
-                // group params
-                var params = new PortalQueryParams({
-                    query: "id:\"" + this.config.group + "\""
-                });
-                this.portal.queryGroups(params).then(function (response) {
-                    if (!_this.results.group) {
-                        _this.results.group = {};
-                    }
-                    _this.results.group.infoData = response;
-                    deferred.resolve(_this.results.group);
-                }, function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving group info.");
-                    }
-                    if (!_this.results.group) {
-                        _this.results.group = {};
-                    }
-                    _this.results.group.infoData = error;
-                    deferred.reject(error);
-                });
-            }
-            return deferred.promise;
+            // group params
+            var params = new PortalQueryParams({
+                query: "id:\"" + this.config.group + "\""
+            });
+            return this.portal.queryGroups(params).then(function (response) {
+                if (!_this.results.group) {
+                    _this.results.group = {};
+                }
+                _this.results.group.infoData = response;
+                return _this.results.group;
+            }).otherwise(function (error) {
+                if (!error) {
+                    error = new Error("Boilerplate:: Error retrieving group info.");
+                }
+                if (!_this.results.group) {
+                    _this.results.group = {};
+                }
+                _this.results.group.infoData = error;
+                return error;
+            });
         };
         Boilerplate.prototype._queryWebSceneItem = function () {
             var _this = this;
-            var deferred, sceneItem;
+            var sceneItem;
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
-            deferred = new Deferred();
             if (!this.settings.webscene.fetch) {
-                deferred.resolve();
+                return promiseUtils.resolve();
+            }
+            // Use local web scene instead of portal web scene
+            if (this.settings.webscene.useLocal) {
+                // get web scene js file
+                var json = JSON.parse(websceneText);
+                this.results.webSceneItem = {
+                    json: json
+                };
+                return promiseUtils.resolve(this.results.webSceneItem);
+            }
+            else if (this.config.webscene) {
+                sceneItem = new PortalItem({
+                    id: this.config.webscene
+                }).load();
+                return sceneItem.then(function (itemData) {
+                    _this.results.webSceneItem = {
+                        data: itemData
+                    };
+                    return _this.results.webSceneItem;
+                }).otherwise(function (error) {
+                    if (!error) {
+                        error = new Error("Boilerplate:: Error retrieving webscene item.");
+                    }
+                    _this.results.webSceneItem = {
+                        data: error
+                    };
+                    return error;
+                });
             }
             else {
-                // Use local web scene instead of portal web scene
-                if (this.settings.webscene.useLocal) {
-                    // get web scene js file
-                    var json = JSON.parse(websceneText);
-                    this.results.webSceneItem = {
-                        json: json
-                    };
-                    deferred.resolve(this.results.webSceneItem);
-                }
-                else if (this.config.webscene) {
-                    sceneItem = new PortalItem({
-                        id: this.config.webscene
-                    }).load();
-                    sceneItem.then(function (itemData) {
-                        _this.results.webSceneItem = {
-                            data: itemData
-                        };
-                        deferred.resolve(_this.results.webSceneItem);
-                    }, function (error) {
-                        if (!error) {
-                            error = new Error("Boilerplate:: Error retrieving webscene item.");
-                        }
-                        _this.results.webSceneItem = {
-                            data: error
-                        };
-                        deferred.reject(error);
-                    });
-                }
-                else {
-                    deferred.resolve();
-                }
+                return promiseUtils.resolve();
             }
-            return deferred.promise;
         };
         Boilerplate.prototype._queryApplicationItem = function () {
             var _this = this;
             // Get the application configuration details using the application id. When the response contains
             // itemData.values then we know the app contains configuration information. We'll use these values
             // to overwrite the application defaults.
-            var deferred = new Deferred();
             if (!this.config.appid) {
-                deferred.resolve();
+                return promiseUtils.resolve();
             }
-            else {
-                var appItem = new PortalItem({
-                    id: this.config.appid
-                }).load();
-                appItem.then(function (itemData) {
-                    itemData.fetchData().then(function (data) {
-                        var cfg = {};
-                        if (data && data.values) {
-                            // get app config values - we'll merge them with config later.
-                            cfg = data.values;
-                        }
-                        // get the extent for the application item. This can be used to override the default web map extent
-                        if (itemData.extent) {
-                            cfg.application_extent = itemData.extent;
-                        }
-                        // get any app proxies defined on the application item
-                        if (itemData.appProxies) {
-                            var layerMixins = itemData.appProxies.map(function (p) {
-                                return {
-                                    "url": p.sourceUrl,
-                                    "mixin": {
-                                        "url": p.proxyUrl
-                                    }
-                                };
-                            });
-                            cfg.layerMixins = layerMixins;
-                        }
-                        _this.results.applicationItem = {
-                            data: itemData,
-                            config: cfg
-                        };
-                        deferred.resolve(_this.results.applicationItem);
-                    }, function (error) {
-                        if (!error) {
-                            error = new Error("Boilerplate:: Error retrieving application configuration data.");
-                        }
-                        _this.results.applicationItem = {
-                            data: error,
-                            config: null
-                        };
-                        deferred.reject(error);
-                    });
-                }, function (error) {
+            var appItem = new PortalItem({
+                id: this.config.appid
+            }).load();
+            return appItem.then(function (itemData) {
+                return itemData.fetchData().then(function (data) {
+                    var cfg = {};
+                    if (data && data.values) {
+                        // get app config values - we'll merge them with config later.
+                        cfg = data.values;
+                    }
+                    // get the extent for the application item. This can be used to override the default web map extent
+                    if (itemData.extent) {
+                        cfg.application_extent = itemData.extent;
+                    }
+                    // get any app proxies defined on the application item
+                    if (itemData.appProxies) {
+                        var layerMixins = itemData.appProxies.map(function (p) {
+                            return {
+                                "url": p.sourceUrl,
+                                "mixin": {
+                                    "url": p.proxyUrl
+                                }
+                            };
+                        });
+                        cfg.layerMixins = layerMixins;
+                    }
+                    _this.results.applicationItem = {
+                        data: itemData,
+                        config: cfg
+                    };
+                    return _this.results.applicationItem;
+                }).otherwise(function (error) {
                     if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving application configuration.");
+                        error = new Error("Boilerplate:: Error retrieving application configuration data.");
                     }
                     _this.results.applicationItem = {
                         data: error,
                         config: null
                     };
-                    deferred.reject(error);
+                    return error;
                 });
-            }
-            return deferred.promise;
+            }).otherwise(function (error) {
+                if (!error) {
+                    error = new Error("Boilerplate:: Error retrieving application configuration.");
+                }
+                _this.results.applicationItem = {
+                    data: error,
+                    config: null
+                };
+                return error;
+            });
         };
         Boilerplate.prototype._queryPortal = function () {
             var _this = this;
-            var deferred = new Deferred();
             if (!this.settings.portal.fetch) {
-                deferred.resolve();
+                return promiseUtils.resolve();
             }
-            else {
-                // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
-                // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
-                // the organization by making a self request to the org url which returns details specific to that organization.
-                // Examples of the type of information returned are custom roles, units settings, helper services and more.
-                // If this fails, the application will continue to function
-                var portal = new Portal().load();
-                this.portal = portal;
-                portal.then(function (response) {
-                    if (_this.settings.webTierSecurity) {
-                        var trustedHost = void 0;
-                        if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
-                            for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
-                                trustedHost = response.authorizedCrossOriginDomains[i];
-                                // add if trusted host is not null, undefined, or empty string
-                                if (_this._isDefined(trustedHost) && trustedHost.length > 0) {
-                                    esriConfig.request.corsEnabledServers.push({
-                                        host: trustedHost,
-                                        withCredentials: true
-                                    });
-                                }
+            // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
+            // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
+            // the organization by making a self request to the org url which returns details specific to that organization.
+            // Examples of the type of information returned are custom roles, units settings, helper services and more.
+            // If this fails, the application will continue to function
+            var portal = new Portal().load();
+            this.portal = portal;
+            return portal.then(function (response) {
+                if (_this.settings.webTierSecurity) {
+                    var trustedHost = void 0;
+                    if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
+                        for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
+                            trustedHost = response.authorizedCrossOriginDomains[i];
+                            // add if trusted host is not null, undefined, or empty string
+                            if (_this._isDefined(trustedHost) && trustedHost.length > 0) {
+                                esriConfig.request.corsEnabledServers.push({
+                                    host: trustedHost,
+                                    withCredentials: true
+                                });
                             }
                         }
                     }
-                    // set boilerplate units
-                    var units = "metric";
-                    if (response.user && response.user.units) {
-                        units = response.user.units;
+                }
+                // set boilerplate units
+                var units = "metric";
+                if (response.user && response.user.units) {
+                    units = response.user.units;
+                }
+                else if (response.units) {
+                    units = response.units;
+                }
+                else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
+                    // use feet/miles only for the US and if nothing is set for a user
+                    units = "english";
+                }
+                _this.units = units;
+                // are any custom roles defined in the organization?
+                if (response.user && _this._isDefined(response.user.roleId)) {
+                    if (response.user.privileges) {
+                        _this.userPrivileges = response.user.privileges;
                     }
-                    else if (response.units) {
-                        units = response.units;
-                    }
-                    else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
-                        // use feet/miles only for the US and if nothing is set for a user
-                        units = "english";
-                    }
-                    _this.units = units;
-                    // are any custom roles defined in the organization?
-                    if (response.user && _this._isDefined(response.user.roleId)) {
-                        if (response.user.privileges) {
-                            _this.userPrivileges = response.user.privileges;
-                        }
-                    }
-                    // set data for portal on boilerplate
-                    _this.results.portal = {
-                        data: response
-                    };
-                    deferred.resolve(_this.results.portal);
-                }, function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving organization information.");
-                    }
-                    _this.results.portal = {
-                        data: error
-                    };
-                    deferred.reject(error);
-                });
-            }
-            return deferred.promise;
+                }
+                // set data for portal on boilerplate
+                _this.results.portal = {
+                    data: response
+                };
+                return _this.results.portal;
+            }).otherwise(function (error) {
+                if (!error) {
+                    error = new Error("Boilerplate:: Error retrieving organization information.");
+                }
+                _this.results.portal = {
+                    data: error
+                };
+                return error;
+            });
         };
         Boilerplate.prototype._overwriteExtent = function (itemInfo, extent) {
             var item = itemInfo && itemInfo.item;
@@ -534,8 +507,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
         };
         Boilerplate.prototype._checkSignIn = function () {
-            var deferred, signedIn, oAuthInfo;
-            deferred = new Deferred();
+            var signedIn, oAuthInfo;
             //If there's an oauth appid specified register it
             if (this.config.oauthappid) {
                 oAuthInfo = new OAuthInfo({
@@ -548,8 +520,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // check sign-in status
             signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
             // resolve regardless of signed in or not.
-            signedIn.always(deferred.resolve);
-            return deferred.promise;
+            return signedIn.always(promiseUtils.resolve);
         };
         Boilerplate.prototype._isDefined = function (value) {
             return (value !== undefined) && (value !== null);
