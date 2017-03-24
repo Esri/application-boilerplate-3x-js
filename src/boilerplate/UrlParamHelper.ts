@@ -77,43 +77,47 @@ class UrlParamHelper {
   }
 
   public find(view: MapView | SceneView, findString, searchWidget?: Search) {
-    if (findString) {
-      if (searchWidget) {
-        searchWidget.search(findString);
-      }
-      else {
-        searchWidget = new Search({
-          view: view
-        });
-        searchWidget.search(findString);
-      }
-      return searchWidget;
+    if (!findString) {
+      return;
     }
+    if (searchWidget) {
+      searchWidget.search(findString);
+    }
+    else {
+      searchWidget = new Search({
+        view: view
+      });
+      searchWidget.search(findString);
+    }
+    return searchWidget;
+
   }
 
-  public setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferenceUrl) {
-    if (basemapUrl && view) {
-      const pl = promiseList.eachAlways({
-        baseLayer: Layer.fromArcGISServerUrl({
-          url: basemapUrl
-        }),
-        referenceLayer: Layer.fromArcGISServerUrl({
-          url: basemapReferenceUrl
-        })
-      });
-      pl.then((response) => {
-        if (response.baseLayer) {
-          const basemapOptions = {
-            baseLayers: response.baseLayer,
-            referenceLayers: null
-          };
-          if (response.referenceLayer) {
-            basemapOptions.referenceLayers = response.referenceLayer;
-          }
-          view.map.basemap = new Basemap(basemapOptions);
-        }
-      });
+  public setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferenceUrl): void {
+    if (!basemapUrl || !view) {
+      return;
     }
+
+    const pl = promiseList.eachAlways({
+      baseLayer: Layer.fromArcGISServerUrl({
+        url: basemapUrl
+      }),
+      referenceLayer: Layer.fromArcGISServerUrl({
+        url: basemapReferenceUrl
+      })
+    });
+    pl.then((response) => {
+      const baseLayer = response.baseLayer;
+      const referenceLayer = response.referenceLayer;
+      if (!baseLayer) {
+        return;
+      }
+      const basemapOptions = {
+        baseLayers: baseLayer,
+        referenceLayers: referenceLayer
+      };
+      view.map.basemap = new Basemap(basemapOptions);
+    });
   }
 
   public viewPointStringToCamera(viewpointParamString: string): Camera {
@@ -121,62 +125,59 @@ class UrlParamHelper {
     if (!viewpointArray || !viewpointArray.length) {
       return;
     }
-    else {
-      let cameraString = "";
-      let tiltHeading = "";
-      for (let i = 0; i < viewpointArray.length; i++) {
-        if (viewpointArray[i].indexOf("cam:") !== -1) {
-          cameraString = viewpointArray[i];
+
+    let cameraString = "";
+    let tiltHeading = "";
+
+    viewpointArray.forEach((viewpointItem) => {
+      viewpointItem.indexOf("cam:") !== -1 ? cameraString = viewpointItem : tiltHeading = viewpointItem;
+    });
+
+    if (cameraString !== "") {
+      cameraString = cameraString.substr(4, cameraString.length - 4);
+      const positionArray = cameraString.split(",");
+      if (positionArray.length >= 3) {
+        let x = 0,
+          y = 0,
+          z = 0;
+        x = parseFloat(positionArray[0]);
+        y = parseFloat(positionArray[1]);
+        z = parseFloat(positionArray[2]);
+        let wkid = 4326;
+        if (positionArray.length === 4) {
+          wkid = parseInt(positionArray[3], 10);
         }
-        else {
-          tiltHeading = viewpointArray[i];
-        }
-      }
-      if (cameraString !== "") {
-        cameraString = cameraString.substr(4, cameraString.length - 4);
-        const positionArray = cameraString.split(",");
-        if (positionArray.length >= 3) {
-          let x = 0,
-            y = 0,
-            z = 0;
-          x = parseFloat(positionArray[0]);
-          y = parseFloat(positionArray[1]);
-          z = parseFloat(positionArray[2]);
-          let wkid = 4326;
-          if (positionArray.length === 4) {
-            wkid = parseInt(positionArray[3], 10);
+
+        const cameraPosition = new Point({
+          x: x,
+          y: y,
+          z: z,
+          spatialReference: {
+            wkid: wkid
           }
+        });
 
-          const cameraPosition = new Point({
-            x: x,
-            y: y,
-            z: z,
-            spatialReference: {
-              wkid: wkid
-            }
-          });
-
-          let heading = 0,
-            tilt = 0;
-          if (tiltHeading !== "") {
-            const tiltHeadingArray = tiltHeading.split(",");
-            if (tiltHeadingArray.length >= 0) {
-              heading = parseFloat(tiltHeadingArray[0]);
-              if (tiltHeadingArray.length > 1) {
-                tilt = parseFloat(tiltHeadingArray[1]);
-              }
+        let heading = 0,
+          tilt = 0;
+        if (tiltHeading !== "") {
+          const tiltHeadingArray = tiltHeading.split(",");
+          if (tiltHeadingArray.length >= 0) {
+            heading = parseFloat(tiltHeadingArray[0]);
+            if (tiltHeadingArray.length > 1) {
+              tilt = parseFloat(tiltHeadingArray[1]);
             }
           }
-
-          const camera = new Camera({
-            position: cameraPosition,
-            heading: heading,
-            tilt: tilt
-          });
-          return camera;
         }
+
+        const camera = new Camera({
+          position: cameraPosition,
+          heading: heading,
+          tilt: tilt
+        });
+        return camera;
       }
     }
+
   }
 
   public extentStringToExtent(extentString: string): Extent {

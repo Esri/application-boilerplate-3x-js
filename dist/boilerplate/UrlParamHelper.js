@@ -47,96 +47,91 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             this.setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
         };
         UrlParamHelper.prototype.find = function (view, findString, searchWidget) {
-            if (findString) {
-                if (searchWidget) {
-                    searchWidget.search(findString);
-                }
-                else {
-                    searchWidget = new Search({
-                        view: view
-                    });
-                    searchWidget.search(findString);
-                }
-                return searchWidget;
+            if (!findString) {
+                return;
             }
+            if (searchWidget) {
+                searchWidget.search(findString);
+            }
+            else {
+                searchWidget = new Search({
+                    view: view
+                });
+                searchWidget.search(findString);
+            }
+            return searchWidget;
         };
         UrlParamHelper.prototype.setBasemapOnView = function (view, basemapUrl, basemapReferenceUrl) {
-            if (basemapUrl && view) {
-                var pl = promiseList.eachAlways({
-                    baseLayer: Layer.fromArcGISServerUrl({
-                        url: basemapUrl
-                    }),
-                    referenceLayer: Layer.fromArcGISServerUrl({
-                        url: basemapReferenceUrl
-                    })
-                });
-                pl.then(function (response) {
-                    if (response.baseLayer) {
-                        var basemapOptions = {
-                            baseLayers: response.baseLayer,
-                            referenceLayers: null
-                        };
-                        if (response.referenceLayer) {
-                            basemapOptions.referenceLayers = response.referenceLayer;
-                        }
-                        view.map.basemap = new Basemap(basemapOptions);
-                    }
-                });
+            if (!basemapUrl || !view) {
+                return;
             }
+            var pl = promiseList.eachAlways({
+                baseLayer: Layer.fromArcGISServerUrl({
+                    url: basemapUrl
+                }),
+                referenceLayer: Layer.fromArcGISServerUrl({
+                    url: basemapReferenceUrl
+                })
+            });
+            pl.then(function (response) {
+                var baseLayer = response.baseLayer;
+                var referenceLayer = response.referenceLayer;
+                if (!baseLayer) {
+                    return;
+                }
+                var basemapOptions = {
+                    baseLayers: baseLayer,
+                    referenceLayers: referenceLayer
+                };
+                view.map.basemap = new Basemap(basemapOptions);
+            });
         };
         UrlParamHelper.prototype.viewPointStringToCamera = function (viewpointParamString) {
             var viewpointArray = viewpointParamString && viewpointParamString.split(";");
             if (!viewpointArray || !viewpointArray.length) {
                 return;
             }
-            else {
-                var cameraString = "";
-                var tiltHeading = "";
-                for (var i = 0; i < viewpointArray.length; i++) {
-                    if (viewpointArray[i].indexOf("cam:") !== -1) {
-                        cameraString = viewpointArray[i];
+            var cameraString = "";
+            var tiltHeading = "";
+            viewpointArray.forEach(function (viewpointItem) {
+                viewpointItem.indexOf("cam:") !== -1 ? cameraString = viewpointItem : tiltHeading = viewpointItem;
+            });
+            if (cameraString !== "") {
+                cameraString = cameraString.substr(4, cameraString.length - 4);
+                var positionArray = cameraString.split(",");
+                if (positionArray.length >= 3) {
+                    var x = 0, y = 0, z = 0;
+                    x = parseFloat(positionArray[0]);
+                    y = parseFloat(positionArray[1]);
+                    z = parseFloat(positionArray[2]);
+                    var wkid = 4326;
+                    if (positionArray.length === 4) {
+                        wkid = parseInt(positionArray[3], 10);
                     }
-                    else {
-                        tiltHeading = viewpointArray[i];
-                    }
-                }
-                if (cameraString !== "") {
-                    cameraString = cameraString.substr(4, cameraString.length - 4);
-                    var positionArray = cameraString.split(",");
-                    if (positionArray.length >= 3) {
-                        var x = 0, y = 0, z = 0;
-                        x = parseFloat(positionArray[0]);
-                        y = parseFloat(positionArray[1]);
-                        z = parseFloat(positionArray[2]);
-                        var wkid = 4326;
-                        if (positionArray.length === 4) {
-                            wkid = parseInt(positionArray[3], 10);
+                    var cameraPosition = new Point({
+                        x: x,
+                        y: y,
+                        z: z,
+                        spatialReference: {
+                            wkid: wkid
                         }
-                        var cameraPosition = new Point({
-                            x: x,
-                            y: y,
-                            z: z,
-                            spatialReference: {
-                                wkid: wkid
-                            }
-                        });
-                        var heading = 0, tilt = 0;
-                        if (tiltHeading !== "") {
-                            var tiltHeadingArray = tiltHeading.split(",");
-                            if (tiltHeadingArray.length >= 0) {
-                                heading = parseFloat(tiltHeadingArray[0]);
-                                if (tiltHeadingArray.length > 1) {
-                                    tilt = parseFloat(tiltHeadingArray[1]);
-                                }
+                    });
+                    var heading = 0, tilt = 0;
+                    if (tiltHeading !== "") {
+                        var tiltHeadingArray = tiltHeading.split(",");
+                        if (tiltHeadingArray.length >= 0) {
+                            heading = parseFloat(tiltHeadingArray[0]);
+                            if (tiltHeadingArray.length > 1) {
+                                tilt = parseFloat(tiltHeadingArray[1]);
                             }
                         }
-                        var camera = new Camera({
-                            position: cameraPosition,
-                            heading: heading,
-                            tilt: tilt
-                        });
-                        return camera;
                     }
+                    var camera = new Camera({
+                        position: cameraPosition,
+                        heading: heading,
+                        tilt: tilt
+                    });
+                    return camera;
                 }
             }
         };
