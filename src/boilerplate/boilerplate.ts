@@ -4,7 +4,6 @@ declare const webmapText: string;
 declare const websceneText: string;
 
 import kernel = require('dojo/_base/kernel');
-import lang = require('dojo/_base/lang'); // todo: replace with es6 templates and Object.assign()?
 import esriConfig = require('esri/config');
 import promiseUtils = require('esri/core/promiseUtils');
 import IdentityManager = require('esri/identity/IdentityManager');
@@ -39,14 +38,14 @@ class Boilerplate {
   userPrivileges: any = null;
 
   constructor(applicationConfigJSON, boilerplateSettings) {
-    this.settings = lang.mixin({
+    this.settings = {
       webscene: {},
       webmap: {},
       group: {},
       portal: {},
-      urlItems: []
-    }, boilerplateSettings);
-
+      urlItems: [],
+      ...boilerplateSettings
+    }
     this.config = applicationConfigJSON;
     this.results = {};
   }
@@ -57,15 +56,15 @@ class Boilerplate {
     if (!this.settings.group.fetchItems || !this.config.group) {
       return promiseUtils.resolve();
     }
-
-    const defaultParams = {
+    const itemParams = this.settings.group.itemParams;
+    const paramOptions = {
       query: `group:"${this.config.group}" AND -type:"Code Attachment"`,
       sortField: "modified",
       sortOrder: "desc",
       num: 9,
-      start: 1
+      start: 1,
+      ...itemParams
     };
-    const paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
     // group params
     const params = new PortalQueryParams(paramOptions);
     return this.portal.queryItems(params).then((response) => {
@@ -238,7 +237,7 @@ class Boilerplate {
   }
 
   private _queryWebSceneItem() {
-    let sceneItem;
+    let sceneItem; // todo
     // Get details about the specified web scene. If the web scene is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
     if (!this.settings.webscene.fetch) {
@@ -293,7 +292,7 @@ class Boilerplate {
     }).load();
     return appItem.then((itemData) => {
       return itemData.fetchData().then((data) => {
-        let cfg: any = {};
+        let cfg: any = {}; // todo
         if (data && data.values) {
           // get app config values - we'll merge them with config later.
           cfg = data.values;
@@ -358,9 +357,9 @@ class Boilerplate {
     this.portal = portal;
     return portal.then((response) => {
       if (this.settings.webTierSecurity) {
-        let trustedHost;
+        let trustedHost; // todo
         if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
-          for (let i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
+          for (let i = 0; i < response.authorizedCrossOriginDomains.length; i++) { // todo
             trustedHost = response.authorizedCrossOriginDomains[i];
             // add if trusted host is not null, undefined, or empty string
             if (this._isDefined(trustedHost) && trustedHost.length > 0) {
@@ -373,7 +372,7 @@ class Boilerplate {
         }
       }
       // set boilerplate units
-      let units = "metric";
+      let units = "metric"; // todo
       if (response.user && response.user.units) { //user defined units
         units = response.user.units;
       }
@@ -456,7 +455,7 @@ class Boilerplate {
   }
 
   private _setLangProps() {
-    let direction = LTR;
+    let direction = LTR; // todo
     RTL_LANGS.forEach((l) => {
       if (kernel.locale.indexOf(l) !== -1) {
         direction = RTL;
@@ -469,12 +468,16 @@ class Boilerplate {
   }
 
   private _mixinAllConfigs() {
-    lang.mixin(
-      this.config,
-      this.results.applicationItem ? this.results.applicationItem.config : null,
-      this.results.localStorageConfig,
-      this.results.urlParams ? this.results.urlParams.config : null
-    );
+    const config = this.config;
+    const applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
+    const localStorageConfig = this.results.localStorageConfig;
+    const urlParams = this.results.urlParams ? this.results.urlParams.config : null;
+    this.config = {
+      ...config,
+      ...applicationItem,
+      ...localStorageConfig,
+      ...urlParams
+    }
   }
 
   private _getUrlParamValues(items: string[]) {
@@ -483,7 +486,7 @@ class Boilerplate {
     const urlObject = this._createUrlParamsObject();
     const obj = {};
     if (urlObject && items && items.length) {
-      for (let i = 0; i < items.length; i++) {
+      for (let i = 0; i < items.length; i++) { // todo
         const item = urlObject[items[i]];
         if (item) {
           if (typeof item === "string") {
@@ -521,7 +524,7 @@ class Boilerplate {
   private _initializeApplication() {
     // If this app is hosted on an Esri environment.
     if (this.settings.esriEnvironment) {
-      let appLocation, instance;
+      let appLocation, instance; // todo
       // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
       // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
       // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
@@ -545,7 +548,7 @@ class Boilerplate {
   }
 
   private _checkSignIn() {
-    let signedIn, oAuthInfo;
+    let signedIn, oAuthInfo; // todo
     //If there's an oauth appid specified register it
     if (this.config.oauthappid) {
       oAuthInfo = new OAuthInfo({
@@ -571,7 +574,7 @@ class Boilerplate {
 
   private _stripObjectTags(data: Object) {
     return Object.keys(data).reduce((p, c, i) => {
-      let obj = p;
+      let obj = p; // todo
       if (typeof data[c] === "string") {
         obj[c] === c.replace(TAGS_RE, "");
       } else {

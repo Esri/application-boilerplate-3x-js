@@ -1,4 +1,12 @@
-define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "dojo/_base/lang", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, webmapText, websceneText, kernel, lang, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, webmapText, websceneText, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path='dojo/text!config/demoWebMap.json' name='webmapText' />
@@ -24,13 +32,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.locale = null;
             this.units = null;
             this.userPrivileges = null;
-            this.settings = lang.mixin({
-                webscene: {},
-                webmap: {},
-                group: {},
-                portal: {},
-                urlItems: []
-            }, boilerplateSettings);
+            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
             this.config = applicationConfigJSON;
             this.results = {};
         }
@@ -41,15 +43,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             if (!this.settings.group.fetchItems || !this.config.group) {
                 return promiseUtils.resolve();
             }
-            var defaultParams = {
-                query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"",
-                sortField: "modified",
-                sortOrder: "desc",
-                num: 9,
-                start: 1
-            };
-            //Object.assign(defaultParams, this.settings.group.itemParams);
-            var paramOptions = lang.mixin(defaultParams, this.settings.group.itemParams);
+            var itemParams = this.settings.group.itemParams;
+            var paramOptions = __assign({ query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             // group params
             var params = new PortalQueryParams(paramOptions);
             return this.portal.queryItems(params).then(function (response) {
@@ -217,7 +212,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         };
         Boilerplate.prototype._queryWebSceneItem = function () {
             var _this = this;
-            var sceneItem;
+            var sceneItem; // todo
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             if (!this.settings.webscene.fetch) {
@@ -268,7 +263,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }).load();
             return appItem.then(function (itemData) {
                 return itemData.fetchData().then(function (data) {
-                    var cfg = {};
+                    var cfg = {}; // todo
                     if (data && data.values) {
                         // get app config values - we'll merge them with config later.
                         cfg = data.values;
@@ -329,7 +324,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.portal = portal;
             return portal.then(function (response) {
                 if (_this.settings.webTierSecurity) {
-                    var trustedHost = void 0;
+                    var trustedHost = void 0; // todo
                     if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
                         for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
                             trustedHost = response.authorizedCrossOriginDomains[i];
@@ -344,7 +339,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                     }
                 }
                 // set boilerplate units
-                var units = "metric";
+                var units = "metric"; // todo
                 if (response.user && response.user.units) {
                     units = response.user.units;
                 }
@@ -423,7 +418,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
         };
         Boilerplate.prototype._setLangProps = function () {
-            var direction = LTR;
+            var direction = LTR; // todo
             RTL_LANGS.forEach(function (l) {
                 if (kernel.locale.indexOf(l) !== -1) {
                     direction = RTL;
@@ -435,7 +430,11 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.locale = kernel.locale;
         };
         Boilerplate.prototype._mixinAllConfigs = function () {
-            lang.mixin(this.config, this.results.applicationItem ? this.results.applicationItem.config : null, this.results.localStorageConfig, this.results.urlParams ? this.results.urlParams.config : null);
+            var config = this.config;
+            var applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
+            var localStorageConfig = this.results.localStorageConfig;
+            var urlParams = this.results.urlParams ? this.results.urlParams.config : null;
+            this.config = __assign({}, config, applicationItem, localStorageConfig, urlParams);
         };
         Boilerplate.prototype._getUrlParamValues = function (items) {
             // retrieves only the items specified from the URL object.
@@ -479,7 +478,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         Boilerplate.prototype._initializeApplication = function () {
             // If this app is hosted on an Esri environment.
             if (this.settings.esriEnvironment) {
-                var appLocation = void 0, instance = void 0;
+                var appLocation = void 0, instance = void 0; // todo
                 // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
                 // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
                 // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
@@ -502,7 +501,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
         };
         Boilerplate.prototype._checkSignIn = function () {
-            var signedIn, oAuthInfo;
+            var signedIn, oAuthInfo; // todo
             //If there's an oauth appid specified register it
             if (this.config.oauthappid) {
                 oAuthInfo = new OAuthInfo({
@@ -525,7 +524,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         };
         Boilerplate.prototype._stripObjectTags = function (data) {
             return Object.keys(data).reduce(function (p, c, i) {
-                var obj = p;
+                var obj = p; // todo
                 if (typeof data[c] === "string") {
                     obj[c] === c.replace(TAGS_RE, "");
                 }

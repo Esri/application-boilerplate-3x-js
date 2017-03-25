@@ -116,14 +116,18 @@ define(["require", "exports", "dojo/i18n!config/nls/resources.js", "dojo/_base/l
             var items = groupItemsData.results;
             this._ready();
             if (info && items) {
-                var html_1 = "";
-                html_1 += "<h1>" + info.title + "</h1>";
-                html_1 += "<ol>";
-                items.forEach(function (item) {
-                    html_1 += "<li>" + item.title + "</li>";
+                var listNodes = items.map(function (item) {
+                    return "<li>" + item.title + "</li>";
                 });
-                html_1 += "</ol>";
-                document.body.innerHTML = html_1;
+                var html = "\n        <h1>" + info.title + "</h1>\n        <ol>\n        " + listNodes + "\n        </ol>\n      ";
+                // let html = "";
+                // html += "<h1>" + info.title + "</h1>";
+                // html += "<ol>";
+                // items.forEach((item) => {
+                //   html += "<li>" + item.title + "</li>";
+                // });
+                // html += "</ol>";
+                document.body.innerHTML = html;
             }
         };
         return Application;

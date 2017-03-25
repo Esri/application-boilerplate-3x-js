@@ -156,17 +156,29 @@ class Application {
     this._ready();
 
     if (info && items) {
-      let html = "";
 
-      html += "<h1>" + info.title + "</h1>";
-
-      html += "<ol>";
-
-      items.forEach((item) => {
-        html += "<li>" + item.title + "</li>";
+      const listNodes = items.map((item: any) => {
+        return `<li>${item.title}</li>`;
       });
 
-      html += "</ol>";
+      const html = `
+        <h1>${info.title}</h1>
+        <ol>
+        ${listNodes}
+        </ol>
+      `;
+
+      // let html = "";
+
+      // html += "<h1>" + info.title + "</h1>";
+
+      // html += "<ol>";
+
+      // items.forEach((item) => {
+      //   html += "<li>" + item.title + "</li>";
+      // });
+
+      // html += "</ol>";
 
       document.body.innerHTML = html;
     }

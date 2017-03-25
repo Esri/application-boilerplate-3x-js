@@ -11,16 +11,17 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
         width: "36px",
         height: "19px",
         xoffset: "9px",
-        yoffset: "18px"
+        yoffset: "18px" // todo: fix typings in next JS API release.
     };
     var UrlParamHelper = (function () {
         function UrlParamHelper() {
         }
         UrlParamHelper.prototype.getViewProperties = function (config) {
             var viewProperties = {};
+            var components = config.components.split(",");
             if (config.components) {
                 viewProperties.ui = {
-                    components: config.components.split(",")
+                    components: components
                 };
             }
             var camera = this.viewPointStringToCamera(config.viewpoint);
@@ -91,6 +92,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             if (!viewpointArray || !viewpointArray.length) {
                 return;
             }
+            // todo
             var cameraString = "";
             var tiltHeading = "";
             viewpointArray.forEach(function (viewpointItem) {
@@ -100,14 +102,8 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 cameraString = cameraString.substr(4, cameraString.length - 4);
                 var positionArray = cameraString.split(",");
                 if (positionArray.length >= 3) {
-                    var x = 0, y = 0, z = 0;
-                    x = parseFloat(positionArray[0]);
-                    y = parseFloat(positionArray[1]);
-                    z = parseFloat(positionArray[2]);
-                    var wkid = 4326;
-                    if (positionArray.length === 4) {
-                        wkid = parseInt(positionArray[3], 10);
-                    }
+                    var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
+                    var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
                     var cameraPosition = new Point({
                         x: x,
                         y: y,
@@ -116,20 +112,11 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                             wkid: wkid
                         }
                     });
-                    var heading = 0, tilt = 0;
-                    if (tiltHeading !== "") {
-                        var tiltHeadingArray = tiltHeading.split(",");
-                        if (tiltHeadingArray.length >= 0) {
-                            heading = parseFloat(tiltHeadingArray[0]);
-                            if (tiltHeadingArray.length > 1) {
-                                tilt = parseFloat(tiltHeadingArray[1]);
-                            }
-                        }
-                    }
+                    var cameraTiltAndHeading = this._getCameraTiltAndHeading(tiltHeading); // todo
                     var camera = new Camera({
                         position: cameraPosition,
-                        heading: heading,
-                        tilt: tilt
+                        heading: cameraTiltAndHeading.heading,
+                        tilt: cameraTiltAndHeading.tilt
                     });
                     return camera;
                 }
@@ -144,10 +131,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 if (extentLength === 4 || extentLength === 5) {
                     var xmin = parseFloat(extentArray[0]), ymin = parseFloat(extentArray[1]), xmax = parseFloat(extentArray[2]), ymax = parseFloat(extentArray[3]);
                     if (!isNaN(xmin) && !isNaN(ymin) && !isNaN(xmax) && !isNaN(ymax)) {
-                        var wkid = 4326;
-                        if (extentLength === 5) {
-                            wkid = parseInt(extentArray[4], 10);
-                        }
+                        var wkid = extentLength === 5 ? parseInt(extentArray[4], 10) : 4326;
                         var ext = new Extent({
                             xmin: xmin,
                             ymin: ymin,
@@ -171,15 +155,8 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 if (centerLength === 2 || centerLength === 3) {
                     var x = parseFloat(centerArray[0]);
                     var y = parseFloat(centerArray[1]);
-                    if (isNaN(x) || isNaN(y)) {
-                        x = parseFloat(centerArray[0]);
-                        y = parseFloat(centerArray[1]);
-                    }
                     if (!isNaN(x) && !isNaN(y)) {
-                        var wkid = 4326;
-                        if (centerLength === 3) {
-                            wkid = parseInt(centerArray[2], 10);
-                        }
+                        var wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
                         return new Point({
                             x: x,
                             y: y,
@@ -207,21 +184,13 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 var markerLength = markerArray.length;
                 if (markerLength >= 2) {
                     var x = parseFloat(markerArray[0]), y = parseFloat(markerArray[1]), content = markerArray[3], icon_url = markerArray[4], label = markerArray[5];
-                    var wkid = 4326;
-                    if (markerArray[2]) {
-                        wkid = parseInt(markerArray[2], 10);
-                    }
-                    var symbolOptions = void 0;
-                    if (icon_url) {
-                        symbolOptions = {
-                            url: icon_url,
-                            height: "32px",
-                            width: "32px"
-                        };
-                    }
-                    else {
-                        symbolOptions = DEFAULT_MARKER_SYMBOL;
-                    }
+                    var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
+                    var symbolSize = "32px"; // todo: fix typings in next JS API release.
+                    var symbolOptions = icon_url ? {
+                        url: icon_url,
+                        height: symbolSize,
+                        width: symbolSize
+                    } : DEFAULT_MARKER_SYMBOL;
                     var markerSymbol = new PictureMarkerSymbol(symbolOptions);
                     var point = new Point({
                         "x": x,
@@ -254,14 +223,24 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 }
             }
         };
+        UrlParamHelper.prototype._getCameraTiltAndHeading = function (tiltHeading) {
+            if (tiltHeading == "") {
+                return null;
+            }
+            var tiltHeadingArray = tiltHeading.split(",");
+            return tiltHeadingArray.length >= 0 ? {
+                heading: parseFloat(tiltHeadingArray[0]),
+                tilt: parseFloat(tiltHeadingArray[1])
+            } : null;
+        };
+        UrlParamHelper.prototype._getCameraProperties = function (cameraString) {
+        };
         UrlParamHelper.prototype._splitURLString = function (value) {
             if (!value) {
-                return;
+                return null;
             }
             var splitValues = value.split(";");
-            if (splitValues.length === 1) {
-                return value.split(",");
-            }
+            return splitValues.length === 1 ? value.split(",") : null;
         };
         return UrlParamHelper;
     }());
