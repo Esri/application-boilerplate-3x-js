@@ -26,7 +26,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
         }
         UrlParamHelper.prototype.getViewProperties = function (config) {
             var viewProperties = {};
-            var components = config.components.split(",");
+            var components = config.components && config.components.split(",");
             if (config.components) {
                 viewProperties.ui = {
                     components: components

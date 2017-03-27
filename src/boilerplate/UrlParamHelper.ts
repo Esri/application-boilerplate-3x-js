@@ -40,7 +40,7 @@ class UrlParamHelper {
 
   public getViewProperties(config: Config): ViewProperties {
     const viewProperties: ViewProperties = {};
-    const components = config.components.split(",");
+    const components = config.components && config.components.split(",");
 
     if (config.components) {
       viewProperties.ui = {
