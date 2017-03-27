@@ -22,6 +22,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     var RTL = "rtl";
     var LOCALSTORAGE_PREFIX = "boilerplate_config_";
     var DEFAULT_URL_PARAM = "default";
+    var EMPTY_OBJECT = {};
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateSettings) {
             this.settings = null;
@@ -32,7 +33,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.locale = null;
             this.units = null;
             this.userPrivileges = null;
-            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
+            this.settings = __assign({}, EMPTY_OBJECT, { webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
             this.config = applicationConfigJSON;
             this.results = {};
         }
@@ -44,7 +45,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 return promiseUtils.resolve();
             }
             var itemParams = this.settings.group.itemParams;
-            var paramOptions = __assign({ query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
+            var paramOptions = __assign({}, EMPTY_OBJECT, { query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             // group params
             var params = new PortalQueryParams(paramOptions);
             return this.portal.queryItems(params).then(function (response) {
@@ -434,7 +435,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
             var localStorageConfig = this.results.localStorageConfig;
             var urlParams = this.results.urlParams ? this.results.urlParams.config : null;
-            this.config = __assign({}, config, applicationItem, localStorageConfig, urlParams);
+            this.config = __assign({}, EMPTY_OBJECT, config, applicationItem, localStorageConfig, urlParams);
         };
         Boilerplate.prototype._getUrlParamValues = function (items) {
             // retrieves only the items specified from the URL object.
@@ -522,6 +523,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         Boilerplate.prototype._stripStringTags = function (data) {
             return data.replace(TAGS_RE, "");
         };
+        // todo: fix this function
         Boilerplate.prototype._stripObjectTags = function (data) {
             return Object.keys(data).reduce(function (p, c, i) {
                 var obj = p; // todo

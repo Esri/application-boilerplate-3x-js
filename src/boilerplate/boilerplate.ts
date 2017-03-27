@@ -26,6 +26,8 @@ const RTL = "rtl";
 const LOCALSTORAGE_PREFIX = "boilerplate_config_";
 const DEFAULT_URL_PARAM = "default";
 
+const EMPTY_OBJECT = {};
+
 class Boilerplate {
 
   settings: Settings = null;
@@ -39,6 +41,7 @@ class Boilerplate {
 
   constructor(applicationConfigJSON, boilerplateSettings) {
     this.settings = {
+      ...EMPTY_OBJECT,
       webscene: {},
       webmap: {},
       group: {},
@@ -58,6 +61,7 @@ class Boilerplate {
     }
     const itemParams = this.settings.group.itemParams;
     const paramOptions = {
+      ...EMPTY_OBJECT,
       query: `group:"${this.config.group}" AND -type:"Code Attachment"`,
       sortField: "modified",
       sortOrder: "desc",
@@ -473,6 +477,7 @@ class Boilerplate {
     const localStorageConfig = this.results.localStorageConfig;
     const urlParams = this.results.urlParams ? this.results.urlParams.config : null;
     this.config = {
+      ...EMPTY_OBJECT,
       ...config,
       ...applicationItem,
       ...localStorageConfig,
@@ -572,6 +577,7 @@ class Boilerplate {
     return data.replace(TAGS_RE, "");
   }
 
+  // todo: fix this function
   private _stripObjectTags(data: Object) {
     return Object.keys(data).reduce((p, c, i) => {
       let obj = p; // todo

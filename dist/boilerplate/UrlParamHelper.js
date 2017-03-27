@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Camera, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
+define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -26,8 +26,8 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
         }
         UrlParamHelper.prototype.getViewProperties = function (config) {
             var viewProperties = {};
-            var components = config.components && config.components.split(",");
             if (config.components) {
+                var components = config.components.split(",");
                 viewProperties.ui = {
                     components: components
                 };
@@ -95,40 +95,6 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 view.map.basemap = new Basemap(basemapOptions);
             });
         };
-        UrlParamHelper.prototype._getCameraPosition = function (cameraString) {
-            if (!cameraString) {
-                return;
-            }
-            var cameraValues = cameraString.substr(4, cameraString.length - 4);
-            var positionArray = cameraValues.split(",");
-            if (positionArray.length >= 3) {
-                var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
-                var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
-                return new Point({
-                    x: x,
-                    y: y,
-                    z: z,
-                    spatialReference: {
-                        wkid: wkid
-                    }
-                });
-            }
-        };
-        UrlParamHelper.prototype._getCameraProperties = function (cameraString, tiltAndHeading) {
-            var cameraPosition = this._getCameraPosition(cameraString);
-            var tiltAndHeadingProperties = this._getTiltAndHeading(tiltAndHeading);
-            return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
-        };
-        UrlParamHelper.prototype._getTiltAndHeading = function (tiltAndHeading) {
-            if (tiltAndHeading == "") {
-                return null;
-            }
-            var tiltHeadingArray = tiltAndHeading.split(",");
-            return tiltHeadingArray.length >= 0 ? {
-                heading: parseFloat(tiltHeadingArray[0]),
-                tilt: parseFloat(tiltHeadingArray[1])
-            } : null;
-        };
         UrlParamHelper.prototype.viewpointStringToCamera = function (viewpointString) {
             // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
             var viewpointArray = viewpointString && viewpointString.split(";");
@@ -138,11 +104,12 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             // todo
             var cameraString = "";
             var tiltHeading = "";
-            viewpointArray.forEach(function (viewpointItem) {
-                viewpointItem.indexOf("cam:") !== -1 ? cameraString = viewpointItem : tiltHeading = viewpointItem;
-            });
-            var cameraProperties = this._getCameraProperties(cameraString, tiltHeading);
-            return new Camera(cameraProperties);
+            var cameraIndex = viewpointArray.indexOf("cam:");
+            console.log(cameraIndex);
+            // const tiltAndHeadingIndex = cameraIndex === 0 ? 1 : 0;
+            // const cameraString = viewpointArray[0].indexOf("cam:") !== -1 ?
+            // const cameraProperties = this._getCameraProperties(cameraString, tiltHeading);
+            // return new Camera(cameraProperties);
         };
         UrlParamHelper.prototype.extentStringToExtent = function (extentString) {
             if (extentString) {
@@ -251,6 +218,41 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             }
             var splitValues = value.split(";");
             return splitValues.length === 1 ? value.split(",") : null;
+        };
+        UrlParamHelper.prototype._getCameraPosition = function (cameraString) {
+            if (!cameraString) {
+                return;
+            }
+            var cameraValues = cameraString.substr(4, cameraString.length - 4);
+            var positionArray = cameraValues.split(",");
+            if (positionArray.length >= 3) {
+                var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
+                var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
+                return new Point({
+                    x: x,
+                    y: y,
+                    z: z,
+                    spatialReference: {
+                        wkid: wkid
+                    }
+                });
+            }
+        };
+        UrlParamHelper.prototype._getTiltAndHeading = function (tiltAndHeading) {
+            if (tiltAndHeading == "") {
+                return null;
+            }
+            var tiltHeadingArray = tiltAndHeading.split(",");
+            return tiltHeadingArray.length >= 0 ? {
+                heading: parseFloat(tiltHeadingArray[0]),
+                tilt: parseFloat(tiltHeadingArray[1])
+            } : null;
+        };
+        UrlParamHelper.prototype._getCameraProperties = function (cameraString, tiltAndHeading) {
+            var cameraPosition = this._getCameraPosition(cameraString);
+            var tiltAndHeadingProperties = this._getTiltAndHeading(tiltAndHeading);
+            var emptyObject = {};
+            return __assign({}, emptyObject, { position: cameraPosition }, tiltAndHeadingProperties);
         };
         return UrlParamHelper;
     }());
