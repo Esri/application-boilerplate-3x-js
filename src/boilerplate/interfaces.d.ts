@@ -68,7 +68,7 @@ export interface GroupData {
 }
 
 export interface BoilerplateResults {
-  group?: GroupData,
+  group: GroupData,
   urlParams?: {
     config: any
   },

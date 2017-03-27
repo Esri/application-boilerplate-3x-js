@@ -1,6 +1,6 @@
 {
-  "defaultWebmap": "7e2b9be8a9c94e45b7f87857d8d168d6",
-  "defaultWebscene": "",
+  "defaultWebmap": "",
+  "defaultWebscene": "073b9499717c484297a40402a21a28cd",
   "defaultGroup": "",
   "localConfig": {
     "fetch": true

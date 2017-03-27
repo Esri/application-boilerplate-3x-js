@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
+define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Camera, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -74,7 +74,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
             if (!basemapUrl || !view) {
                 return;
             }
-            var pl = promiseList.eachAlways({
+            var getBaseLayers = promiseList.eachAlways({
                 baseLayer: Layer.fromArcGISServerUrl({
                     url: basemapUrl
                 }),
@@ -82,7 +82,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
                     url: basemapReferenceUrl
                 })
             });
-            pl.then(function (response) {
+            getBaseLayers.then(function (response) {
                 var baseLayer = response.baseLayer;
                 var referenceLayer = response.referenceLayer;
                 if (!baseLayer) {
@@ -101,61 +101,66 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
             if (!viewpointArray || !viewpointArray.length) {
                 return;
             }
-            // todo
-            var cameraString = "";
-            var tiltHeading = "";
-            var cameraIndex = viewpointArray.indexOf("cam:");
-            console.log(cameraIndex);
-            // const tiltAndHeadingIndex = cameraIndex === 0 ? 1 : 0;
-            // const cameraString = viewpointArray[0].indexOf("cam:") !== -1 ?
-            // const cameraProperties = this._getCameraProperties(cameraString, tiltHeading);
-            // return new Camera(cameraProperties);
+            var cameraIndex = viewpointArray[0].indexOf("cam:") !== -1 ? 0 : 1;
+            var tiltAndHeadingIndex = cameraIndex === 0 ? 1 : 0;
+            var cameraString = viewpointArray[cameraIndex];
+            var tiltAndHeadingString = viewpointArray[tiltAndHeadingIndex];
+            var cameraProperties = this._getCameraProperties(cameraString, tiltAndHeadingString);
+            if (cameraProperties.position) {
+                return new Camera(cameraProperties);
+            }
         };
         UrlParamHelper.prototype.extentStringToExtent = function (extentString) {
-            if (extentString) {
-                //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-                //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
-                var extentArray = this._splitURLString(extentString);
-                var extentLength = extentArray.length;
-                if (extentLength === 4 || extentLength === 5) {
-                    var xmin = parseFloat(extentArray[0]), ymin = parseFloat(extentArray[1]), xmax = parseFloat(extentArray[2]), ymax = parseFloat(extentArray[3]);
-                    if (!isNaN(xmin) && !isNaN(ymin) && !isNaN(xmax) && !isNaN(ymax)) {
-                        var wkid = extentLength === 5 ? parseInt(extentArray[4], 10) : 4326;
-                        var ext = new Extent({
-                            xmin: xmin,
-                            ymin: ymin,
-                            xmax: xmax,
-                            ymax: ymax,
-                            spatialReference: {
-                                wkid: wkid
-                            }
-                        });
-                        return ext;
-                    }
-                }
+            if (!extentString) {
+                return null;
             }
+            //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+            //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
+            var extentArray = this._splitURLString(extentString);
+            var extentLength = extentArray.length;
+            if (extentLength < 4) {
+                return null;
+            }
+            var xmin = parseFloat(extentArray[0]), ymin = parseFloat(extentArray[1]), xmax = parseFloat(extentArray[2]), ymax = parseFloat(extentArray[3]);
+            if (isNaN(xmin) || isNaN(ymin) || isNaN(xmax) || isNaN(ymax)) {
+                return null;
+            }
+            var wkid = extentLength === 5 ? parseInt(extentArray[4], 10) : 4326;
+            var ext = new Extent({
+                xmin: xmin,
+                ymin: ymin,
+                xmax: xmax,
+                ymax: ymax,
+                spatialReference: {
+                    wkid: wkid
+                }
+            });
+            return ext;
         };
         UrlParamHelper.prototype.centerStringToPoint = function (centerString) {
             //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
             //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
-            if (centerString) {
-                var centerArray = this._splitURLString(centerString);
-                var centerLength = centerArray.length;
-                if (centerLength === 2 || centerLength === 3) {
-                    var x = parseFloat(centerArray[0]);
-                    var y = parseFloat(centerArray[1]);
-                    if (!isNaN(x) && !isNaN(y)) {
-                        var wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
-                        return new Point({
-                            x: x,
-                            y: y,
-                            spatialReference: {
-                                wkid: wkid
-                            }
-                        });
-                    }
-                }
+            if (!centerString) {
+                return null;
             }
+            var centerArray = this._splitURLString(centerString);
+            var centerLength = centerArray.length;
+            if (centerLength < 2) {
+                return null;
+            }
+            var x = parseFloat(centerArray[0]);
+            var y = parseFloat(centerArray[1]);
+            if (isNaN(x) || isNaN(y)) {
+                return null;
+            }
+            var wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
+            return new Point({
+                x: x,
+                y: y,
+                spatialReference: {
+                    wkid: wkid
+                }
+            });
         };
         UrlParamHelper.prototype.levelStringToLevel = function (levelString) {
             return levelString && parseInt(levelString, 10);
@@ -168,48 +173,55 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
             // ?marker=-117,34,,,,My%20location&level=10
             // ?marker=-117,34&level=10
             // ?marker=10406557.402,6590748.134,2526
-            if (markerString) {
-                var markerArray = this._splitURLString(markerString);
-                var markerLength = markerArray.length;
-                if (markerLength >= 2) {
-                    var x = parseFloat(markerArray[0]), y = parseFloat(markerArray[1]), content = markerArray[3], icon_url = markerArray[4], label = markerArray[5];
-                    var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
-                    var symbolSize = "32px"; // todo: fix typings in next JS API release.
-                    var symbolOptions = icon_url ? {
-                        url: icon_url,
-                        height: symbolSize,
-                        width: symbolSize
-                    } : DEFAULT_MARKER_SYMBOL;
-                    var markerSymbol = new PictureMarkerSymbol(symbolOptions);
-                    var point = new Point({
-                        "x": x,
-                        "y": y,
-                        "spatialReference": {
-                            "wkid": wkid
-                        }
-                    });
-                    var hasPopupDetails = content || label;
-                    var popupTemplate = hasPopupDetails ?
-                        new PopupTemplate({
-                            "title": label || null,
-                            "content": content || null
-                        }) : null;
-                    var graphic = new Graphic({
-                        geometry: point,
-                        symbol: markerSymbol,
-                        popupTemplate: popupTemplate
-                    });
-                    if (graphic) {
-                        view.graphics.add(graphic);
-                        // todo: will be cleaned up in next JS API release.
-                        if (view instanceof SceneView) {
-                            view.goTo(graphic);
-                        }
-                        else {
-                            view.goTo(graphic);
-                        }
-                    }
+            if (!markerString) {
+                return null;
+            }
+            var markerArray = this._splitURLString(markerString);
+            var markerLength = markerArray.length;
+            if (markerLength < 2) {
+                return null;
+            }
+            var x = parseFloat(markerArray[0]);
+            var y = parseFloat(markerArray[1]);
+            var content = markerArray[3];
+            var icon_url = markerArray[4];
+            var label = markerArray[5];
+            var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
+            var symbolSize = "32px"; // todo: fix typings in next JS API release.
+            var symbolOptions = icon_url ? {
+                url: icon_url,
+                height: symbolSize,
+                width: symbolSize
+            } : DEFAULT_MARKER_SYMBOL;
+            var markerSymbol = new PictureMarkerSymbol(symbolOptions);
+            var point = new Point({
+                "x": x,
+                "y": y,
+                "spatialReference": {
+                    "wkid": wkid
                 }
+            });
+            var hasPopupDetails = content || label;
+            var popupTemplate = hasPopupDetails ?
+                new PopupTemplate({
+                    "title": label || null,
+                    "content": content || null
+                }) : null;
+            var graphic = new Graphic({
+                geometry: point,
+                symbol: markerSymbol,
+                popupTemplate: popupTemplate
+            });
+            if (!graphic) {
+                return null;
+            }
+            view.graphics.add(graphic);
+            // todo: will be cleaned up in next JS API release.
+            if (view instanceof SceneView) {
+                view.goTo(graphic);
+            }
+            else {
+                view.goTo(graphic);
             }
         };
         UrlParamHelper.prototype._splitURLString = function (value) {
@@ -221,22 +233,23 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         };
         UrlParamHelper.prototype._getCameraPosition = function (cameraString) {
             if (!cameraString) {
-                return;
+                return null;
             }
             var cameraValues = cameraString.substr(4, cameraString.length - 4);
             var positionArray = cameraValues.split(",");
-            if (positionArray.length >= 3) {
-                var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
-                var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
-                return new Point({
-                    x: x,
-                    y: y,
-                    z: z,
-                    spatialReference: {
-                        wkid: wkid
-                    }
-                });
+            if (positionArray.length < 3) {
+                return null;
             }
+            var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
+            var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
+            return new Point({
+                x: x,
+                y: y,
+                z: z,
+                spatialReference: {
+                    wkid: wkid
+                }
+            });
         };
         UrlParamHelper.prototype._getTiltAndHeading = function (tiltAndHeading) {
             if (tiltAndHeading == "") {
@@ -251,8 +264,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         UrlParamHelper.prototype._getCameraProperties = function (cameraString, tiltAndHeading) {
             var cameraPosition = this._getCameraPosition(cameraString);
             var tiltAndHeadingProperties = this._getTiltAndHeading(tiltAndHeading);
-            var emptyObject = {};
-            return __assign({}, emptyObject, { position: cameraPosition }, tiltAndHeadingProperties);
+            return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
         };
         return UrlParamHelper;
     }());

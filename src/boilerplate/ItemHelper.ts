@@ -3,7 +3,7 @@ import WebMap = require('esri/WebMap');
 import WebScene = require('esri/WebScene');
 import PortalItem = require('esri/portal/PortalItem');
 
-interface Item {
+interface BoilerplateItem {
   data?: PortalItem | Error;
   json?: {
     itemData: any,
@@ -13,7 +13,7 @@ interface Item {
 
 class ItemHelper {
 
-  public createWebMap(item: Item): IPromise<WebMap> {
+  public createWebMap(item: BoilerplateItem): IPromise<WebMap> {
     if (!item) {
       return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
     }
@@ -26,7 +26,7 @@ class ItemHelper {
     return wm ? promiseUtils.resolve(wm) : promiseUtils.reject(new Error("ItemHelper:: WebMap does not have usable data."));
   }
 
-  public createWebScene(item: Item): IPromise<WebScene> {
+  public createWebScene(item: BoilerplateItem): IPromise<WebScene> {
     if (!item) {
       return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
     }
@@ -39,7 +39,7 @@ class ItemHelper {
     return ws ? promiseUtils.resolve(ws) : promiseUtils.reject(new Error("ItemHelper:: WebScene does not have usable data."));
   }
 
-  private _createWebMap(item: Item): WebMap {
+  private _createWebMap(item: BoilerplateItem): WebMap {
     if (item.data) {
       return new WebMap({
         portalItem: item.data
@@ -53,7 +53,7 @@ class ItemHelper {
     // }
   }
 
-  private _createWebScene(item: Item): WebScene {
+  private _createWebScene(item: BoilerplateItem): WebScene {
     if (item.data) {
       return new WebScene({
         portalItem: item.data

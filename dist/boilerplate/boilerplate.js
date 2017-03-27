@@ -22,44 +22,37 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     var RTL = "rtl";
     var LOCALSTORAGE_PREFIX = "boilerplate_config_";
     var DEFAULT_URL_PARAM = "default";
-    var EMPTY_OBJECT = {};
+    // todo: have promise return results instead of setting using `this`
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateSettings) {
             this.settings = null;
             this.config = null;
-            this.results = null;
+            this.results = {
+                group: {}
+            };
             this.portal = null;
             this.direction = null;
             this.locale = null;
             this.units = null;
             this.userPrivileges = null;
-            this.settings = __assign({}, EMPTY_OBJECT, { webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
+            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
             this.config = applicationConfigJSON;
-            this.results = {};
         }
         Boilerplate.prototype.queryGroupItems = function () {
             var _this = this;
-            // Get details about the specified web scene. If the web scene is not shared publicly users will
-            // be prompted to log-in by the Identity Manager.
             if (!this.settings.group.fetchItems || !this.config.group) {
                 return promiseUtils.resolve();
             }
             var itemParams = this.settings.group.itemParams;
-            var paramOptions = __assign({}, EMPTY_OBJECT, { query: "group:\"" + this.config.group + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
-            // group params
+            var groupId = this.config.group;
+            var paramOptions = __assign({ query: "group:\"" + groupId + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             var params = new PortalQueryParams(paramOptions);
             return this.portal.queryItems(params).then(function (response) {
-                if (!_this.results.group) {
-                    _this.results.group = {};
-                }
                 _this.results.group.itemsData = response;
                 return _this.results.group;
             }).otherwise(function (error) {
                 if (!error) {
                     error = new Error("Boilerplate:: Error retrieving group items.");
-                }
-                if (!_this.results.group) {
-                    _this.results.group = {};
                 }
                 _this.results.group.itemsData = error;
                 return error;
@@ -137,12 +130,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var appid = this.config.appid;
             if (window.localStorage && appid && this.settings.localConfig.fetch) {
                 var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
-                if (lsItem) {
-                    var config = JSON.parse(lsItem);
-                    if (config) {
-                        return config;
-                    }
-                }
+                var config = lsItem && JSON.parse(lsItem);
+                return config || null;
             }
         };
         Boilerplate.prototype._queryWebMapItem = function () {
@@ -163,8 +152,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             else if (this.config.webmap) {
                 var mapItem = new PortalItem({
                     id: this.config.webmap
-                }).load();
-                return mapItem.then(function (itemData) {
+                });
+                return mapItem.load().then(function (itemData) {
                     _this.results.webMapItem = {
                         data: itemData
                     };
@@ -195,17 +184,11 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 query: "id:\"" + this.config.group + "\""
             });
             return this.portal.queryGroups(params).then(function (response) {
-                if (!_this.results.group) {
-                    _this.results.group = {};
-                }
                 _this.results.group.infoData = response;
                 return _this.results.group;
             }).otherwise(function (error) {
                 if (!error) {
                     error = new Error("Boilerplate:: Error retrieving group info.");
-                }
-                if (!_this.results.group) {
-                    _this.results.group = {};
                 }
                 _this.results.group.infoData = error;
                 return error;
@@ -213,7 +196,6 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
         };
         Boilerplate.prototype._queryWebSceneItem = function () {
             var _this = this;
-            var sceneItem; // todo
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
             if (!this.settings.webscene.fetch) {
@@ -229,10 +211,10 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 return promiseUtils.resolve(this.results.webSceneItem);
             }
             else if (this.config.webscene) {
-                sceneItem = new PortalItem({
+                var sceneItem = new PortalItem({
                     id: this.config.webscene
-                }).load();
-                return sceneItem.then(function (itemData) {
+                });
+                return sceneItem.load().then(function (itemData) {
                     _this.results.webSceneItem = {
                         data: itemData
                     };
@@ -261,21 +243,18 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
             var appItem = new PortalItem({
                 id: this.config.appid
-            }).load();
-            return appItem.then(function (itemData) {
-                return itemData.fetchData().then(function (data) {
-                    var cfg = {}; // todo
-                    if (data && data.values) {
-                        // get app config values - we'll merge them with config later.
-                        cfg = data.values;
-                    }
+            });
+            return appItem.load().then(function (itemInfo) {
+                return itemInfo.fetchData().then(function (data) {
+                    var cfg = data && data.values || {};
+                    var appProxies = itemInfo.appProxies;
                     // get the extent for the application item. This can be used to override the default web map extent
-                    if (itemData.extent) {
-                        cfg.application_extent = itemData.extent;
+                    if (itemInfo.extent) {
+                        cfg.application_extent = itemInfo.extent;
                     }
                     // get any app proxies defined on the application item
-                    if (itemData.appProxies) {
-                        var layerMixins = itemData.appProxies.map(function (p) {
+                    if (appProxies) {
+                        var layerMixins = appProxies.map(function (p) {
                             return {
                                 "url": p.sourceUrl,
                                 "mixin": {
@@ -286,7 +265,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                         cfg.layerMixins = layerMixins;
                     }
                     _this.results.applicationItem = {
-                        data: itemData,
+                        data: itemInfo,
                         config: cfg
                     };
                     return _this.results.applicationItem;
@@ -311,6 +290,19 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 return error;
             });
         };
+        Boilerplate.prototype._setupCORS = function (authorizedDomains) {
+            var _this = this;
+            if (this.settings.webTierSecurity && authorizedDomains && authorizedDomains.length) {
+                authorizedDomains.forEach(function (authorizedDomain) {
+                    if (_this._isDefined(authorizedDomain) && authorizedDomain.length) {
+                        esriConfig.request.corsEnabledServers.push({
+                            host: authorizedDomain,
+                            withCredentials: true
+                        });
+                    }
+                });
+            }
+        };
         Boilerplate.prototype._queryPortal = function () {
             var _this = this;
             if (!this.settings.portal.fetch) {
@@ -321,42 +313,28 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // the organization by making a self request to the org url which returns details specific to that organization.
             // Examples of the type of information returned are custom roles, units settings, helper services and more.
             // If this fails, the application will continue to function
-            var portal = new Portal().load();
+            var portal = new Portal();
             this.portal = portal;
-            return portal.then(function (response) {
-                if (_this.settings.webTierSecurity) {
-                    var trustedHost = void 0; // todo
-                    if (response.authorizedCrossOriginDomains && response.authorizedCrossOriginDomains.length > 0) {
-                        for (var i = 0; i < response.authorizedCrossOriginDomains.length; i++) {
-                            trustedHost = response.authorizedCrossOriginDomains[i];
-                            // add if trusted host is not null, undefined, or empty string
-                            if (_this._isDefined(trustedHost) && trustedHost.length > 0) {
-                                esriConfig.request.corsEnabledServers.push({
-                                    host: trustedHost,
-                                    withCredentials: true
-                                });
-                            }
-                        }
-                    }
-                }
-                // set boilerplate units
-                var units = "metric"; // todo
-                if (response.user && response.user.units) {
-                    units = response.user.units;
-                }
-                else if (response.units) {
-                    units = response.units;
-                }
-                else if ((response.user && response.user.region && response.user.region === "US") || (response.user && !response.user.region && response.region === "US") || (response.user && !response.user.region && !response.region) || (!response.user && response.ipCntryCode === "US") || (!response.user && !response.ipCntryCode && kernel.locale === "en-us")) {
-                    // use feet/miles only for the US and if nothing is set for a user
-                    units = "english";
-                }
+            return portal.load().then(function (response) {
+                _this._setupCORS(response.authorizedCrossOriginDomains);
+                var user = response.user;
+                var roleId = user && user.roleId;
+                var userPrivileges = user && user.privileges;
+                var userRegion = user && user.region;
+                var userUnits = user && user.units;
+                var responseUnits = response.units;
+                var responseRegion = response.region;
+                var ipCountryCode = response.ipCntryCode;
+                var isEnglishUnits = (userRegion === "US") ||
+                    (userRegion && responseRegion === "US") ||
+                    (userRegion && !responseRegion) ||
+                    (!user && ipCountryCode === "US") ||
+                    (!user && !ipCountryCode && kernel.locale === "en-us");
+                var units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
                 _this.units = units;
                 // are any custom roles defined in the organization?
-                if (response.user && _this._isDefined(response.user.roleId)) {
-                    if (response.user.privileges) {
-                        _this.userPrivileges = response.user.privileges;
-                    }
+                if (roleId && _this._isDefined(roleId) && userPrivileges) {
+                    _this.userPrivileges = userPrivileges;
                 }
                 // set data for portal on boilerplate
                 _this.results.portal = {
@@ -419,12 +397,10 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
         };
         Boilerplate.prototype._setLangProps = function () {
-            var direction = LTR; // todo
-            RTL_LANGS.forEach(function (l) {
-                if (kernel.locale.indexOf(l) !== -1) {
-                    direction = RTL;
-                }
+            var isRTL = RTL_LANGS.some(function (language) {
+                return kernel.locale.indexOf(language) !== -1;
             });
+            var direction = isRTL ? RTL : LTR;
             // set boilerplate language direction
             this.direction = direction;
             // set boilerplate langauge locale
@@ -435,38 +411,75 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
             var localStorageConfig = this.results.localStorageConfig;
             var urlParams = this.results.urlParams ? this.results.urlParams.config : null;
-            this.config = __assign({}, EMPTY_OBJECT, config, applicationItem, localStorageConfig, urlParams);
+            this.config = __assign({}, config, applicationItem, localStorageConfig, urlParams);
         };
-        Boilerplate.prototype._getUrlParamValues = function (items) {
-            // retrieves only the items specified from the URL object.
-            // Gets parameters from the URL, convert them to an object and remove HTML tags.
-            var urlObject = this._createUrlParamsObject();
-            var obj = {};
-            if (urlObject && items && items.length) {
-                for (var i = 0; i < items.length; i++) {
-                    var item = urlObject[items[i]];
-                    if (item) {
-                        if (typeof item === "string") {
-                            switch (item.toLowerCase()) {
-                                case "true":
-                                    obj[items[i]] = true;
-                                    break;
-                                case "false":
-                                    obj[items[i]] = false;
-                                    break;
-                                default:
-                                    obj[items[i]] = item;
-                            }
-                        }
-                        else {
-                            obj[items[i]] = item;
-                        }
-                    }
+        Boilerplate.prototype._foramatUrlParamValue = function (urlParamValue) {
+            if (typeof urlParamValue === "string") {
+                switch (urlParamValue.toLowerCase()) {
+                    case "true":
+                        return true;
+                    case "false":
+                        return false;
+                    default:
+                        return urlParamValue;
                 }
             }
-            return obj;
+            return urlParamValue;
         };
-        Boilerplate.prototype._createUrlParamsObject = function () {
+        Boilerplate.prototype._getUrlParamValues = function (urlParams) {
+            var _this = this;
+            var urlObject = this._urlToObject();
+            var formattedUrlObject = {};
+            if (!urlObject || !urlParams || !urlParams.length) {
+                return;
+            }
+            urlParams.forEach(function (param) {
+                var urlParamValue = urlObject[param];
+                if (urlParamValue) {
+                    formattedUrlObject[param] = _this._foramatUrlParamValue(urlParamValue);
+                }
+            });
+            return formattedUrlObject;
+        };
+        Boilerplate.prototype._initializeApplication = function () {
+            if (this.settings.esriEnvironment) {
+                var esriAppsPath = location.pathname.indexOf(ESRI_APPS_PATH);
+                var esriHomePath = location.pathname.indexOf(ESRI_HOME_PATH);
+                var isEsriAppsPath = esriAppsPath !== -1 ? true : false;
+                var isEsriHomePath = esriHomePath !== -1 ? true : false;
+                var appLocation = isEsriAppsPath ? esriAppsPath : isEsriHomePath ? esriHomePath : null;
+                if (appLocation) {
+                    var portalInstance = location.pathname.substr(0, appLocation);
+                    this.config.portalUrl = "https://" + location.host + portalInstance;
+                    this.config.proxyUrl = "https://" + location.host + portalInstance + ESRI_PROXY_PATH;
+                }
+            }
+            esriConfig.portalUrl = this.config.portalUrl;
+            if (this.config.proxyUrl) {
+                esriConfig.request.proxyUrl = this.config.proxyUrl;
+            }
+        };
+        Boilerplate.prototype._checkSignIn = function () {
+            var info = this.config.oauthappid ?
+                new OAuthInfo({
+                    appId: this.config.oauthappid,
+                    portalUrl: this.config.portalUrl,
+                    popup: true
+                }) : null;
+            if (info) {
+                IdentityManager.registerOAuthInfos([info]);
+            }
+            var signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
+            return signedIn.always(promiseUtils.resolve);
+        };
+        Boilerplate.prototype._isDefined = function (value) {
+            return (value !== undefined) && (value !== null);
+        };
+        Boilerplate.prototype._stripStringTags = function (value) {
+            return value.replace(TAGS_RE, "");
+        };
+        Boilerplate.prototype._urlToObject = function () {
+            var _this = this;
             // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
             // resource to work with.
             // Scene templates use the webscene param to define the scene to display
@@ -474,72 +487,9 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // id to retrieve application specific configuration information. The configuration
             // information will contain the values the  user selected on the template configuration
             // panel.
-            return this._stripObjectTags(this._urlToObject());
-        };
-        Boilerplate.prototype._initializeApplication = function () {
-            // If this app is hosted on an Esri environment.
-            if (this.settings.esriEnvironment) {
-                var appLocation = void 0, instance = void 0; // todo
-                // Check to see if the app is hosted or a portal. If the app is hosted or a portal set the
-                // portalUrl and the proxy. Otherwise use the portalUrl set it to arcgis.com.
-                // We know app is hosted (or portal) if it has /apps/ or /home/ in the url.
-                appLocation = location.pathname.indexOf(ESRI_APPS_PATH);
-                if (appLocation === -1) {
-                    appLocation = location.pathname.indexOf(ESRI_HOME_PATH);
-                }
-                // app is hosted and no portalUrl is defined so let's figure it out.
-                if (appLocation !== -1) {
-                    // hosted or portal
-                    instance = location.pathname.substr(0, appLocation); //get the portal instance name
-                    this.config.portalUrl = "https://" + location.host + instance;
-                    this.config.proxyUrl = "https://" + location.host + instance + ESRI_PROXY_PATH;
-                }
-            }
-            esriConfig.portalUrl = this.config.portalUrl;
-            // Define the proxy url for the app
-            if (this.config.proxyUrl) {
-                esriConfig.request.proxyUrl = this.config.proxyUrl;
-            }
-        };
-        Boilerplate.prototype._checkSignIn = function () {
-            var signedIn, oAuthInfo; // todo
-            //If there's an oauth appid specified register it
-            if (this.config.oauthappid) {
-                oAuthInfo = new OAuthInfo({
-                    appId: this.config.oauthappid,
-                    portalUrl: this.config.portalUrl,
-                    popup: true
-                });
-                IdentityManager.registerOAuthInfos([oAuthInfo]);
-            }
-            // check sign-in status
-            signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
-            // resolve regardless of signed in or not.
-            return signedIn.always(promiseUtils.resolve);
-        };
-        Boilerplate.prototype._isDefined = function (value) {
-            return (value !== undefined) && (value !== null);
-        };
-        Boilerplate.prototype._stripStringTags = function (data) {
-            return data.replace(TAGS_RE, "");
-        };
-        // todo: fix this function
-        Boilerplate.prototype._stripObjectTags = function (data) {
-            return Object.keys(data).reduce(function (p, c, i) {
-                var obj = p; // todo
-                if (typeof data[c] === "string") {
-                    obj[c] === c.replace(TAGS_RE, "");
-                }
-                else {
-                    obj[c] === c;
-                }
-                return obj;
-            }, {});
-        };
-        Boilerplate.prototype._urlToObject = function () {
             var query = (window.location.search || "?").substr(1), map = {};
             query.replace(URL_RE, function (match, key, value) {
-                map[key] = decodeURIComponent(value);
+                map[key] = _this._stripStringTags(decodeURIComponent(value));
                 return '';
             });
             return map;
