@@ -48,7 +48,7 @@ class UrlParamHelper {
       };
     }
 
-    const camera = this.viewPointStringToCamera(config.viewpoint);
+    const camera = this.viewpointStringToCamera(config.viewpoint);
     if (camera) {
       viewProperties.camera = camera;
     }
@@ -120,8 +120,52 @@ class UrlParamHelper {
     });
   }
 
-  public viewPointStringToCamera(viewpointParamString: string): Camera {
-    const viewpointArray = viewpointParamString && viewpointParamString.split(";");
+  private _getCameraPosition(cameraString: string): Point {
+    if (!cameraString) {
+      return;
+    }
+    const cameraValues = cameraString.substr(4, cameraString.length - 4);
+    const positionArray = cameraValues.split(",");
+    if (positionArray.length >= 3) {
+      const x = parseFloat(positionArray[0]),
+        y = parseFloat(positionArray[1]),
+        z = parseFloat(positionArray[2]);
+      const wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
+      return new Point({
+        x: x,
+        y: y,
+        z: z,
+        spatialReference: {
+          wkid: wkid
+        }
+      });
+    }
+  }
+
+  private _getCameraProperties(cameraString: string, tiltAndHeading: string) {
+    const cameraPosition = this._getCameraPosition(cameraString);
+    const tiltAndHeadingProperties = this._getTiltAndHeading(tiltAndHeading);
+
+    return {
+      position: cameraPosition,
+      ...tiltAndHeadingProperties
+    };
+  }
+
+  private _getTiltAndHeading(tiltAndHeading: string) {
+    if (tiltAndHeading == "") {
+      return null;
+    }
+    const tiltHeadingArray = tiltAndHeading.split(",");
+    return tiltHeadingArray.length >= 0 ? {
+      heading: parseFloat(tiltHeadingArray[0]),
+      tilt: parseFloat(tiltHeadingArray[1])
+    } : null;
+  }
+
+  public viewpointStringToCamera(viewpointString: string): Camera {
+    // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
+    const viewpointArray = viewpointString && viewpointString.split(";");
     if (!viewpointArray || !viewpointArray.length) {
       return;
     }
@@ -134,34 +178,8 @@ class UrlParamHelper {
       viewpointItem.indexOf("cam:") !== -1 ? cameraString = viewpointItem : tiltHeading = viewpointItem;
     });
 
-    if (cameraString !== "") {
-      cameraString = cameraString.substr(4, cameraString.length - 4);
-      const positionArray = cameraString.split(",");
-      if (positionArray.length >= 3) {
-        const x = parseFloat(positionArray[0]),
-          y = parseFloat(positionArray[1]),
-          z = parseFloat(positionArray[2]);
-        const wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
-        const cameraPosition = new Point({
-          x: x,
-          y: y,
-          z: z,
-          spatialReference: {
-            wkid: wkid
-          }
-        });
-
-        const cameraTiltAndHeading = this._getCameraTiltAndHeading(tiltHeading); // todo
-
-        const camera = new Camera({
-          position: cameraPosition,
-          heading: cameraTiltAndHeading.heading,
-          tilt: cameraTiltAndHeading.tilt
-        });
-        return camera;
-      }
-    }
-
+    const cameraProperties = this._getCameraProperties(cameraString, tiltHeading);
+    return new Camera(cameraProperties);
   }
 
   public extentStringToExtent(extentString: string): Extent {
@@ -279,21 +297,6 @@ class UrlParamHelper {
         }
       }
     }
-  }
-
-  private _getCameraTiltAndHeading(tiltHeading: string) {
-    if (tiltHeading == "") {
-      return null;
-    }
-    const tiltHeadingArray = tiltHeading.split(",");
-    return tiltHeadingArray.length >= 0 ? {
-      heading: parseFloat(tiltHeadingArray[0]),
-      tilt: parseFloat(tiltHeadingArray[1])
-    } : null;
-  }
-
-  private _getCameraProperties(cameraString: string) {
-
   }
 
   private _splitURLString(value: string): string[] {

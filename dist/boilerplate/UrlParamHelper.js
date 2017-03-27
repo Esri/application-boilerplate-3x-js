@@ -1,3 +1,11 @@
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geometry/Point", "esri/widgets/Search", "esri/Basemap", "esri/layers/Layer", "esri/core/promiseUtils", "esri/Graphic", "esri/PopupTemplate", "esri/symbols/PictureMarkerSymbol", "esri/views/SceneView"], function (require, exports, Camera, Extent, Point, Search, Basemap, Layer, promiseList, Graphic, PopupTemplate, PictureMarkerSymbol, SceneView) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -24,7 +32,7 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                     components: components
                 };
             }
-            var camera = this.viewPointStringToCamera(config.viewpoint);
+            var camera = this.viewpointStringToCamera(config.viewpoint);
             if (camera) {
                 viewProperties.camera = camera;
             }
@@ -87,8 +95,43 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                 view.map.basemap = new Basemap(basemapOptions);
             });
         };
-        UrlParamHelper.prototype.viewPointStringToCamera = function (viewpointParamString) {
-            var viewpointArray = viewpointParamString && viewpointParamString.split(";");
+        UrlParamHelper.prototype._getCameraPosition = function (cameraString) {
+            if (!cameraString) {
+                return;
+            }
+            var cameraValues = cameraString.substr(4, cameraString.length - 4);
+            var positionArray = cameraValues.split(",");
+            if (positionArray.length >= 3) {
+                var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
+                var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
+                return new Point({
+                    x: x,
+                    y: y,
+                    z: z,
+                    spatialReference: {
+                        wkid: wkid
+                    }
+                });
+            }
+        };
+        UrlParamHelper.prototype._getCameraProperties = function (cameraString, tiltAndHeading) {
+            var cameraPosition = this._getCameraPosition(cameraString);
+            var tiltAndHeadingProperties = this._getTiltAndHeading(tiltAndHeading);
+            return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
+        };
+        UrlParamHelper.prototype._getTiltAndHeading = function (tiltAndHeading) {
+            if (tiltAndHeading == "") {
+                return null;
+            }
+            var tiltHeadingArray = tiltAndHeading.split(",");
+            return tiltHeadingArray.length >= 0 ? {
+                heading: parseFloat(tiltHeadingArray[0]),
+                tilt: parseFloat(tiltHeadingArray[1])
+            } : null;
+        };
+        UrlParamHelper.prototype.viewpointStringToCamera = function (viewpointString) {
+            // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
+            var viewpointArray = viewpointString && viewpointString.split(";");
             if (!viewpointArray || !viewpointArray.length) {
                 return;
             }
@@ -98,29 +141,8 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
             viewpointArray.forEach(function (viewpointItem) {
                 viewpointItem.indexOf("cam:") !== -1 ? cameraString = viewpointItem : tiltHeading = viewpointItem;
             });
-            if (cameraString !== "") {
-                cameraString = cameraString.substr(4, cameraString.length - 4);
-                var positionArray = cameraString.split(",");
-                if (positionArray.length >= 3) {
-                    var x = parseFloat(positionArray[0]), y = parseFloat(positionArray[1]), z = parseFloat(positionArray[2]);
-                    var wkid = positionArray.length === 4 ? parseInt(positionArray[3], 10) : 4326;
-                    var cameraPosition = new Point({
-                        x: x,
-                        y: y,
-                        z: z,
-                        spatialReference: {
-                            wkid: wkid
-                        }
-                    });
-                    var cameraTiltAndHeading = this._getCameraTiltAndHeading(tiltHeading); // todo
-                    var camera = new Camera({
-                        position: cameraPosition,
-                        heading: cameraTiltAndHeading.heading,
-                        tilt: cameraTiltAndHeading.tilt
-                    });
-                    return camera;
-                }
-            }
+            var cameraProperties = this._getCameraProperties(cameraString, tiltHeading);
+            return new Camera(cameraProperties);
         };
         UrlParamHelper.prototype.extentStringToExtent = function (extentString) {
             if (extentString) {
@@ -222,18 +244,6 @@ define(["require", "exports", "esri/Camera", "esri/geometry/Extent", "esri/geome
                     }
                 }
             }
-        };
-        UrlParamHelper.prototype._getCameraTiltAndHeading = function (tiltHeading) {
-            if (tiltHeading == "") {
-                return null;
-            }
-            var tiltHeadingArray = tiltHeading.split(",");
-            return tiltHeadingArray.length >= 0 ? {
-                heading: parseFloat(tiltHeadingArray[0]),
-                tilt: parseFloat(tiltHeadingArray[1])
-            } : null;
-        };
-        UrlParamHelper.prototype._getCameraProperties = function (cameraString) {
         };
         UrlParamHelper.prototype._splitURLString = function (value) {
             if (!value) {
