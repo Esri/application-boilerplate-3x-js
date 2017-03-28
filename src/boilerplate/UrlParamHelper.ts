@@ -38,7 +38,7 @@ const DEFAULT_MARKER_SYMBOL = {
   yoffset: "18px" as any as number // todo: fix typings in next JS API release.
 };
 
-export function getViewProperties(config: Config): ViewProperties {
+export function getUrlViewProperties(config: Config): ViewProperties {
   const viewProperties: ViewProperties = {};
 
   if (config.components) {
@@ -72,7 +72,7 @@ export function getViewProperties(config: Config): ViewProperties {
   return viewProperties;
 }
 
-export function addToView(view: MapView | SceneView, config, searchWidget?: Search): void {
+export function setConfigItemsOnView(view: MapView | SceneView, config, searchWidget?: Search): void {
   _addMarkerToView(view, config.marker);
   _find(view, config.find, searchWidget);
   _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
@@ -152,12 +152,12 @@ function _viewpointStringToCamera(viewpointString: string): IPromise<Camera> {
 }
 
 function _extentStringToExtent(extentString: string): Extent {
+  //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+  //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
   if (!extentString) {
     return null;
   }
 
-  //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-  //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
   const extentArray = _splitURLString(extentString);
   const extentLength = extentArray.length;
 

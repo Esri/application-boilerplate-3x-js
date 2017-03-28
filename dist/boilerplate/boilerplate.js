@@ -9,8 +9,8 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, webmapText, websceneText, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path='dojo/text!config/demoWebMap.json' name='webmapText' />
-    /// <amd-dependency path='dojo/text!config/demoWebScene.json' name='websceneText' />
+    /// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
+    /// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
     var TAGS_RE = /<\/?[^>]+>/g;
     var URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
     var SHARING_PATH = "/sharing";

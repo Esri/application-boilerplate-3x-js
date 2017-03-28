@@ -1,10 +1,10 @@
-/// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
+/// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
 declare const i18n: any;
-import MapView = require('esri/views/MapView'); // todo: lazy load
-import SceneView = require('esri/views/SceneView'); // todo: lazy load
-import { BoilerplateResponse, Settings, GroupData, Config } from 'boilerplate/interfaces';
+import MapView = require("esri/views/MapView"); // todo: lazy load
+import SceneView = require("esri/views/SceneView"); // todo: lazy load
+import { BoilerplateResponse, Settings, GroupData, Config } from "boilerplate/interfaces";
 import { createWebMap, createWebScene } from "boilerplate/ItemHelper";
-import { addToView, getViewProperties } from "boilerplate/UrlParamHelper";
+import { setConfigItemsOnView, getUrlViewProperties } from "boilerplate/UrlParamHelper";
 
 const CSS = {
   loading: "boilerplate--loading",
@@ -84,9 +84,9 @@ class Application {
   }
 
   private _createWebMap(webMapItem) {
-    createWebMap(webMapItem).then((map) => {
+    createWebMap(webMapItem).then(map => {
 
-      const urlViewProperties = getViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
@@ -101,7 +101,7 @@ class Application {
       const view = new MapView(viewProperties);
 
       view.then((response) => {
-        addToView(view, this.config);
+        setConfigItemsOnView(view, this.config);
         this._ready();
       }, this.reportError);
 
@@ -109,9 +109,9 @@ class Application {
   }
 
   private _createWebScene(webSceneItem) {
-    createWebScene(webSceneItem).then((map) => {
+    createWebScene(webSceneItem).then(map => {
 
-      const urlViewProperties = getViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
@@ -126,7 +126,7 @@ class Application {
       const view = new SceneView(viewProperties);
 
       view.then((response) => {
-        addToView(view, this.config);
+        setConfigItemsOnView(view, this.config);
         this._ready();
       }, this.reportError);
 

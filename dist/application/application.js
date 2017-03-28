@@ -9,7 +9,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
+    /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
     var CSS = {
         loading: "boilerplate--loading",
         error: "boilerplate--error",
@@ -78,14 +78,14 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         Application.prototype._createWebMap = function (webMapItem) {
             var _this = this;
             ItemHelper_1.createWebMap(webMapItem).then(function (map) {
-                var urlViewProperties = UrlParamHelper_1.getViewProperties(_this.config); // todo: fix interface
+                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webmap.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
                 var view = new MapView(viewProperties);
                 view.then(function (response) {
-                    UrlParamHelper_1.addToView(view, _this.config);
+                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
                     _this._ready();
                 }, _this.reportError);
             }, this.reportError);
@@ -93,14 +93,14 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
             ItemHelper_1.createWebScene(webSceneItem).then(function (map) {
-                var urlViewProperties = UrlParamHelper_1.getViewProperties(_this.config); // todo: fix interface
+                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webscene.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
                 var view = new SceneView(viewProperties);
                 view.then(function (response) {
-                    UrlParamHelper_1.addToView(view, _this.config);
+                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
                     _this._ready();
                 }, _this.reportError);
             }, this.reportError);

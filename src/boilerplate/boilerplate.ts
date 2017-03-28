@@ -1,18 +1,18 @@
-/// <amd-dependency path='dojo/text!config/demoWebMap.json' name='webmapText' />
-/// <amd-dependency path='dojo/text!config/demoWebScene.json' name='websceneText' />
+/// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
+/// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
 declare const webmapText: string;
 declare const websceneText: string;
 
-import kernel = require('dojo/_base/kernel');
-import esriConfig = require('esri/config');
-import promiseUtils = require('esri/core/promiseUtils');
-import IdentityManager = require('esri/identity/IdentityManager');
-import OAuthInfo = require('esri/identity/OAuthInfo');
-import Portal = require('esri/portal/Portal');
-import PortalItem = require('esri/portal/PortalItem');
-import PortalQueryParams = require('esri/portal/PortalQueryParams');
+import kernel = require("dojo/_base/kernel");
+import esriConfig = require("esri/config");
+import promiseUtils = require("esri/core/promiseUtils");
+import IdentityManager = require("esri/identity/IdentityManager");
+import OAuthInfo = require("esri/identity/OAuthInfo");
+import Portal = require("esri/portal/Portal");
+import PortalItem = require("esri/portal/PortalItem");
+import PortalQueryParams = require("esri/portal/PortalQueryParams");
 
-import { Settings, Config, BoilerplateResults, BoilerplateResponse } from 'boilerplate/interfaces';
+import { Settings, Config, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
 const TAGS_RE = /<\/?[^>]+>/g;
 const URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
@@ -541,7 +541,7 @@ class Boilerplate {
       map = {};
     query.replace(URL_RE, (match, key, value) => {
       map[key] = this._stripStringTags(decodeURIComponent(value));
-      return '';
+      return "";
     });
     return map;
   }

@@ -21,7 +21,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         xoffset: "9px",
         yoffset: "18px" // todo: fix typings in next JS API release.
     };
-    function getViewProperties(config) {
+    function getUrlViewProperties(config) {
         var viewProperties = {};
         if (config.components) {
             var components = config.components.split(",");
@@ -48,13 +48,13 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         }
         return viewProperties;
     }
-    exports.getViewProperties = getViewProperties;
-    function addToView(view, config, searchWidget) {
+    exports.getUrlViewProperties = getUrlViewProperties;
+    function setConfigItemsOnView(view, config, searchWidget) {
         _addMarkerToView(view, config.marker);
         _find(view, config.find, searchWidget);
         _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
     }
-    exports.addToView = addToView;
+    exports.setConfigItemsOnView = setConfigItemsOnView;
     function _find(view, findString, searchWidget) {
         if (!findString) {
             return;
@@ -119,11 +119,11 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         return promiseUtils.resolve();
     }
     function _extentStringToExtent(extentString) {
+        //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+        //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
         if (!extentString) {
             return null;
         }
-        //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-        //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
         var extentArray = _splitURLString(extentString);
         var extentLength = extentArray.length;
         if (extentLength < 4) {
