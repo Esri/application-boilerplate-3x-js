@@ -3,8 +3,8 @@ declare const i18n: any;
 import MapView = require('esri/views/MapView'); // todo: lazy load
 import SceneView = require('esri/views/SceneView'); // todo: lazy load
 import { BoilerplateResponse, Settings, GroupData, Config } from 'boilerplate/interfaces';
-import ItemHelper from "boilerplate/ItemHelper";
-import UrlParamHelper from "boilerplate/UrlParamHelper";
+import { createWebMap, createWebScene } from "boilerplate/ItemHelper";
+import { addToView, getViewProperties } from "boilerplate/UrlParamHelper";
 
 const CSS = {
   loading: "boilerplate--loading",
@@ -17,9 +17,6 @@ class Application {
   config: Config = null;
   direction: any = null;
   settings: Settings = null;
-
-  urlParamHelper: UrlParamHelper = null; // todo: should not be a class
-  itemHelper: ItemHelper = null; // todo: should not be a class
 
   public init(boilerplateResponse: BoilerplateResponse): void {
 
@@ -35,9 +32,6 @@ class Application {
     const webMapItem = boilerplateResults.webMapItem;
     const webSceneItem = boilerplateResults.webSceneItem;
     const groupData = boilerplateResults.group;
-
-    this.urlParamHelper = new UrlParamHelper();
-    this.itemHelper = new ItemHelper();
 
     this._setDocumentLocale(boilerplateResponse.locale);
     this._setDirection(boilerplateResponse.direction);
@@ -90,9 +84,9 @@ class Application {
   }
 
   private _createWebMap(webMapItem) {
-    this.itemHelper.createWebMap(webMapItem).then((map) => {
+    createWebMap(webMapItem).then((map) => {
 
-      const urlViewProperties = this.urlParamHelper.getViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
@@ -107,7 +101,7 @@ class Application {
       const view = new MapView(viewProperties);
 
       view.then((response) => {
-        this.urlParamHelper.addToView(view, this.config);
+        addToView(view, this.config);
         this._ready();
       }, this.reportError);
 
@@ -115,9 +109,9 @@ class Application {
   }
 
   private _createWebScene(webSceneItem) {
-    this.itemHelper.createWebScene(webSceneItem).then((map) => {
+    createWebScene(webSceneItem).then((map) => {
 
-      const urlViewProperties = this.urlParamHelper.getViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
@@ -132,7 +126,7 @@ class Application {
       const view = new SceneView(viewProperties);
 
       view.then((response) => {
-        this.urlParamHelper.addToView(view, this.config);
+        addToView(view, this.config);
         this._ready();
       }, this.reportError);
 

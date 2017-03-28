@@ -1,56 +1,64 @@
-define(["require", "exports", "esri/core/promiseUtils", "esri/WebMap", "esri/WebScene"], function (require, exports, promiseUtils, WebMap, WebScene) {
+define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"], function (require, exports, promiseUtils, requireUtils) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var ItemHelper = (function () {
-        function ItemHelper() {
+    function createWebMap(item) {
+        if (!item) {
+            return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
         }
-        ItemHelper.prototype.createWebMap = function (item) {
-            if (!item) {
-                return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
-            }
-            if (item.data instanceof Error) {
-                return promiseUtils.reject(item.data);
-            }
-            var wm = this._createWebMap(item);
-            return wm ? promiseUtils.resolve(wm) : promiseUtils.reject(new Error("ItemHelper:: WebMap does not have usable data."));
-        };
-        ItemHelper.prototype.createWebScene = function (item) {
-            if (!item) {
-                return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
-            }
-            if (item.data instanceof Error) {
-                return promiseUtils.reject(item.data);
-            }
-            var ws = this._createWebScene(item);
-            return ws ? promiseUtils.resolve(ws) : promiseUtils.reject(new Error("ItemHelper:: WebScene does not have usable data."));
-        };
-        ItemHelper.prototype._createWebMap = function (item) {
-            if (item.data) {
+        if (item.data instanceof Error) {
+            return promiseUtils.reject(item.data);
+        }
+        return this._createWebMap(item);
+    }
+    exports.createWebMap = createWebMap;
+    function createWebScene(item) {
+        if (!item) {
+            return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
+        }
+        if (item.data instanceof Error) {
+            return promiseUtils.reject(item.data);
+        }
+        return this._createWebScene(item);
+    }
+    exports.createWebScene = createWebScene;
+    function _createWebMap(item) {
+        var itemData = item.data;
+        var itemJSON = item.json;
+        if (!itemData && !itemJSON) {
+            return promiseUtils.reject(new Error("ItemHelper:: WebMap does not have usable data."));
+        }
+        return requireUtils.when(require, "esri/WebMap").then(function (WebMap) {
+            if (itemData) {
                 return new WebMap({
-                    portalItem: item.data
+                    portalItem: itemData
                 });
             }
             // todo: fix
-            // if (item.json) {
-            //   const wm = WebMap.fromJSON(item.json.itemData);
-            //   wm.portalItem = item.json.item;
+            // if (itemJSON) {
+            //   const wm = WebMap.fromJSON(itemJSON.itemData);
+            //   wm.portalItem = itemJSON.item;
             //   return wm;
             // }
-        };
-        ItemHelper.prototype._createWebScene = function (item) {
-            if (item.data) {
+        });
+    }
+    function _createWebScene(item) {
+        var itemData = item.data;
+        var itemJSON = item.json;
+        if (!itemData && !itemJSON) {
+            return promiseUtils.reject(new Error("ItemHelper:: WebScene does not have usable data."));
+        }
+        return requireUtils.when(require, "esri/WebScene").then(function (WebScene) {
+            if (itemData) {
                 return new WebScene({
-                    portalItem: item.data
+                    portalItem: itemData
                 });
             }
-            if (item.json) {
-                var ws = WebScene.fromJSON(item.json.itemData);
-                ws.portalItem = item.json.item;
-                return ws;
+            if (itemJSON) {
+                var wm = WebScene.fromJSON(itemJSON.itemData);
+                wm.portalItem = itemJSON.item;
+                return wm;
             }
-        };
-        return ItemHelper;
-    }());
-    exports.default = ItemHelper;
+        });
+    }
 });
 //# sourceMappingURL=ItemHelper.js.map
