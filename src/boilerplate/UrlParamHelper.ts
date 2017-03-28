@@ -1,9 +1,9 @@
-import Camera = require('esri/Camera');
+import Camera = require('esri/Camera'); // todo: lazy load
 import Extent = require('esri/geometry/Extent');
 import Point = require('esri/geometry/Point');
-import Search = require('esri/widgets/Search');
-import Basemap = require('esri/Basemap');
-import Layer = require('esri/layers/Layer');
+import Search = require('esri/widgets/Search'); // todo: lazy load
+import Basemap = require('esri/Basemap'); // todo: lazy load
+import Layer = require('esri/layers/Layer'); // todo: lazy load
 import promiseList = require('esri/core/promiseUtils');
 import Graphic = require('esri/Graphic');
 import PopupTemplate = require('esri/PopupTemplate');

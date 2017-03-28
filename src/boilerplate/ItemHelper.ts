@@ -1,6 +1,6 @@
 import promiseUtils = require('esri/core/promiseUtils');
-import WebMap = require('esri/WebMap');
-import WebScene = require('esri/WebScene');
+import WebMap = require('esri/WebMap'); // todo: lazy load
+import WebScene = require('esri/WebScene'); // todo: lazy load
 import PortalItem = require('esri/portal/PortalItem');
 
 interface BoilerplateItem {
