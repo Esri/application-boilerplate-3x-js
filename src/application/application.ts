@@ -1,4 +1,4 @@
-/// <amd-dependency path='dojo/i18n!config/nls/resources.js' name='i18n' />
+/// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
 declare const i18n: any;
 
 import lang = require('dojo/_base/lang'); // todo: replace with es6 templates and Object.assign()?

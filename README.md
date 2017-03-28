@@ -164,7 +164,7 @@ The template consists of the following folders and files:
     - **main.css** This file contains the map styles that set the margin, padding and initial height (100%).
 - **/images/**: Contains images used by the application and this readme.
 - **/js/**: Contains JavaScript files
-    - **dojoConfig.js:** Dojo configuration file for defining module packages.
+    - **dojo.js:** Dojo configuration file for defining module packages.
     - **/application/:** Application specific logic. This is where you would put your application's classes and logic.
         - **main.js:** Creates a scene based on configuration info. You will write all your main application logic in here.
         - **/examples/:** Other `main.js` example js files. Demonstrates code using a group or webmap.

@@ -22,19 +22,19 @@
     <div class="boilerplate-loading-message" id="loading_message"></div>
   </div>
   <div id="viewDiv" class="boilerplate-view"></div>
-  <script type="text/javascript" src="./config/dojoConfig.js"></script>
+  <script type="text/javascript" src="./config/dojo.js"></script>
   <script type="text/javascript" src="https://js.arcgis.com/4.3/"></script>
   <script type="text/javascript">
     require([
-      "dojo/text!config/appConfig.json",
-      "dojo/text!config/boilerplateSettings.json",
+      "dojo/text!config/application.json",
+      "dojo/text!config/boilerplate.json",
       "application/entrypoint.js"
     ], function (
-      configSettings,
-      boilerplateSettings,
+      applicationConfig,
+      boilerplateConfig,
       entrypoint
     ) {
-      entrypoint.init(configSettings, boilerplateSettings);
+      entrypoint.init(applicationConfig, boilerplateConfig);
     });
   </script>
 </body>

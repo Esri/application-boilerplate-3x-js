@@ -4,9 +4,9 @@ import Boilerplate from 'boilerplate/boilerplate';
 export = {
   Application,
   Boilerplate,
-  init: (configSettings, boilerplateSettings) => {
+  init: (applicationConfig, boilerplateConfig) => {
     const application = new Application();
-    const boilerplate = new Boilerplate(JSON.parse(configSettings), JSON.parse(boilerplateSettings));
+    const boilerplate = new Boilerplate(JSON.parse(applicationConfig), JSON.parse(boilerplateConfig));
     boilerplate.init().then(function (boilerplateResponse) {
       application.init(boilerplateResponse);
     });

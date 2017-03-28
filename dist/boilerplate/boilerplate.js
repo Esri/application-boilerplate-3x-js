@@ -24,7 +24,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     var DEFAULT_URL_PARAM = "default";
     // todo: have promise return results instead of setting using `this`
     var Boilerplate = (function () {
-        function Boilerplate(applicationConfigJSON, boilerplateSettings) {
+        function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
             this.settings = null;
             this.config = null;
             this.results = {
@@ -35,7 +35,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.locale = null;
             this.units = null;
             this.userPrivileges = null;
-            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateSettings);
+            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
         Boilerplate.prototype.queryGroupItems = function () {

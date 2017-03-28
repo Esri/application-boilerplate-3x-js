@@ -41,14 +41,14 @@ class Boilerplate {
   units: string = null;
   userPrivileges: any = null;
 
-  constructor(applicationConfigJSON, boilerplateSettings) {
+  constructor(applicationConfigJSON, boilerplateConfigJSON) {
     this.settings = {
       webscene: {},
       webmap: {},
       group: {},
       portal: {},
       urlItems: [],
-      ...boilerplateSettings
+      ...boilerplateConfigJSON
     }
     this.config = applicationConfigJSON;
   }

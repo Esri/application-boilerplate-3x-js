@@ -1,7 +1,7 @@
-define(["require", "exports", "dojo/i18n!config/nls/resources.js", "dojo/_base/lang", "dojo/dom", "dojo/dom-attr", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, lang, dom, domAttr, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_base/lang", "dojo/dom", "dojo/dom-attr", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, lang, dom, domAttr, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path='dojo/i18n!config/nls/resources.js' name='i18n' />
+    /// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
     var CSS = {
         loading: "boilerplate--loading",
         error: "boilerplate--error",
