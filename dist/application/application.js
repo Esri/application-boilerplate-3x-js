@@ -1,4 +1,12 @@
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_base/lang", "dojo/dom", "dojo/dom-attr", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, lang, dom, domAttr, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
+var __assign = (this && this.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
@@ -12,37 +20,37 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_b
             this.config = null;
             this.direction = null;
             this.settings = null;
-            this.urlParamHelper = null;
-            this.itemHelper = null;
+            this.urlParamHelper = null; // todo: should not be a class
+            this.itemHelper = null; // todo: should not be a class
         }
         Application.prototype.init = function (boilerplateResponse) {
-            if (boilerplateResponse) {
-                this.direction = boilerplateResponse.direction;
-                this.config = boilerplateResponse.config;
-                this.settings = boilerplateResponse.settings;
-                var boilerplateResults = boilerplateResponse.results;
-                var webMapItem = boilerplateResults.webMapItem;
-                var webSceneItem = boilerplateResults.webSceneItem;
-                var groupData = boilerplateResults.group;
-                document.documentElement.lang = boilerplateResponse.locale;
-                this.urlParamHelper = new UrlParamHelper_1.default();
-                this.itemHelper = new ItemHelper_1.default();
-                this._setDirection();
-                if (webMapItem) {
-                    this._createWebMap(webMapItem);
-                }
-                else if (webSceneItem) {
-                    this._createWebScene(webSceneItem);
-                }
-                else if (groupData) {
-                    this._createGroupGallery(groupData);
-                }
-                else {
-                    this.reportError(new Error("app:: Could not load an item to display"));
-                }
-            }
-            else {
+            if (!boilerplateResponse) {
                 this.reportError(new Error("app:: Boilerplate is not defined"));
+            }
+            this.direction = boilerplateResponse.direction;
+            this.config = boilerplateResponse.config;
+            this.settings = boilerplateResponse.settings;
+            var boilerplateResults = boilerplateResponse.results;
+            var webMapItem = boilerplateResults.webMapItem;
+            var webSceneItem = boilerplateResults.webSceneItem;
+            var groupData = boilerplateResults.group;
+            this.urlParamHelper = new UrlParamHelper_1.default();
+            this.itemHelper = new ItemHelper_1.default();
+            this._setDocumentLocale(boilerplateResponse.locale);
+            this._setDirection(boilerplateResponse.direction);
+            // todo: support multiple webscenes, webmaps, groups.
+            // todo: allow all at once
+            if (webMapItem) {
+                this._createWebMap(webMapItem);
+            }
+            else if (webSceneItem) {
+                this._createWebScene(webSceneItem);
+            }
+            else if (groupData) {
+                this._createGroupGallery(groupData);
+            }
+            if (!webMapItem && !webSceneItem && !groupData) {
+                this.reportError(new Error("app:: Could not load an item to display"));
             }
         };
         Application.prototype.reportError = function (error) {
@@ -54,16 +62,18 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_b
             // for localization. If you don't need to support multiple languages you can hardcode the
             // strings here and comment out the call in index.html to get the localization strings.
             // set message
-            var node = dom.byId("loading_message");
+            var node = document.getElementById("loading_message");
             if (node) {
                 node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
             }
             return error;
         };
-        Application.prototype._setDirection = function () {
-            var direction = this.direction;
+        Application.prototype._setDocumentLocale = function (locale) {
+            document.documentElement.lang = locale;
+        };
+        Application.prototype._setDirection = function (direction) {
             var dirNode = document.getElementsByTagName("html")[0];
-            domAttr.set(dirNode, "dir", direction);
+            dirNode.setAttribute("dir", direction);
         };
         Application.prototype._ready = function () {
             document.body.removeAttribute('class');
@@ -72,14 +82,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_b
         Application.prototype._createWebMap = function (webMapItem) {
             var _this = this;
             this.itemHelper.createWebMap(webMapItem).then(function (map) {
-                var viewProperties = {
-                    map: map,
-                    container: _this.settings.webmap.containerId
-                };
+                var urlViewProperties = _this.urlParamHelper.getViewProperties(_this.config); // todo: fix interface
+                var viewProperties = __assign({ map: map, container: _this.settings.webmap.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
-                lang.mixin(viewProperties, _this.urlParamHelper.getViewProperties(_this.config));
                 var view = new MapView(viewProperties);
                 view.then(function (response) {
                     _this.urlParamHelper.addToView(view, _this.config);
@@ -90,14 +97,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "dojo/_b
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
             this.itemHelper.createWebScene(webSceneItem).then(function (map) {
-                var viewProperties = {
-                    map: map,
-                    container: _this.settings.webscene.containerId
-                };
+                var urlViewProperties = _this.urlParamHelper.getViewProperties(_this.config); // todo: fix interface
+                var viewProperties = __assign({ map: map, container: _this.settings.webscene.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
-                lang.mixin(viewProperties, _this.urlParamHelper.getViewProperties(_this.config));
                 var view = new SceneView(viewProperties);
                 view.then(function (response) {
                     _this.urlParamHelper.addToView(view, _this.config);

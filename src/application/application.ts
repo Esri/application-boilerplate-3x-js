@@ -1,15 +1,7 @@
 /// <amd-dependency path='dojo/i18n!application/nls/resources.js' name='i18n' />
 declare const i18n: any;
-
-import lang = require('dojo/_base/lang'); // todo: replace with es6 templates and Object.assign()?
-import dom = require('dojo/dom'); // todo: replace with document.getElementById()
-import domAttr = require('dojo/dom-attr'); // todo: replace native JS
-
-import MapView = require('esri/views/MapView');
-import SceneView = require('esri/views/SceneView');
-import WebMap = require('esri/WebMap');
-import WebScene = require('esri/WebScene');
-
+import MapView = require('esri/views/MapView'); // todo: lazy load
+import SceneView = require('esri/views/SceneView'); // todo: lazy load
 import { BoilerplateResponse, Settings, GroupData, Config } from 'boilerplate/interfaces';
 import ItemHelper from "boilerplate/ItemHelper";
 import UrlParamHelper from "boilerplate/UrlParamHelper";
@@ -21,44 +13,49 @@ const CSS = {
 };
 
 class Application {
+
   config: Config = null;
   direction: any = null;
   settings: Settings = null;
-  urlParamHelper: UrlParamHelper = null;
-  itemHelper: ItemHelper = null;
+
+  urlParamHelper: UrlParamHelper = null; // todo: should not be a class
+  itemHelper: ItemHelper = null; // todo: should not be a class
 
   public init(boilerplateResponse: BoilerplateResponse): void {
-    if (boilerplateResponse) {
-      this.direction = boilerplateResponse.direction;
-      this.config = boilerplateResponse.config;
-      this.settings = boilerplateResponse.settings;
-      const boilerplateResults = boilerplateResponse.results;
-      const webMapItem = boilerplateResults.webMapItem;
-      const webSceneItem = boilerplateResults.webSceneItem;
-      const groupData = boilerplateResults.group;
 
-      document.documentElement.lang = boilerplateResponse.locale;
-
-      this.urlParamHelper = new UrlParamHelper();
-      this.itemHelper = new ItemHelper();
-
-      this._setDirection();
-
-      if (webMapItem) {
-        this._createWebMap(webMapItem);
-      }
-      else if (webSceneItem) {
-        this._createWebScene(webSceneItem);
-      }
-      else if (groupData) {
-        this._createGroupGallery(groupData);
-      }
-      else {
-        this.reportError(new Error("app:: Could not load an item to display"));
-      }
-    }
-    else {
+    if (!boilerplateResponse) {
       this.reportError(new Error("app:: Boilerplate is not defined"));
+    }
+
+    this.direction = boilerplateResponse.direction;
+    this.config = boilerplateResponse.config;
+    this.settings = boilerplateResponse.settings;
+
+    const boilerplateResults = boilerplateResponse.results;
+    const webMapItem = boilerplateResults.webMapItem;
+    const webSceneItem = boilerplateResults.webSceneItem;
+    const groupData = boilerplateResults.group;
+
+    this.urlParamHelper = new UrlParamHelper();
+    this.itemHelper = new ItemHelper();
+
+    this._setDocumentLocale(boilerplateResponse.locale);
+    this._setDirection(boilerplateResponse.direction);
+
+    // todo: support multiple webscenes, webmaps, groups.
+    // todo: allow all at once
+    if (webMapItem) {
+      this._createWebMap(webMapItem);
+    }
+    else if (webSceneItem) {
+      this._createWebScene(webSceneItem);
+    }
+    else if (groupData) {
+      this._createGroupGallery(groupData);
+    }
+
+    if (!webMapItem && !webSceneItem && !groupData) {
+      this.reportError(new Error("app:: Could not load an item to display"));
     }
   }
 
@@ -71,17 +68,20 @@ class Application {
     // for localization. If you don't need to support multiple languages you can hardcode the
     // strings here and comment out the call in index.html to get the localization strings.
     // set message
-    const node = dom.byId("loading_message");
+    const node = document.getElementById("loading_message");
     if (node) {
       node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
     }
     return error;
   }
 
-  private _setDirection() {
-    const direction = this.direction;
+  private _setDocumentLocale(locale: string): void {
+    document.documentElement.lang = locale;
+  }
+
+  private _setDirection(direction: string) {
     const dirNode = document.getElementsByTagName("html")[0];
-    domAttr.set(dirNode, "dir", direction);
+    dirNode.setAttribute("dir", direction);
   }
 
   private _ready() {
@@ -90,52 +90,50 @@ class Application {
   }
 
   private _createWebMap(webMapItem) {
-    this.itemHelper.createWebMap(webMapItem).then((map: WebMap) => {
+    this.itemHelper.createWebMap(webMapItem).then((map) => {
+
+      const urlViewProperties = this.urlParamHelper.getViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
-        container: this.settings.webmap.containerId
+        container: this.settings.webmap.containerId,
+        ...urlViewProperties
       };
 
       if (!this.config.title && map.portalItem && map.portalItem.title) {
         this.config.title = map.portalItem.title;
       }
 
-      lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
       const view = new MapView(viewProperties);
 
       view.then((response) => {
         this.urlParamHelper.addToView(view, this.config);
-
         this._ready();
-
       }, this.reportError);
 
     }, this.reportError);
   }
 
   private _createWebScene(webSceneItem) {
-    this.itemHelper.createWebScene(webSceneItem).then((map: WebScene) => {
+    this.itemHelper.createWebScene(webSceneItem).then((map) => {
+
+      const urlViewProperties = this.urlParamHelper.getViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
         map,
-        container: this.settings.webscene.containerId
+        container: this.settings.webscene.containerId,
+        ...urlViewProperties
       };
 
       if (!this.config.title && map.portalItem && map.portalItem.title) {
         this.config.title = map.portalItem.title;
       }
 
-      lang.mixin(viewProperties, this.urlParamHelper.getViewProperties(this.config));
-
       const view = new SceneView(viewProperties);
 
       view.then((response) => {
         this.urlParamHelper.addToView(view, this.config);
-
         this._ready();
-
       }, this.reportError);
 
     }, this.reportError);

@@ -14,12 +14,12 @@ import { Config } from 'boilerplate/interfaces';
 
 interface ViewProperties {
   ui?: {
-    components?: string[]
+    components?: string[];
   },
-  camera?: Camera,
-  center?: Point,
-  zoom?: number,
-  extent?: Extent
+  camera?: Camera;
+  center?: Point;
+  zoom?: number;
+  extent?: Extent;
 }
 
 interface CameraProperties {
