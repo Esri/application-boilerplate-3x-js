@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "esri/views/SceneView", "esri/core/promiseUtils", "esri/core/requireUtils"], function (require, exports, Extent, Point, SceneView, promiseUtils, requireUtils) {
+define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "esri/views/SceneView", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils"], function (require, exports, Extent, Point, SceneView, Camera, promiseUtils, requireUtils) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -14,6 +14,8 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
     //  Static constiables
     //
     //--------------------------------------------------------------------------
+    var URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+    var TAGS_RE = /<\/?[^>]+>/g;
     var DEFAULT_MARKER_SYMBOL = {
         url: "./symbols/mapPin.png",
         width: "36px",
@@ -21,6 +23,21 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         xoffset: "9px",
         yoffset: "18px" // todo: fix typings in next JS API release.
     };
+    function getUrlParamValues(urlParams) {
+        var urlObject = _urlToObject();
+        var formattedUrlObject = {};
+        if (!urlObject || !urlParams || !urlParams.length) {
+            return;
+        }
+        urlParams.forEach(function (param) {
+            var urlParamValue = urlObject[param];
+            if (urlParamValue) {
+                formattedUrlObject[param] = _foramatUrlParamValue(urlParamValue);
+            }
+        });
+        return formattedUrlObject;
+    }
+    exports.getUrlParamValues = getUrlParamValues;
     function getUrlViewProperties(config) {
         var viewProperties = {};
         if (config.components) {
@@ -29,12 +46,10 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
                 components: components
             };
         }
-        // todo: needs to wait for this.
-        _viewpointStringToCamera(config.viewpoint).then(function (camera) {
-            if (camera) {
-                viewProperties.camera = camera;
-            }
-        });
+        var camera = _viewpointStringToCamera(config.viewpoint);
+        if (camera) {
+            viewProperties.camera = camera;
+        }
         var center = _centerStringToPoint(config.center);
         if (center) {
             viewProperties.center = center;
@@ -105,7 +120,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
         var viewpointArray = viewpointString && viewpointString.split(";");
         if (!viewpointArray || !viewpointArray.length) {
-            return promiseUtils.resolve();
+            return;
         }
         var cameraIndex = viewpointArray[0].indexOf("cam:") !== -1 ? 0 : 1;
         var tiltAndHeadingIndex = cameraIndex === 0 ? 1 : 0;
@@ -113,11 +128,9 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         var tiltAndHeadingString = viewpointArray[tiltAndHeadingIndex];
         var cameraProperties = _getCameraProperties(cameraString, tiltAndHeadingString);
         if (cameraProperties.position) {
-            return requireUtils.when(require, "esri/Camera").then(function (Camera) {
-                return new Camera(cameraProperties);
-            });
+            return new Camera(cameraProperties);
         }
-        return promiseUtils.resolve();
+        return;
     }
     function _extentStringToExtent(extentString) {
         //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
@@ -281,6 +294,37 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         var cameraPosition = _getCameraPosition(cameraString);
         var tiltAndHeadingProperties = _getTiltAndHeading(tiltAndHeading);
         return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
+    }
+    function _stripStringTags(value) {
+        return value.replace(TAGS_RE, "");
+    }
+    function _urlToObject() {
+        // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
+        // resource to work with.
+        // Scene templates use the webscene param to define the scene to display
+        // appid is the id of the application based on the template. We use this
+        // id to retrieve application specific configuration information. The configuration
+        // information will contain the values the  user selected on the template configuration
+        // panel.
+        var query = (window.location.search || "?").substr(1), map = {};
+        query.replace(URL_RE, function (match, key, value) {
+            map[key] = _stripStringTags(decodeURIComponent(value));
+            return "";
+        });
+        return map;
+    }
+    function _foramatUrlParamValue(urlParamValue) {
+        if (typeof urlParamValue === "string") {
+            switch (urlParamValue.toLowerCase()) {
+                case "true":
+                    return true;
+                case "false":
+                    return false;
+                default:
+                    return urlParamValue;
+            }
+        }
+        return urlParamValue;
     }
 });
 //# sourceMappingURL=UrlParamHelper.js.map

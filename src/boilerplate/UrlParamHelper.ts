@@ -30,6 +30,9 @@ interface CameraProperties {
 //
 //--------------------------------------------------------------------------
 
+const URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+const TAGS_RE = /<\/?[^>]+>/g;
+
 const DEFAULT_MARKER_SYMBOL = {
   url: "./symbols/mapPin.png",
   width: "36px" as any as number, // todo: fix typings in next JS API release.
@@ -37,6 +40,24 @@ const DEFAULT_MARKER_SYMBOL = {
   xoffset: "9px" as any as number, // todo: fix typings in next JS API release.
   yoffset: "18px" as any as number // todo: fix typings in next JS API release.
 };
+
+export function getUrlParamValues(urlParams: string[]) {
+  const urlObject = _urlToObject();
+  const formattedUrlObject = {};
+
+  if (!urlObject || !urlParams || !urlParams.length) {
+    return;
+  }
+
+  urlParams.forEach((param) => {
+    const urlParamValue = urlObject[param];
+    if (urlParamValue) {
+      formattedUrlObject[param] = _foramatUrlParamValue(urlParamValue);
+    }
+  });
+
+  return formattedUrlObject;
+}
 
 export function getUrlViewProperties(config: Config): ViewProperties {
   const viewProperties: ViewProperties = {};
@@ -48,12 +69,10 @@ export function getUrlViewProperties(config: Config): ViewProperties {
     };
   }
 
-  // todo: needs to wait for this.
-  _viewpointStringToCamera(config.viewpoint).then(camera => {
-    if (camera) {
-      viewProperties.camera = camera;
-    }
-  });
+  const camera = _viewpointStringToCamera(config.viewpoint);
+  if (camera) {
+    viewProperties.camera = camera;
+  }
 
   const center = _centerStringToPoint(config.center);
   if (center) {
@@ -129,12 +148,12 @@ function _setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferen
   });
 }
 
-function _viewpointStringToCamera(viewpointString: string): IPromise<Camera> {
+function _viewpointStringToCamera(viewpointString: string): Camera {
   // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
   const viewpointArray = viewpointString && viewpointString.split(";");
 
   if (!viewpointArray || !viewpointArray.length) {
-    return promiseUtils.resolve();
+    return;
   }
 
   const cameraIndex = viewpointArray[0].indexOf("cam:") !== -1 ? 0 : 1;
@@ -144,12 +163,10 @@ function _viewpointStringToCamera(viewpointString: string): IPromise<Camera> {
   const cameraProperties = _getCameraProperties(cameraString, tiltAndHeadingString);
 
   if (cameraProperties.position) {
-    return requireUtils.when(require, "esri/Camera").then(Camera => {
-      return new Camera(cameraProperties);
-    });
+    return new Camera(cameraProperties);
   }
 
-  return promiseUtils.resolve();
+  return;
 }
 
 function _extentStringToExtent(extentString: string): Extent {
@@ -353,5 +370,40 @@ function _getCameraProperties(cameraString: string, tiltAndHeading: string): Cam
     position: cameraPosition,
     ...tiltAndHeadingProperties
   };
+}
+
+function _stripStringTags(value: string) {
+  return value.replace(TAGS_RE, "");
+}
+
+function _urlToObject() {
+  // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
+  // resource to work with.
+  // Scene templates use the webscene param to define the scene to display
+  // appid is the id of the application based on the template. We use this
+  // id to retrieve application specific configuration information. The configuration
+  // information will contain the values the  user selected on the template configuration
+  // panel.
+  const query = (window.location.search || "?").substr(1),
+    map = {};
+  query.replace(URL_RE, (match, key, value) => {
+    map[key] = _stripStringTags(decodeURIComponent(value));
+    return "";
+  });
+  return map;
+}
+
+function _foramatUrlParamValue(urlParamValue: any): any {
+  if (typeof urlParamValue === "string") {
+    switch (urlParamValue.toLowerCase()) {
+      case "true":
+        return true;
+      case "false":
+        return false;
+      default:
+        return urlParamValue;
+    }
+  }
+  return urlParamValue;
 }
 

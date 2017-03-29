@@ -70,7 +70,7 @@ export interface GroupData {
 export interface BoilerplateResults {
   group: GroupData;
   urlParams?: {
-    config: any;
+    [propName: string]: any;
   },
   localStorageConfig?: {
     [propName: string]: any;

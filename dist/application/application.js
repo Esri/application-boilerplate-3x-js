@@ -41,7 +41,6 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             this._setDocumentLocale(boilerplateResponse.locale);
             this._setDirection(boilerplateResponse.direction);
             // todo: support multiple webscenes, webmaps, groups.
-            // todo: allow all at once
             if (webMapItem) {
                 this._createWebMap(webMapItem).then(function (view) {
                     UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
@@ -126,11 +125,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             var info = groupInfoData.results[0];
             var items = groupItemsData.results;
             if (info && items) {
-                var listNodes = items.map(function (item) {
+                var listItems = items.map(function (item) {
                     return "<li>" + item.title + "</li>";
                 });
-                console.log(listNodes);
-                var html = "<h1>" + info.title + "</h1><ol>" + listNodes.join("") + "</ol>";
+                var listHTML = listItems.join("");
+                var html = "<h1>" + info.title + "</h1><ol>" + listHTML + "</ol>";
                 return html;
             }
         };

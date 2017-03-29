@@ -11,11 +11,9 @@ import OAuthInfo = require("esri/identity/OAuthInfo");
 import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
-
+import { getUrlParamValues } from "boilerplate/UrlParamHelper";
 import { Settings, Config, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
-const TAGS_RE = /<\/?[^>]+>/g;
-const URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
 const SHARING_PATH = "/sharing";
 const ESRI_PROXY_PATH = "/sharing/proxy";
 const ESRI_APPS_PATH = "/apps/";
@@ -72,13 +70,11 @@ class Boilerplate {
     const params = new PortalQueryParams(paramOptions);
 
     return this.portal.queryItems(params).then((response) => {
-      this.results.group.itemsData = response;
-      return this.results.group;
+      return response;
     }).otherwise((error) => {
       if (!error) {
         error = new Error("Boilerplate:: Error retrieving group items.");
       }
-      this.results.group.itemsData = error;
       return error;
     });
   }
@@ -98,9 +94,7 @@ class Boilerplate {
     // application default and configuration info has been applied. Currently these values
     // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
     // supporting additional url parameters in your application.
-    this.results.urlParams = {
-      config: this._getUrlParamValues(this.settings.urlItems)
-    };
+    this.results.urlParams = getUrlParamValues(this.settings.urlItems)
     // config defaults <- standard url params
     // we need the web scene, appid,and oauthappid to query for the data
     this._mixinAllConfigs();
@@ -118,9 +112,13 @@ class Boilerplate {
         this._queryApplicationItem(),
         // get org data
         this._queryPortal()
-      ]).always(() => {
+      ]).always(args => { // todo: rename args here and below
+        const [applicationResponse, portalResponse] = args;
         // gets a temporary config from the users local storage
         this.results.localStorageConfig = this._getLocalConfig();
+        this.results.applicationItem = applicationResponse.value;
+        this.results.portal = portalResponse.value;
+
         // mixin all new settings from org and app
         this._mixinAllConfigs();
         // let's set up a few things
@@ -135,7 +133,16 @@ class Boilerplate {
           this._queryGroupInfo(),
           // items within a specific group
           this.queryGroupItems()
-        ]).always(() => {
+        ]).always(args => {
+          const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = args;
+
+          this.results.webMapItem = webMapResponse.value;
+          this.results.webSceneItem = webSceneResponse.value;
+          this.results.group.itemsData = groupItemsResponse.value;
+          this.results.group.infoData = groupInfoResponse.value;
+
+          console.log(this);
+
           return {
             settings: this.settings,
             config: this.config,
@@ -169,10 +176,9 @@ class Boilerplate {
     // Use local web map instead of portal web map
     if (this.settings.webmap.useLocal) {
       const json = JSON.parse(webmapText);
-      this.results.webMapItem = {
+      return promiseUtils.resolve({
         json
-      };
-      return promiseUtils.resolve(this.results.webMapItem);
+      });
     }
     // use webmap from id
     else if (this.config.webmap) {
@@ -180,18 +186,16 @@ class Boilerplate {
         id: this.config.webmap
       });
       return mapItem.load().then((itemData) => {
-        this.results.webMapItem = {
+        return {
           data: itemData
         };
-        return this.results.webMapItem;
       }).otherwise((error) => {
         if (!error) {
           error = new Error("Boilerplate:: Error retrieving webmap item.");
         }
-        this.results.webMapItem = {
+        return {
           data: error
         };
-        return error;
       });
     }
     else {
@@ -210,13 +214,11 @@ class Boilerplate {
       query: `id:"${this.config.group}"`
     });
     return this.portal.queryGroups(params).then((response) => {
-      this.results.group.infoData = response;
-      return this.results.group;
+      return response;
     }).otherwise((error) => {
       if (!error) {
         error = new Error("Boilerplate:: Error retrieving group info.");
       }
-      this.results.group.infoData = error;
       return error;
     });
   }
@@ -231,10 +233,9 @@ class Boilerplate {
     if (this.settings.webscene.useLocal) {
       // get web scene js file
       const json = JSON.parse(websceneText);
-      this.results.webSceneItem = {
+      return promiseUtils.resolve({
         json: json
-      };
-      return promiseUtils.resolve(this.results.webSceneItem);
+      });
     }
     // use webscene from id
     else if (this.config.webscene) {
@@ -242,18 +243,16 @@ class Boilerplate {
         id: this.config.webscene
       });
       return sceneItem.load().then((itemData) => {
-        this.results.webSceneItem = {
+        return {
           data: itemData
         };
-        return this.results.webSceneItem;
       }).otherwise((error) => {
         if (!error) {
           error = new Error("Boilerplate:: Error retrieving webscene item.");
         }
-        this.results.webSceneItem = {
+        return {
           data: error
         };
-        return error;
       });
     }
     else {
@@ -292,32 +291,28 @@ class Boilerplate {
           });
           cfg.layerMixins = layerMixins;
         }
-        this.results.applicationItem = {
+        return {
           data: itemInfo,
           config: cfg
         };
-        return this.results.applicationItem;
-
       }).otherwise((error) => {
         if (!error) {
           error = new Error("Boilerplate:: Error retrieving application configuration data.");
         }
-        this.results.applicationItem = {
+        return {
           data: error,
           config: null
         };
-        return error;
       });
 
     }).otherwise((error) => {
       if (!error) {
         error = new Error("Boilerplate:: Error retrieving application configuration.");
       }
-      this.results.applicationItem = {
+      return {
         data: error,
         config: null
       };
-      return error
     });
 
   }
@@ -367,19 +362,16 @@ class Boilerplate {
       if (roleId && this._isDefined(roleId) && userPrivileges) {
         this.userPrivileges = userPrivileges;
       }
-      // set data for portal on boilerplate
-      this.results.portal = {
+      return {
         data: response
       };
-      return this.results.portal;
     }).otherwise((error) => {
       if (!error) {
         error = new Error("Boilerplate:: Error retrieving organization information.");
       }
-      this.results.portal = {
+      return {
         data: error
       };
-      return error;
     });
   }
 
@@ -445,45 +437,13 @@ class Boilerplate {
     const config = this.config;
     const applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
     const localStorageConfig = this.results.localStorageConfig;
-    const urlParams = this.results.urlParams ? this.results.urlParams.config : null;
+    const urlParams = this.results.urlParams ? this.results.urlParams : null;
     this.config = {
       ...config,
       ...applicationItem,
       ...localStorageConfig,
       ...urlParams
     }
-  }
-
-  private _foramatUrlParamValue(urlParamValue: any): any {
-    if (typeof urlParamValue === "string") {
-      switch (urlParamValue.toLowerCase()) {
-        case "true":
-          return true;
-        case "false":
-          return false;
-        default:
-          return urlParamValue;
-      }
-    }
-    return urlParamValue;
-  }
-
-  private _getUrlParamValues(urlParams: string[]) {
-    const urlObject = this._urlToObject();
-    const formattedUrlObject = {};
-
-    if (!urlObject || !urlParams || !urlParams.length) {
-      return;
-    }
-
-    urlParams.forEach((param) => {
-      const urlParamValue = urlObject[param];
-      if (urlParamValue) {
-        formattedUrlObject[param] = this._foramatUrlParamValue(urlParamValue);
-      }
-    });
-
-    return formattedUrlObject;
   }
 
   private _initializeApplication() {
@@ -525,26 +485,6 @@ class Boilerplate {
     return (value !== undefined) && (value !== null);
   }
 
-  private _stripStringTags(value: string) {
-    return value.replace(TAGS_RE, "");
-  }
-
-  private _urlToObject() {
-    // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
-    // resource to work with.
-    // Scene templates use the webscene param to define the scene to display
-    // appid is the id of the application based on the template. We use this
-    // id to retrieve application specific configuration information. The configuration
-    // information will contain the values the  user selected on the template configuration
-    // panel.
-    const query = (window.location.search || "?").substr(1),
-      map = {};
-    query.replace(URL_RE, (match, key, value) => {
-      map[key] = this._stripStringTags(decodeURIComponent(value));
-      return "";
-    });
-    return map;
-  }
 }
 
 export default Boilerplate;
