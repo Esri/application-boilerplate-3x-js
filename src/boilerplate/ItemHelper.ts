@@ -12,7 +12,7 @@ interface BoilerplateItem {
   }
 }
 
-export function createWebMap(item: BoilerplateItem): IPromise<WebMap> {
+export function createWebMapFromItem(item: BoilerplateItem): IPromise<WebMap> {
   if (!item) {
     return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
   }
@@ -42,7 +42,7 @@ export function createWebMap(item: BoilerplateItem): IPromise<WebMap> {
   });
 }
 
-export function createWebScene(item: BoilerplateItem): IPromise<WebScene> {
+export function createWebSceneFromItem(item: BoilerplateItem): IPromise<WebScene> {
   if (!item) {
     return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
   }

@@ -3,7 +3,7 @@ declare const i18n: any;
 import MapView = require("esri/views/MapView"); // todo: lazy load
 import SceneView = require("esri/views/SceneView"); // todo: lazy load
 import { BoilerplateResponse, Settings, GroupData, Config } from "boilerplate/interfaces";
-import { createWebMap, createWebScene } from "boilerplate/ItemHelper";
+import { createWebMapFromItem, createWebSceneFromItem } from "boilerplate/ItemHelper";
 import { setConfigItemsOnView, getUrlViewProperties } from "boilerplate/UrlParamHelper";
 
 const CSS = {
@@ -84,7 +84,7 @@ class Application {
   }
 
   private _createWebMap(webMapItem) {
-    createWebMap(webMapItem).then(map => {
+    createWebMapFromItem(webMapItem).then(map => {
 
       const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
@@ -109,7 +109,7 @@ class Application {
   }
 
   private _createWebScene(webSceneItem) {
-    createWebScene(webSceneItem).then(map => {
+    createWebSceneFromItem(webSceneItem).then(map => {
       console.log(map);
       // todo: not getting in here
 

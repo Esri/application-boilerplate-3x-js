@@ -1,7 +1,7 @@
 define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"], function (require, exports, promiseUtils, requireUtils) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function createWebMap(item) {
+    function createWebMapFromItem(item) {
         if (!item) {
             return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
         }
@@ -27,8 +27,8 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
             // }
         });
     }
-    exports.createWebMap = createWebMap;
-    function createWebScene(item) {
+    exports.createWebMapFromItem = createWebMapFromItem;
+    function createWebSceneFromItem(item) {
         if (!item) {
             return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
         }
@@ -53,6 +53,6 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
             }
         });
     }
-    exports.createWebScene = createWebScene;
+    exports.createWebSceneFromItem = createWebSceneFromItem;
 });
 //# sourceMappingURL=ItemHelper.js.map

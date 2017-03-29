@@ -77,7 +77,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         };
         Application.prototype._createWebMap = function (webMapItem) {
             var _this = this;
-            ItemHelper_1.createWebMap(webMapItem).then(function (map) {
+            ItemHelper_1.createWebMapFromItem(webMapItem).then(function (map) {
                 var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webmap.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
@@ -92,7 +92,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         };
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
-            ItemHelper_1.createWebScene(webSceneItem).then(function (map) {
+            ItemHelper_1.createWebSceneFromItem(webSceneItem).then(function (map) {
                 console.log(map);
                 // todo: not getting in here
                 var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
