@@ -20,21 +20,6 @@ export function createWebMap(item: BoilerplateItem): IPromise<WebMap> {
     return promiseUtils.reject(item.data);
   }
 
-  return this._createWebMap(item);
-}
-
-export function createWebScene(item: BoilerplateItem): IPromise<WebScene> {
-  if (!item) {
-    return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
-  }
-  if (item.data instanceof Error) {
-    return promiseUtils.reject(item.data);
-  }
-
-  return this._createWebScene(item);
-}
-
-function _createWebMap(item: BoilerplateItem): IPromise<WebMap> {
   const itemData = item.data;
   const itemJSON = item.json;
 
@@ -42,7 +27,7 @@ function _createWebMap(item: BoilerplateItem): IPromise<WebMap> {
     return promiseUtils.reject(new Error("ItemHelper:: WebMap does not have usable data."));
   }
 
-  return requireUtils.when(require, "esri/WebMap").then((WebMap) => {
+  return requireUtils.when(require, "esri/WebMap").then(WebMap => {
     if (itemData) {
       return new WebMap({
         portalItem: itemData
@@ -57,7 +42,14 @@ function _createWebMap(item: BoilerplateItem): IPromise<WebMap> {
   });
 }
 
-function _createWebScene(item: BoilerplateItem): IPromise<WebScene> {
+export function createWebScene(item: BoilerplateItem): IPromise<WebScene> {
+  if (!item) {
+    return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
+  }
+  if (item.data instanceof Error) {
+    return promiseUtils.reject(item.data);
+  }
+
   const itemData = item.data;
   const itemJSON = item.json;
 
@@ -65,7 +57,7 @@ function _createWebScene(item: BoilerplateItem): IPromise<WebScene> {
     return promiseUtils.reject(new Error("ItemHelper:: WebScene does not have usable data."));
   }
 
-  return requireUtils.when(require, "esri/WebScene").then((WebScene) => {
+  return requireUtils.when(require, "esri/WebScene").then(WebScene => {
     if (itemData) {
       return new WebScene({
         portalItem: itemData
@@ -78,3 +70,4 @@ function _createWebScene(item: BoilerplateItem): IPromise<WebScene> {
     }
   });
 }
+

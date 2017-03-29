@@ -48,6 +48,7 @@ export function getUrlViewProperties(config: Config): ViewProperties {
     };
   }
 
+  // todo: needs to wait for this.
   _viewpointStringToCamera(config.viewpoint).then(camera => {
     if (camera) {
       viewProperties.camera = camera;

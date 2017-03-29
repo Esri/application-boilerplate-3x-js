@@ -29,6 +29,7 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
                 components: components
             };
         }
+        // todo: needs to wait for this.
         _viewpointStringToCamera(config.viewpoint).then(function (camera) {
             if (camera) {
                 viewProperties.camera = camera;

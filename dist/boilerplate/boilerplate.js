@@ -490,7 +490,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var query = (window.location.search || "?").substr(1), map = {};
             query.replace(URL_RE, function (match, key, value) {
                 map[key] = _this._stripStringTags(decodeURIComponent(value));
-                return '';
+                return "";
             });
             return map;
         };

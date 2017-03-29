@@ -100,7 +100,7 @@ class Application {
 
       const view = new MapView(viewProperties);
 
-      view.then((response) => {
+      view.then(() => {
         setConfigItemsOnView(view, this.config);
         this._ready();
       }, this.reportError);
@@ -110,6 +110,8 @@ class Application {
 
   private _createWebScene(webSceneItem) {
     createWebScene(webSceneItem).then(map => {
+      console.log(map);
+      // todo: not getting in here
 
       const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
@@ -125,7 +127,7 @@ class Application {
 
       const view = new SceneView(viewProperties);
 
-      view.then((response) => {
+      view.then(() => {
         setConfigItemsOnView(view, this.config);
         this._ready();
       }, this.reportError);

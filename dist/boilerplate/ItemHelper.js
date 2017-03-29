@@ -8,20 +8,6 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
         if (item.data instanceof Error) {
             return promiseUtils.reject(item.data);
         }
-        return this._createWebMap(item);
-    }
-    exports.createWebMap = createWebMap;
-    function createWebScene(item) {
-        if (!item) {
-            return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
-        }
-        if (item.data instanceof Error) {
-            return promiseUtils.reject(item.data);
-        }
-        return this._createWebScene(item);
-    }
-    exports.createWebScene = createWebScene;
-    function _createWebMap(item) {
         var itemData = item.data;
         var itemJSON = item.json;
         if (!itemData && !itemJSON) {
@@ -41,7 +27,14 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
             // }
         });
     }
-    function _createWebScene(item) {
+    exports.createWebMap = createWebMap;
+    function createWebScene(item) {
+        if (!item) {
+            return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
+        }
+        if (item.data instanceof Error) {
+            return promiseUtils.reject(item.data);
+        }
         var itemData = item.data;
         var itemJSON = item.json;
         if (!itemData && !itemJSON) {
@@ -60,5 +53,6 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
             }
         });
     }
+    exports.createWebScene = createWebScene;
 });
 //# sourceMappingURL=ItemHelper.js.map

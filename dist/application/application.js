@@ -84,7 +84,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
                     _this.config.title = map.portalItem.title;
                 }
                 var view = new MapView(viewProperties);
-                view.then(function (response) {
+                view.then(function () {
                     UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
                     _this._ready();
                 }, _this.reportError);
@@ -93,13 +93,15 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
             ItemHelper_1.createWebScene(webSceneItem).then(function (map) {
+                console.log(map);
+                // todo: not getting in here
                 var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webscene.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
                 var view = new SceneView(viewProperties);
-                view.then(function (response) {
+                view.then(function () {
                     UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
                     _this._ready();
                 }, _this.reportError);
