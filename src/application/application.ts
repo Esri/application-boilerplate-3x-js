@@ -1,7 +1,8 @@
 /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
 declare const i18n: any;
-import MapView = require("esri/views/MapView"); // todo: lazy load
-import SceneView = require("esri/views/SceneView"); // todo: lazy load
+import requireUtils = require("esri/core/requireUtils");
+import MapView = require("esri/views/MapView");
+import SceneView = require("esri/views/SceneView");
 import { BoilerplateResponse, Settings, GroupData, Config } from "boilerplate/interfaces";
 import { createWebMapFromItem, createWebSceneFromItem } from "boilerplate/ItemHelper";
 import { setConfigItemsOnView, getUrlViewProperties } from "boilerplate/UrlParamHelper";
@@ -22,6 +23,7 @@ class Application {
 
     if (!boilerplateResponse) {
       this.reportError(new Error("app:: Boilerplate is not defined"));
+      return;
     }
 
     this.direction = boilerplateResponse.direction;
@@ -33,23 +35,36 @@ class Application {
     const webSceneItem = boilerplateResults.webSceneItem;
     const groupData = boilerplateResults.group;
 
+    if (!webMapItem && !webSceneItem && !groupData) {
+      this.reportError(new Error("app:: Could not load an item to display"));
+      return;
+    }
+
     this._setDocumentLocale(boilerplateResponse.locale);
     this._setDirection(boilerplateResponse.direction);
 
     // todo: support multiple webscenes, webmaps, groups.
-    // todo: allow all at once
     if (webMapItem) {
-      this._createWebMap(webMapItem);
+      this._createWebMap(webMapItem).then((view) => {
+        setConfigItemsOnView(view, this.config);
+        this._ready();
+      }).otherwise(this.reportError);
     }
     else if (webSceneItem) {
-      this._createWebScene(webSceneItem);
+      this._createWebScene(webSceneItem).then((view) => {
+        setConfigItemsOnView(view, this.config);
+        this._ready();
+      }).otherwise(this.reportError);
     }
     else if (groupData) {
-      this._createGroupGallery(groupData);
-    }
-
-    if (!webMapItem && !webSceneItem && !groupData) {
-      this.reportError(new Error("app:: Could not load an item to display"));
+      const galleryHTML = this._createGroupGallery(groupData);
+      if (galleryHTML instanceof Error) {
+        this.reportError(galleryHTML);
+      }
+      else {
+        document.body.innerHTML = galleryHTML;
+        this._ready();
+      }
     }
   }
 
@@ -83,8 +98,8 @@ class Application {
     document.title = this.config.title;
   }
 
-  private _createWebMap(webMapItem) {
-    createWebMapFromItem(webMapItem).then(map => {
+  private _createWebMap(webMapItem): IPromise<MapView> {
+    return createWebMapFromItem(webMapItem).then(map => {
 
       const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
@@ -98,21 +113,14 @@ class Application {
         this.config.title = map.portalItem.title;
       }
 
-      const view = new MapView(viewProperties);
-
-      view.then(() => {
-        setConfigItemsOnView(view, this.config);
-        this._ready();
-      }, this.reportError);
-
-    }, this.reportError);
+      return requireUtils.when(require, "esri/views/MapView").then(MapView => {
+        return new MapView(viewProperties);
+      });
+    });
   }
 
-  private _createWebScene(webSceneItem) {
-    createWebSceneFromItem(webSceneItem).then(map => {
-      console.log(map);
-      // todo: not getting in here
-
+  private _createWebScene(webSceneItem): IPromise<SceneView> {
+    return createWebSceneFromItem(webSceneItem).then(map => {
       const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
 
       const viewProperties = {
@@ -125,56 +133,31 @@ class Application {
         this.config.title = map.portalItem.title;
       }
 
-      const view = new SceneView(viewProperties);
-
-      view.then(() => {
-        setConfigItemsOnView(view, this.config);
-        this._ready();
-      }, this.reportError);
-
-    }, this.reportError);
+      return requireUtils.when(require, "esri/views/SceneView").then(SceneView => {
+        return new SceneView(viewProperties);
+      });
+    });
   }
 
-  private _createGroupGallery(groupData: GroupData) {
+  private _createGroupGallery(groupData: GroupData): string | Error {
     const groupInfoData = groupData.infoData;
     const groupItemsData = groupData.itemsData;
 
     if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
-      this.reportError(new Error("app:: group data does not exist."));
-      return;
+      return new Error("app:: group data does not exist.");
     }
 
     const info = groupInfoData.results[0];
     const items = groupItemsData.results;
 
-    this._ready();
-
     if (info && items) {
-
-      const listNodes = items.map((item: any) => {
+      const listItems = items.map((item: any) => {
         return `<li>${item.title}</li>`;
       });
+      const listHTML = listItems.join("");
 
-      const html = `
-        <h1>${info.title}</h1>
-        <ol>
-        ${listNodes}
-        </ol>
-      `;
-
-      // let html = "";
-
-      // html += "<h1>" + info.title + "</h1>";
-
-      // html += "<ol>";
-
-      // items.forEach((item) => {
-      //   html += "<li>" + item.title + "</li>";
-      // });
-
-      // html += "</ol>";
-
-      document.body.innerHTML = html;
+      const html = `<h1>${info.title}</h1><ol>${listHTML}</ol>`;
+      return html;
     }
   }
 }

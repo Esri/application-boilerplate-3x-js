@@ -29,15 +29,16 @@ export function createWebMapFromItem(item: BoilerplateItem): IPromise<WebMap> {
 
   return requireUtils.when(require, "esri/WebMap").then(WebMap => {
     if (itemData) {
-      return new WebMap({
+      const wm = new WebMap({
         portalItem: itemData
       });
+      return wm.load();
     }
     // todo: fix
     // if (itemJSON) {
     //   const wm = WebMap.fromJSON(itemJSON.itemData);
     //   wm.portalItem = itemJSON.item;
-    //   return wm;
+    //   return wm.load();
     // }
   });
 }
@@ -59,14 +60,15 @@ export function createWebSceneFromItem(item: BoilerplateItem): IPromise<WebScene
 
   return requireUtils.when(require, "esri/WebScene").then(WebScene => {
     if (itemData) {
-      return new WebScene({
+      const ws = new WebScene({
         portalItem: itemData
       });
+      return ws.load();
     }
     if (itemJSON) {
-      const wm = WebScene.fromJSON(itemJSON.itemData);
-      wm.portalItem = itemJSON.item;
-      return wm;
+      const ws = WebScene.fromJSON(itemJSON.itemData);
+      ws.portalItem = itemJSON.item;
+      return ws.load();
     }
   });
 }

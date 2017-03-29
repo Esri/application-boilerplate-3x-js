@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/views/MapView", "esri/views/SceneView", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, MapView, SceneView, ItemHelper_1, UrlParamHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "boilerplate/ItemHelper", "boilerplate/UrlParamHelper"], function (require, exports, i18n, requireUtils, ItemHelper_1, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -22,8 +22,10 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
             this.settings = null;
         }
         Application.prototype.init = function (boilerplateResponse) {
+            var _this = this;
             if (!boilerplateResponse) {
                 this.reportError(new Error("app:: Boilerplate is not defined"));
+                return;
             }
             this.direction = boilerplateResponse.direction;
             this.config = boilerplateResponse.config;
@@ -32,21 +34,35 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
             var webMapItem = boilerplateResults.webMapItem;
             var webSceneItem = boilerplateResults.webSceneItem;
             var groupData = boilerplateResults.group;
+            if (!webMapItem && !webSceneItem && !groupData) {
+                this.reportError(new Error("app:: Could not load an item to display"));
+                return;
+            }
             this._setDocumentLocale(boilerplateResponse.locale);
             this._setDirection(boilerplateResponse.direction);
             // todo: support multiple webscenes, webmaps, groups.
             // todo: allow all at once
             if (webMapItem) {
-                this._createWebMap(webMapItem);
+                this._createWebMap(webMapItem).then(function (view) {
+                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
+                    _this._ready();
+                }).otherwise(this.reportError);
             }
             else if (webSceneItem) {
-                this._createWebScene(webSceneItem);
+                this._createWebScene(webSceneItem).then(function (view) {
+                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
+                    _this._ready();
+                }).otherwise(this.reportError);
             }
             else if (groupData) {
-                this._createGroupGallery(groupData);
-            }
-            if (!webMapItem && !webSceneItem && !groupData) {
-                this.reportError(new Error("app:: Could not load an item to display"));
+                var galleryHTML = this._createGroupGallery(groupData);
+                if (galleryHTML instanceof Error) {
+                    this.reportError(galleryHTML);
+                }
+                else {
+                    document.body.innerHTML = galleryHTML;
+                    this._ready();
+                }
             }
         };
         Application.prototype.reportError = function (error) {
@@ -77,59 +93,45 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/vi
         };
         Application.prototype._createWebMap = function (webMapItem) {
             var _this = this;
-            ItemHelper_1.createWebMapFromItem(webMapItem).then(function (map) {
+            return ItemHelper_1.createWebMapFromItem(webMapItem).then(function (map) {
                 var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webmap.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
-                var view = new MapView(viewProperties);
-                view.then(function () {
-                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
-                    _this._ready();
-                }, _this.reportError);
-            }, this.reportError);
+                return requireUtils.when(require, "esri/views/MapView").then(function (MapView) {
+                    return new MapView(viewProperties);
+                });
+            });
         };
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
-            ItemHelper_1.createWebSceneFromItem(webSceneItem).then(function (map) {
-                console.log(map);
-                // todo: not getting in here
+            return ItemHelper_1.createWebSceneFromItem(webSceneItem).then(function (map) {
                 var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
                 var viewProperties = __assign({ map: map, container: _this.settings.webscene.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
                 }
-                var view = new SceneView(viewProperties);
-                view.then(function () {
-                    UrlParamHelper_1.setConfigItemsOnView(view, _this.config);
-                    _this._ready();
-                }, _this.reportError);
-            }, this.reportError);
+                return requireUtils.when(require, "esri/views/SceneView").then(function (SceneView) {
+                    return new SceneView(viewProperties);
+                });
+            });
         };
         Application.prototype._createGroupGallery = function (groupData) {
             var groupInfoData = groupData.infoData;
             var groupItemsData = groupData.itemsData;
             if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
-                this.reportError(new Error("app:: group data does not exist."));
-                return;
+                return new Error("app:: group data does not exist.");
             }
             var info = groupInfoData.results[0];
             var items = groupItemsData.results;
-            this._ready();
             if (info && items) {
                 var listNodes = items.map(function (item) {
                     return "<li>" + item.title + "</li>";
                 });
-                var html = "\n        <h1>" + info.title + "</h1>\n        <ol>\n        " + listNodes + "\n        </ol>\n      ";
-                // let html = "";
-                // html += "<h1>" + info.title + "</h1>";
-                // html += "<ol>";
-                // items.forEach((item) => {
-                //   html += "<li>" + item.title + "</li>";
-                // });
-                // html += "</ol>";
-                document.body.innerHTML = html;
+                console.log(listNodes);
+                var html = "<h1>" + info.title + "</h1><ol>" + listNodes.join("") + "</ol>";
+                return html;
             }
         };
         return Application;

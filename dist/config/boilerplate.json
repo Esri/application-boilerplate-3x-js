@@ -21,7 +21,6 @@
     "fetchInfo": true,
     "fetchItems": true,
     "itemParams": {
-      "query": "group:\"{groupid}\" AND -type:\"Code Attachment\"",
       "sortField": "modified",
       "sortOrder": "desc",
       "num": 9,

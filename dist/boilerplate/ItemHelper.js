@@ -15,15 +15,16 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
         }
         return requireUtils.when(require, "esri/WebMap").then(function (WebMap) {
             if (itemData) {
-                return new WebMap({
+                var wm = new WebMap({
                     portalItem: itemData
                 });
+                return wm.load();
             }
             // todo: fix
             // if (itemJSON) {
             //   const wm = WebMap.fromJSON(itemJSON.itemData);
             //   wm.portalItem = itemJSON.item;
-            //   return wm;
+            //   return wm.load();
             // }
         });
     }
@@ -42,14 +43,15 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
         }
         return requireUtils.when(require, "esri/WebScene").then(function (WebScene) {
             if (itemData) {
-                return new WebScene({
+                var ws = new WebScene({
                     portalItem: itemData
                 });
+                return ws.load();
             }
             if (itemJSON) {
-                var wm = WebScene.fromJSON(itemJSON.itemData);
-                wm.portalItem = itemJSON.item;
-                return wm;
+                var ws = WebScene.fromJSON(itemJSON.itemData);
+                ws.portalItem = itemJSON.item;
+                return ws.load();
             }
         });
     }
