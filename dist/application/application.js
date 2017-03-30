@@ -18,7 +18,6 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
     var Application = (function () {
         function Application() {
             this.config = null;
-            this.direction = null;
             this.settings = null;
         }
         Application.prototype.init = function (boilerplateResponse) {
@@ -27,7 +26,6 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 this.reportError(new Error("app:: Boilerplate is not defined"));
                 return;
             }
-            this.direction = boilerplateResponse.direction;
             this.config = boilerplateResponse.config;
             this.settings = boilerplateResponse.settings;
             var boilerplateResults = boilerplateResponse.results;

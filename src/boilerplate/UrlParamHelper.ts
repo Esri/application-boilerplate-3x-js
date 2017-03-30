@@ -6,7 +6,7 @@ import Camera = require("esri/Camera");
 import Search = require("esri/widgets/Search");
 import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
-import { Config } from "boilerplate/interfaces";
+import { ApplicationConfig } from "boilerplate/interfaces";
 
 interface ViewProperties {
   ui?: {
@@ -59,7 +59,7 @@ export function getUrlParamValues(urlParams: string[]) {
   return formattedUrlObject;
 }
 
-export function getUrlViewProperties(config: Config): ViewProperties {
+export function getUrlViewProperties(config: ApplicationConfig): ViewProperties {
   const viewProperties: ViewProperties = {};
 
   if (config.components) {

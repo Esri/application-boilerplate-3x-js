@@ -12,7 +12,7 @@ import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
 import { getUrlParamValues } from "boilerplate/UrlParamHelper";
-import { Settings, Config, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
+import { BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
 const SHARING_PATH = "/sharing";
 const ESRI_PROXY_PATH = "/sharing/proxy";
@@ -28,8 +28,8 @@ const DEFAULT_URL_PARAM = "default";
 
 class Boilerplate {
 
-  settings: Settings = null;
-  config: Config = null;
+  settings: BoilerplateSettings = null;
+  config: ApplicationConfig = null;
   results: BoilerplateResults = {
     group: {}
   };
@@ -158,7 +158,7 @@ class Boilerplate {
     });
   }
 
-  private _getLocalConfig(): Config {
+  private _getLocalConfig(): BoilerplateSettings {
     const appid = this.config.appid;
     if (window.localStorage && appid && this.settings.localConfig.fetch) {
       const lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);

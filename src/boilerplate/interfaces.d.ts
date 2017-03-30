@@ -1,4 +1,4 @@
-export interface Config {
+export interface ApplicationConfig {
   title?: string;
   webmap?: string;
   webscene?: string;
@@ -30,7 +30,7 @@ export interface Config {
   }
 }
 
-export interface Settings {
+export interface BoilerplateSettings {
   webscene?: {
     containerId?: string;
     fetch?: boolean;
@@ -93,10 +93,10 @@ export interface BoilerplateResults {
 }
 
 export interface BoilerplateResponse {
-  config: Config;
-  settings: Settings;
-  direction: any;
+  config: ApplicationConfig;
+  settings: BoilerplateSettings;
+  direction: string;
   results: BoilerplateResults;
   groupData: GroupData;
-  locale: any;
+  locale: string;
 }

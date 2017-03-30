@@ -3,7 +3,7 @@ declare const i18n: any;
 import requireUtils = require("esri/core/requireUtils");
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
-import { BoilerplateResponse, Settings, GroupData, Config } from "boilerplate/interfaces";
+import { BoilerplateResponse, BoilerplateSettings, GroupData, ApplicationConfig } from "boilerplate/interfaces";
 import { createWebMapFromItem, createWebSceneFromItem } from "boilerplate/ItemHelper";
 import { setConfigItemsOnView, getUrlViewProperties } from "boilerplate/UrlParamHelper";
 
@@ -15,9 +15,8 @@ const CSS = {
 
 class Application {
 
-  config: Config = null;
-  direction: any = null;
-  settings: Settings = null;
+  config: ApplicationConfig = null;
+  settings: BoilerplateSettings = null;
 
   public init(boilerplateResponse: BoilerplateResponse): void {
 
@@ -26,7 +25,6 @@ class Application {
       return;
     }
 
-    this.direction = boilerplateResponse.direction;
     this.config = boilerplateResponse.config;
     this.settings = boilerplateResponse.settings;
 
