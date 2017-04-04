@@ -99,7 +99,7 @@ class Application {
   private _createWebMap(webMapItem): IPromise<MapView> {
     return createWebMapFromItem(webMapItem).then(map => {
 
-      const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getUrlViewProperties(this.config);
 
       const viewProperties = {
         map,
@@ -119,7 +119,7 @@ class Application {
 
   private _createWebScene(webSceneItem): IPromise<SceneView> {
     return createWebSceneFromItem(webSceneItem).then(map => {
-      const urlViewProperties = getUrlViewProperties(this.config) as any; // todo: fix interface
+      const urlViewProperties = getUrlViewProperties(this.config);
 
       const viewProperties = {
         map,

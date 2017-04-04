@@ -91,7 +91,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         Application.prototype._createWebMap = function (webMapItem) {
             var _this = this;
             return ItemHelper_1.createWebMapFromItem(webMapItem).then(function (map) {
-                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
+                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config);
                 var viewProperties = __assign({ map: map, container: _this.settings.webmap.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;
@@ -104,7 +104,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         Application.prototype._createWebScene = function (webSceneItem) {
             var _this = this;
             return ItemHelper_1.createWebSceneFromItem(webSceneItem).then(function (map) {
-                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config); // todo: fix interface
+                var urlViewProperties = UrlParamHelper_1.getUrlViewProperties(_this.config);
                 var viewProperties = __assign({ map: map, container: _this.settings.webscene.containerId }, urlViewProperties);
                 if (!_this.config.title && map.portalItem && map.portalItem.title) {
                     _this.config.title = map.portalItem.title;

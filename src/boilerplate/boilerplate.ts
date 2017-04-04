@@ -24,6 +24,10 @@ const RTL = "rtl";
 const LOCALSTORAGE_PREFIX = "boilerplate_config_";
 const DEFAULT_URL_PARAM = "default";
 
+function isDefined(value: any) {
+  return (value !== undefined) && (value !== null);
+}
+
 // todo: have promise return results instead of setting using `this`
 
 class Boilerplate {
@@ -52,6 +56,7 @@ class Boilerplate {
     this.config = applicationConfigJSON;
   }
 
+  // todo: rewrite function without `this`
   public queryGroupItems() {
     if (!this.settings.group.fetchItems || !this.config.group) {
       return promiseUtils.resolve();
@@ -161,6 +166,7 @@ class Boilerplate {
     return localConfig;
   }
 
+  // todo: rewrite function without `this`
   private _queryWebMapItem(): BoilerplateItem {
     // Get details about the specified web map. If the web map is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
@@ -186,6 +192,7 @@ class Boilerplate {
     return promiseUtils.resolve();
   }
 
+  // todo: rewrite function without `this`
   private _queryGroupInfo() {
     // Get details about the specified group. If the group is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
@@ -199,6 +206,7 @@ class Boilerplate {
     return this.portal.queryGroups(params);
   }
 
+  // todo: rewrite function without `this`
   private _queryWebSceneItem(): BoilerplateItem {
     // Get details about the specified web scene. If the web scene is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
@@ -273,10 +281,11 @@ class Boilerplate {
 
   }
 
+  // todo: rewrite function without `this`
   private _setupCORS(authorizedDomains: any): void {
     if (this.settings.webTierSecurity && authorizedDomains && authorizedDomains.length) {
       authorizedDomains.forEach((authorizedDomain) => {
-        if (this._isDefined(authorizedDomain) && authorizedDomain.length) {
+        if (isDefined(authorizedDomain) && authorizedDomain.length) {
           esriConfig.request.corsEnabledServers.push({
             host: authorizedDomain,
             withCredentials: true
@@ -286,6 +295,7 @@ class Boilerplate {
     }
   }
 
+  // todo: rewrite function without `this`
   private _queryPortal() {
     if (!this.settings.portal.fetch) {
       return promiseUtils.resolve();
@@ -315,7 +325,7 @@ class Boilerplate {
       const units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
       this.units = units;
       // are any custom roles defined in the organization?
-      if (roleId && this._isDefined(roleId) && userPrivileges) {
+      if (roleId && isDefined(roleId) && userPrivileges) {
         this.userPrivileges = userPrivileges;
       }
       return { data: response };
@@ -340,6 +350,7 @@ class Boilerplate {
     }
   }
 
+  // todo: rewrite function without `this`
   private _completeApplication(): void {
     // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
     // existing extents with the application item extent when set.
@@ -373,6 +384,7 @@ class Boilerplate {
     }
   }
 
+  // todo: rewrite function without `this`
   private _setLangProps() {
     const isRTL = RTL_LANGS.some((language) => {
       return kernel.locale.indexOf(language) !== -1;
@@ -397,6 +409,7 @@ class Boilerplate {
     }
   }
 
+  // todo: rewrite function without `this`
   private _initializeApplication() {
     if (this.settings.esriEnvironment) {
       const esriAppsPath = location.pathname.indexOf(ESRI_APPS_PATH);
@@ -431,10 +444,6 @@ class Boilerplate {
 
     const signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
     return signedIn.always(promiseUtils.resolve);
-  }
-
-  private _isDefined(value: any) {
-    return (value !== undefined) && (value !== null);
   }
 
 }

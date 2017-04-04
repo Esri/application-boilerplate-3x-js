@@ -19,6 +19,9 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     var RTL = "rtl";
     var LOCALSTORAGE_PREFIX = "boilerplate_config_";
     var DEFAULT_URL_PARAM = "default";
+    function isDefined(value) {
+        return (value !== undefined) && (value !== null);
+    }
     // todo: have promise return results instead of setting using `this`
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
@@ -41,6 +44,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
+        // todo: rewrite function without `this`
         Boilerplate.prototype.queryGroupItems = function () {
             if (!this.settings.group.fetchItems || !this.config.group) {
                 return promiseUtils.resolve();
@@ -135,6 +139,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var localConfig = lsItem && JSON.parse(lsItem);
             return localConfig;
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._queryWebMapItem = function () {
             // Get details about the specified web map. If the web map is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
@@ -159,6 +164,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
             return promiseUtils.resolve();
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._queryGroupInfo = function () {
             // Get details about the specified group. If the group is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
@@ -171,6 +177,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             });
             return this.portal.queryGroups(params);
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._queryWebSceneItem = function () {
             // Get details about the specified web scene. If the web scene is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
@@ -241,11 +248,11 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 };
             });
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._setupCORS = function (authorizedDomains) {
-            var _this = this;
             if (this.settings.webTierSecurity && authorizedDomains && authorizedDomains.length) {
                 authorizedDomains.forEach(function (authorizedDomain) {
-                    if (_this._isDefined(authorizedDomain) && authorizedDomain.length) {
+                    if (isDefined(authorizedDomain) && authorizedDomain.length) {
                         esriConfig.request.corsEnabledServers.push({
                             host: authorizedDomain,
                             withCredentials: true
@@ -254,6 +261,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 });
             }
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._queryPortal = function () {
             var _this = this;
             if (!this.settings.portal.fetch) {
@@ -284,7 +292,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 var units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
                 _this.units = units;
                 // are any custom roles defined in the organization?
-                if (roleId && _this._isDefined(roleId) && userPrivileges) {
+                if (roleId && isDefined(roleId) && userPrivileges) {
                     _this.userPrivileges = userPrivileges;
                 }
                 return { data: response };
@@ -307,6 +315,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 ];
             }
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._completeApplication = function () {
             // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
             // existing extents with the application item extent when set.
@@ -339,6 +348,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 this.config.group = this.settings.defaultGroup;
             }
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._setLangProps = function () {
             var isRTL = RTL_LANGS.some(function (language) {
                 return kernel.locale.indexOf(language) !== -1;
@@ -356,6 +366,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var urlParams = this.results.urlParams ? this.results.urlParams : null;
             this.config = __assign({}, config, applicationItem, localStorageConfig, urlParams);
         };
+        // todo: rewrite function without `this`
         Boilerplate.prototype._initializeApplication = function () {
             if (this.settings.esriEnvironment) {
                 var esriAppsPath = location.pathname.indexOf(ESRI_APPS_PATH);
@@ -387,9 +398,6 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             }
             var signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
             return signedIn.always(promiseUtils.resolve);
-        };
-        Boilerplate.prototype._isDefined = function (value) {
-            return (value !== undefined) && (value !== null);
         };
         return Boilerplate;
     }());

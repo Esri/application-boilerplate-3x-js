@@ -5,10 +5,8 @@ export = {
   Application,
   Boilerplate,
   init: (applicationConfigJSON, boilerplateConfigJSON) => {
-    const applicationConfig = JSON.parse(applicationConfigJSON);
-    const boilerplateConfig = JSON.parse(boilerplateConfigJSON);
     const application = new Application();
-    const boilerplate = new Boilerplate(applicationConfig, boilerplateConfig);
+    const boilerplate = new Boilerplate(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
     boilerplate.init().then(response => application.init(response));
   }
 };

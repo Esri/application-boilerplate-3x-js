@@ -4,10 +4,8 @@ define(["require", "exports", "application/application", "boilerplate/boilerplat
         Application: application_1.default,
         Boilerplate: boilerplate_1.default,
         init: function (applicationConfigJSON, boilerplateConfigJSON) {
-            var applicationConfig = JSON.parse(applicationConfigJSON);
-            var boilerplateConfig = JSON.parse(boilerplateConfigJSON);
             var application = new application_1.default();
-            var boilerplate = new boilerplate_1.default(applicationConfig, boilerplateConfig);
+            var boilerplate = new boilerplate_1.default(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
             boilerplate.init().then(function (response) { return application.init(response); });
         }
     };
