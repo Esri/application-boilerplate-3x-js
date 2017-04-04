@@ -2,21 +2,13 @@ import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
 import WebMap = require("esri/WebMap");
 import WebScene = require("esri/WebScene");
-import PortalItem = require("esri/portal/PortalItem");
-
-interface BoilerplateItem {
-  data?: PortalItem | Error;
-  json?: {
-    itemData: any,
-    item: any
-  }
-}
+import { BoilerplateItem } from "boilerplate/interfaces";
 
 export function createWebMapFromItem(item: BoilerplateItem): IPromise<WebMap> {
   if (!item) {
     return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
   }
-  if (item.data instanceof Error) {
+  if (item.error) {
     return promiseUtils.reject(item.data);
   }
 
@@ -47,7 +39,7 @@ export function createWebSceneFromItem(item: BoilerplateItem): IPromise<WebScene
   if (!item) {
     return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
   }
-  if (item.data instanceof Error) {
+  if (item.error) {
     return promiseUtils.reject(item.data);
   }
 

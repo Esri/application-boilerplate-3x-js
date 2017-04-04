@@ -5,6 +5,7 @@ declare const websceneText: string;
 
 import kernel = require("dojo/_base/kernel");
 import esriConfig = require("esri/config");
+import EsriPromise = require("esri/core/Promise"); // todo: make this class extend promise
 import promiseUtils = require("esri/core/promiseUtils");
 import IdentityManager = require("esri/identity/IdentityManager");
 import OAuthInfo = require("esri/identity/OAuthInfo");
@@ -12,9 +13,8 @@ import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
 import { getUrlParamValues } from "boilerplate/UrlParamHelper";
-import { BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
+import { BoilerplateItem, BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
-const SHARING_PATH = "/sharing";
 const ESRI_PROXY_PATH = "/sharing/proxy";
 const ESRI_APPS_PATH = "/apps/";
 const ESRI_HOME_PATH = "/home/";
@@ -28,7 +28,13 @@ const DEFAULT_URL_PARAM = "default";
 
 class Boilerplate {
 
-  settings: BoilerplateSettings = null;
+  settings: BoilerplateSettings = {
+    webscene: {},
+    webmap: {},
+    group: {},
+    portal: {},
+    urlItems: []
+  };
   config: ApplicationConfig = null;
   results: BoilerplateResults = {
     group: {}
@@ -41,11 +47,6 @@ class Boilerplate {
 
   constructor(applicationConfigJSON, boilerplateConfigJSON) {
     this.settings = {
-      webscene: {},
-      webmap: {},
-      group: {},
-      portal: {},
-      urlItems: [],
       ...boilerplateConfigJSON
     }
     this.config = applicationConfigJSON;
@@ -68,15 +69,7 @@ class Boilerplate {
     };
 
     const params = new PortalQueryParams(paramOptions);
-
-    return this.portal.queryItems(params).then((response) => {
-      return response;
-    }).otherwise((error) => {
-      if (!error) {
-        error = new Error("Boilerplate:: Error retrieving group items.");
-      }
-      return error;
-    });
+    return this.portal.queryItems(params);
   }
 
   public init(): IPromise<BoilerplateResponse> {
@@ -105,17 +98,19 @@ class Boilerplate {
     // determine boilerplate language properties
     this._setLangProps();
     // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-    return this._checkSignIn().always(() => {
+    return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(() => {
       // execute these tasks async
       return promiseUtils.eachAlways([
         // get application data
-        this._queryApplicationItem(),
+        this._queryApplicationItem(this.config.appid),
         // get org data
         this._queryPortal()
       ]).always(args => { // todo: rename args here and below
         const [applicationResponse, portalResponse] = args;
         // gets a temporary config from the users local storage
-        this.results.localStorageConfig = this._getLocalConfig();
+        this.results.localStorageConfig = this.settings.localConfig.fetch ?
+          this._getLocalConfig(this.config.appid) :
+          null;
         this.results.applicationItem = applicationResponse.value;
         this.results.portal = portalResponse.value;
 
@@ -141,8 +136,6 @@ class Boilerplate {
           this.results.group.itemsData = groupItemsResponse.value;
           this.results.group.infoData = groupInfoResponse.value;
 
-          console.log(this);
-
           return {
             settings: this.settings,
             config: this.config,
@@ -158,16 +151,17 @@ class Boilerplate {
     });
   }
 
-  private _getLocalConfig(): BoilerplateSettings {
-    const appid = this.config.appid;
-    if (window.localStorage && appid && this.settings.localConfig.fetch) {
-      const lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
-      const config = lsItem && JSON.parse(lsItem);
-      return config || null;
+  private _getLocalConfig(appid: string): BoilerplateSettings {
+    if (!(window.localStorage && appid)) {
+      return;
     }
+
+    const lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
+    const localConfig = lsItem && JSON.parse(lsItem);
+    return localConfig;
   }
 
-  private _queryWebMapItem() {
+  private _queryWebMapItem(): BoilerplateItem {
     // Get details about the specified web map. If the web map is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
     if (!this.settings.webmap.fetch) {
@@ -176,31 +170,20 @@ class Boilerplate {
     // Use local web map instead of portal web map
     if (this.settings.webmap.useLocal) {
       const json = JSON.parse(webmapText);
-      return promiseUtils.resolve({
-        json
-      });
+      return promiseUtils.resolve({ json });
     }
     // use webmap from id
-    else if (this.config.webmap) {
+    if (this.config.webmap) {
       const mapItem = new PortalItem({
         id: this.config.webmap
       });
       return mapItem.load().then((itemData) => {
-        return {
-          data: itemData
-        };
+        return { data: itemData };
       }).otherwise((error) => {
-        if (!error) {
-          error = new Error("Boilerplate:: Error retrieving webmap item.");
-        }
-        return {
-          data: error
-        };
+        return { error: error || new Error("Boilerplate:: Error retrieving webmap item.") };
       });
     }
-    else {
-      return promiseUtils.resolve();
-    }
+    return promiseUtils.resolve();
   }
 
   private _queryGroupInfo() {
@@ -213,17 +196,10 @@ class Boilerplate {
     const params = new PortalQueryParams({
       query: `id:"${this.config.group}"`
     });
-    return this.portal.queryGroups(params).then((response) => {
-      return response;
-    }).otherwise((error) => {
-      if (!error) {
-        error = new Error("Boilerplate:: Error retrieving group info.");
-      }
-      return error;
-    });
+    return this.portal.queryGroups(params);
   }
 
-  private _queryWebSceneItem() {
+  private _queryWebSceneItem(): BoilerplateItem {
     // Get details about the specified web scene. If the web scene is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
     if (!this.settings.webscene.fetch) {
@@ -233,43 +209,32 @@ class Boilerplate {
     if (this.settings.webscene.useLocal) {
       // get web scene js file
       const json = JSON.parse(websceneText);
-      return promiseUtils.resolve({
-        json: json
-      });
+      return promiseUtils.resolve({ json: json });
     }
     // use webscene from id
-    else if (this.config.webscene) {
+    if (this.config.webscene) {
       const sceneItem = new PortalItem({
         id: this.config.webscene
       });
       return sceneItem.load().then((itemData) => {
-        return {
-          data: itemData
-        };
+        return { data: itemData };
       }).otherwise((error) => {
-        if (!error) {
-          error = new Error("Boilerplate:: Error retrieving webscene item.");
-        }
-        return {
-          data: error
-        };
+        return { error: error || new Error("Boilerplate:: Error retrieving webscene item.") };
       });
     }
-    else {
-      return promiseUtils.resolve();
-    }
+    return promiseUtils.resolve();
   }
 
-  private _queryApplicationItem() {
+  private _queryApplicationItem(appid: string) {
     // Get the application configuration details using the application id. When the response contains
     // itemData.values then we know the app contains configuration information. We'll use these values
     // to overwrite the application defaults.
-    if (!this.config.appid) {
+    if (!appid) {
       return promiseUtils.resolve();
     }
 
     const appItem = new PortalItem({
-      id: this.config.appid
+      id: appid
     });
     return appItem.load().then((itemInfo) => {
       return itemInfo.fetchData().then((data) => {
@@ -296,22 +261,13 @@ class Boilerplate {
           config: cfg
         };
       }).otherwise((error) => {
-        if (!error) {
-          error = new Error("Boilerplate:: Error retrieving application configuration data.");
-        }
         return {
-          data: error,
-          config: null
+          error: error || new Error("Boilerplate:: Error retrieving application configuration data.")
         };
       });
-
     }).otherwise((error) => {
-      if (!error) {
-        error = new Error("Boilerplate:: Error retrieving application configuration.");
-      }
       return {
-        data: error,
-        config: null
+        error: error || new Error("Boilerplate:: Error retrieving application configuration.")
       };
     });
 
@@ -362,15 +318,10 @@ class Boilerplate {
       if (roleId && this._isDefined(roleId) && userPrivileges) {
         this.userPrivileges = userPrivileges;
       }
-      return {
-        data: response
-      };
+      return { data: response };
     }).otherwise((error) => {
-      if (!error) {
-        error = new Error("Boilerplate:: Error retrieving organization information.");
-      }
       return {
-        data: error
+        error: error || new Error("Boilerplate:: Error retrieving organization information.")
       };
     });
   }
@@ -465,11 +416,12 @@ class Boilerplate {
     }
   }
 
-  private _checkSignIn() {
-    const info = this.config.oauthappid ?
+  private _checkSignIn(oauthappid: string, portalUrl: string) {
+    const SHARING_PATH = "/sharing";
+    const info = oauthappid ?
       new OAuthInfo({
-        appId: this.config.oauthappid,
-        portalUrl: this.config.portalUrl,
+        appId: oauthappid,
+        portalUrl: portalUrl,
         popup: true
       }) : null;
 
@@ -477,7 +429,7 @@ class Boilerplate {
       IdentityManager.registerOAuthInfos([info]);
     }
 
-    const signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
+    const signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
     return signedIn.always(promiseUtils.resolve);
   }
 

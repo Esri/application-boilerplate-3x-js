@@ -11,7 +11,6 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
     /// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
-    var SHARING_PATH = "/sharing";
     var ESRI_PROXY_PATH = "/sharing/proxy";
     var ESRI_APPS_PATH = "/apps/";
     var ESRI_HOME_PATH = "/home/";
@@ -23,7 +22,13 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     // todo: have promise return results instead of setting using `this`
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
-            this.settings = null;
+            this.settings = {
+                webscene: {},
+                webmap: {},
+                group: {},
+                portal: {},
+                urlItems: []
+            };
             this.config = null;
             this.results = {
                 group: {}
@@ -33,7 +38,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.locale = null;
             this.units = null;
             this.userPrivileges = null;
-            this.settings = __assign({ webscene: {}, webmap: {}, group: {}, portal: {}, urlItems: [] }, boilerplateConfigJSON);
+            this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
         Boilerplate.prototype.queryGroupItems = function () {
@@ -44,14 +49,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var groupId = this.config.group;
             var paramOptions = __assign({ query: "group:\"" + groupId + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             var params = new PortalQueryParams(paramOptions);
-            return this.portal.queryItems(params).then(function (response) {
-                return response;
-            }).otherwise(function (error) {
-                if (!error) {
-                    error = new Error("Boilerplate:: Error retrieving group items.");
-                }
-                return error;
-            });
+            return this.portal.queryItems(params);
         };
         Boilerplate.prototype.init = function () {
             var _this = this;
@@ -80,17 +78,19 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // determine boilerplate language properties
             this._setLangProps();
             // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-            return this._checkSignIn().always(function () {
+            return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(function () {
                 // execute these tasks async
                 return promiseUtils.eachAlways([
                     // get application data
-                    _this._queryApplicationItem(),
+                    _this._queryApplicationItem(_this.config.appid),
                     // get org data
                     _this._queryPortal()
                 ]).always(function (args) {
                     var applicationResponse = args[0], portalResponse = args[1];
                     // gets a temporary config from the users local storage
-                    _this.results.localStorageConfig = _this._getLocalConfig();
+                    _this.results.localStorageConfig = _this.settings.localConfig.fetch ?
+                        _this._getLocalConfig(_this.config.appid) :
+                        null;
                     _this.results.applicationItem = applicationResponse.value;
                     _this.results.portal = portalResponse.value;
                     // mixin all new settings from org and app
@@ -113,7 +113,6 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                         _this.results.webSceneItem = webSceneResponse.value;
                         _this.results.group.itemsData = groupItemsResponse.value;
                         _this.results.group.infoData = groupInfoResponse.value;
-                        console.log(_this);
                         return {
                             settings: _this.settings,
                             config: _this.config,
@@ -128,13 +127,13 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 });
             });
         };
-        Boilerplate.prototype._getLocalConfig = function () {
-            var appid = this.config.appid;
-            if (window.localStorage && appid && this.settings.localConfig.fetch) {
-                var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
-                var config = lsItem && JSON.parse(lsItem);
-                return config || null;
+        Boilerplate.prototype._getLocalConfig = function (appid) {
+            if (!(window.localStorage && appid)) {
+                return;
             }
+            var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
+            var localConfig = lsItem && JSON.parse(lsItem);
+            return localConfig;
         };
         Boilerplate.prototype._queryWebMapItem = function () {
             // Get details about the specified web map. If the web map is not shared publicly users will
@@ -145,30 +144,20 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // Use local web map instead of portal web map
             if (this.settings.webmap.useLocal) {
                 var json = JSON.parse(webmapText);
-                return promiseUtils.resolve({
-                    json: json
-                });
+                return promiseUtils.resolve({ json: json });
             }
-            else if (this.config.webmap) {
+            // use webmap from id
+            if (this.config.webmap) {
                 var mapItem = new PortalItem({
                     id: this.config.webmap
                 });
                 return mapItem.load().then(function (itemData) {
-                    return {
-                        data: itemData
-                    };
+                    return { data: itemData };
                 }).otherwise(function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving webmap item.");
-                    }
-                    return {
-                        data: error
-                    };
+                    return { error: error || new Error("Boilerplate:: Error retrieving webmap item.") };
                 });
             }
-            else {
-                return promiseUtils.resolve();
-            }
+            return promiseUtils.resolve();
         };
         Boilerplate.prototype._queryGroupInfo = function () {
             // Get details about the specified group. If the group is not shared publicly users will
@@ -180,14 +169,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var params = new PortalQueryParams({
                 query: "id:\"" + this.config.group + "\""
             });
-            return this.portal.queryGroups(params).then(function (response) {
-                return response;
-            }).otherwise(function (error) {
-                if (!error) {
-                    error = new Error("Boilerplate:: Error retrieving group info.");
-                }
-                return error;
-            });
+            return this.portal.queryGroups(params);
         };
         Boilerplate.prototype._queryWebSceneItem = function () {
             // Get details about the specified web scene. If the web scene is not shared publicly users will
@@ -199,40 +181,30 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             if (this.settings.webscene.useLocal) {
                 // get web scene js file
                 var json = JSON.parse(websceneText);
-                return promiseUtils.resolve({
-                    json: json
-                });
+                return promiseUtils.resolve({ json: json });
             }
-            else if (this.config.webscene) {
+            // use webscene from id
+            if (this.config.webscene) {
                 var sceneItem = new PortalItem({
                     id: this.config.webscene
                 });
                 return sceneItem.load().then(function (itemData) {
-                    return {
-                        data: itemData
-                    };
+                    return { data: itemData };
                 }).otherwise(function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving webscene item.");
-                    }
-                    return {
-                        data: error
-                    };
+                    return { error: error || new Error("Boilerplate:: Error retrieving webscene item.") };
                 });
             }
-            else {
-                return promiseUtils.resolve();
-            }
+            return promiseUtils.resolve();
         };
-        Boilerplate.prototype._queryApplicationItem = function () {
+        Boilerplate.prototype._queryApplicationItem = function (appid) {
             // Get the application configuration details using the application id. When the response contains
             // itemData.values then we know the app contains configuration information. We'll use these values
             // to overwrite the application defaults.
-            if (!this.config.appid) {
+            if (!appid) {
                 return promiseUtils.resolve();
             }
             var appItem = new PortalItem({
-                id: this.config.appid
+                id: appid
             });
             return appItem.load().then(function (itemInfo) {
                 return itemInfo.fetchData().then(function (data) {
@@ -259,21 +231,13 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                         config: cfg
                     };
                 }).otherwise(function (error) {
-                    if (!error) {
-                        error = new Error("Boilerplate:: Error retrieving application configuration data.");
-                    }
                     return {
-                        data: error,
-                        config: null
+                        error: error || new Error("Boilerplate:: Error retrieving application configuration data.")
                     };
                 });
             }).otherwise(function (error) {
-                if (!error) {
-                    error = new Error("Boilerplate:: Error retrieving application configuration.");
-                }
                 return {
-                    data: error,
-                    config: null
+                    error: error || new Error("Boilerplate:: Error retrieving application configuration.")
                 };
             });
         };
@@ -323,15 +287,10 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 if (roleId && _this._isDefined(roleId) && userPrivileges) {
                     _this.userPrivileges = userPrivileges;
                 }
-                return {
-                    data: response
-                };
+                return { data: response };
             }).otherwise(function (error) {
-                if (!error) {
-                    error = new Error("Boilerplate:: Error retrieving organization information.");
-                }
                 return {
-                    data: error
+                    error: error || new Error("Boilerplate:: Error retrieving organization information.")
                 };
             });
         };
@@ -415,17 +374,18 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 esriConfig.request.proxyUrl = this.config.proxyUrl;
             }
         };
-        Boilerplate.prototype._checkSignIn = function () {
-            var info = this.config.oauthappid ?
+        Boilerplate.prototype._checkSignIn = function (oauthappid, portalUrl) {
+            var SHARING_PATH = "/sharing";
+            var info = oauthappid ?
                 new OAuthInfo({
-                    appId: this.config.oauthappid,
-                    portalUrl: this.config.portalUrl,
+                    appId: oauthappid,
+                    portalUrl: portalUrl,
                     popup: true
                 }) : null;
             if (info) {
                 IdentityManager.registerOAuthInfos([info]);
             }
-            var signedIn = IdentityManager.checkSignInStatus(this.config.portalUrl + SHARING_PATH);
+            var signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
             return signedIn.always(promiseUtils.resolve);
         };
         Boilerplate.prototype._isDefined = function (value) {

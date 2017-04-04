@@ -1,3 +1,5 @@
+import PortalItem = require("esri/portal/PortalItem");
+
 export interface ApplicationConfig {
   title?: string;
   webmap?: string;
@@ -42,18 +44,18 @@ export interface BoilerplateSettings {
     useLocal?: boolean;
   },
   group?: {
-    itemParams: {
+    itemParams?: {
       [propname: string]: any;
     },
     fetchItems?: boolean;
     fetchInfo?: boolean;
   },
   portal?: {
-    fetch: boolean;
+    fetch?: boolean;
   },
   urlItems?: string[];
   localConfig?: {
-    fetch: boolean;
+    fetch?: boolean;
   },
   webTierSecurity?: boolean;
   esriEnvironment?: boolean;
@@ -89,6 +91,15 @@ export interface BoilerplateResults {
   },
   portal?: {
     data: any;
+  }
+}
+
+export interface BoilerplateItem {
+  data?: PortalItem;
+  error?: Error;
+  json?: {
+    itemData: any,
+    item: any
   }
 }
 

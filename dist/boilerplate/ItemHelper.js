@@ -5,7 +5,7 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
         if (!item) {
             return promiseUtils.reject(new Error("ItemHelper:: WebMap data does not exist."));
         }
-        if (item.data instanceof Error) {
+        if (item.error) {
             return promiseUtils.reject(item.data);
         }
         var itemData = item.data;
@@ -33,7 +33,7 @@ define(["require", "exports", "esri/core/promiseUtils", "esri/core/requireUtils"
         if (!item) {
             return promiseUtils.reject(new Error("ItemHelper:: WebScene data does not exist."));
         }
-        if (item.data instanceof Error) {
+        if (item.error) {
             return promiseUtils.reject(item.data);
         }
         var itemData = item.data;
