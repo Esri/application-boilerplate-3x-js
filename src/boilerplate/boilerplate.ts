@@ -15,14 +15,6 @@ import PortalQueryParams = require("esri/portal/PortalQueryParams");
 import { getUrlParamValues } from "boilerplate/UrlParamHelper";
 import { BoilerplateItem, BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
-const ESRI_PROXY_PATH = "/sharing/proxy";
-const ESRI_APPS_PATH = "/apps/";
-const ESRI_HOME_PATH = "/home/";
-const RTL_LANGS = ["ar", "he"];
-const LTR = "ltr";
-const RTL = "rtl";
-const LOCALSTORAGE_PREFIX = "boilerplate_config_";
-const DEFAULT_URL_PARAM = "default";
 
 function isDefined(value: any) {
   return (value !== undefined) && (value !== null);
@@ -45,9 +37,8 @@ class Boilerplate {
   };
   portal: any = null;
   direction: string = null;
-  locale: string = null;
+  locale: string = kernel.locale;
   units: string = null;
-  userPrivileges: any = null;
 
   constructor(applicationConfigJSON, boilerplateConfigJSON) {
     this.settings = {
@@ -92,16 +83,25 @@ class Boilerplate {
     // application default and configuration info has been applied. Currently these values
     // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
     // supporting additional url parameters in your application.
-    this.results.urlParams = getUrlParamValues(this.settings.urlItems)
+    const urlParams = getUrlParamValues(this.settings.urlItems);
+    this.results.urlParams = urlParams
     // config defaults <- standard url params
     // we need the web scene, appid,and oauthappid to query for the data
     this._mixinAllConfigs();
     // Define the portalUrl and other default values like the proxy.
     // The portalUrl defines where to search for the web map and application content. The
     // default value is arcgis.com.
-    this._initializeApplication();
-    // determine boilerplate language properties
-    this._setLangProps();
+    if (this.settings.esriEnvironment) {
+      const portalUrl = this._getEsriEnvironmentPortalUrl();
+      const proxyUrl = this._getEsriEnvironmentProxyUrl(portalUrl);
+      this.config.portalUrl = portalUrl;
+      this.config.proxyUrl = proxyUrl;
+    }
+    this._setPortalUrl(this.config.portalUrl)
+    this._setProxyUrl(this.config.proxyUrl);
+
+    this.direction = this._getLanguageDirection();
+
     // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
     return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(() => {
       // execute these tasks async
@@ -109,15 +109,30 @@ class Boilerplate {
         // get application data
         this._queryApplicationItem(this.config.appid),
         // get org data
-        this._queryPortal()
-      ]).always(args => { // todo: rename args here and below
-        const [applicationResponse, portalResponse] = args;
+        this.settings.portal.fetch ? this._queryPortal() : null
+      ]).always(applicationArgs => {
+        const [applicationResponse, portalResponse] = applicationArgs;
+
+
+
+
         // gets a temporary config from the users local storage
         this.results.localStorageConfig = this.settings.localConfig.fetch ?
           this._getLocalConfig(this.config.appid) :
           null;
         this.results.applicationItem = applicationResponse.value;
-        this.results.portal = portalResponse.value;
+        const portal = portalResponse.value;
+        this.portal = portal;
+        this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.webTierSecurity);
+
+        this.units = this._getUnits(portal);
+
+
+
+
+
+
+
 
         // mixin all new settings from org and app
         this._mixinAllConfigs();
@@ -133,8 +148,8 @@ class Boilerplate {
           this._queryGroupInfo(),
           // items within a specific group
           this.queryGroupItems()
-        ]).always(args => {
-          const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = args;
+        ]).always(itemArgs => {
+          const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
 
           this.results.webMapItem = webMapResponse.value;
           this.results.webSceneItem = webSceneResponse.value;
@@ -148,20 +163,35 @@ class Boilerplate {
             portal: this.portal,
             direction: this.direction,
             locale: this.locale,
-            units: this.units,
-            userPrivileges: this.userPrivileges
+            units: this.units
           };
         });
       });
     });
   }
 
+  private _getUnits(portal: Portal): string {
+    const user = portal.user;
+    const userRegion = user && user.region;
+    const userUnits = user && user.units;
+    const responseUnits = portal.units;
+    const responseRegion = portal.region;
+    const ipCountryCode = portal.ipCntryCode;
+    const isEnglishUnits = (userRegion === "US") ||
+      (userRegion && responseRegion === "US") ||
+      (userRegion && !responseRegion) ||
+      (!user && ipCountryCode === "US") ||
+      (!user && !ipCountryCode && kernel.locale === "en-us");
+    const units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
+    return units;
+  }
   private _getLocalConfig(appid: string): BoilerplateSettings {
     if (!(window.localStorage && appid)) {
       return;
     }
 
-    const lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
+    const localStoragePrefix = "boilerplate_config_";
+    const lsItem = localStorage.getItem(localStoragePrefix + appid);
     const localConfig = lsItem && JSON.parse(lsItem);
     return localConfig;
   }
@@ -281,9 +311,8 @@ class Boilerplate {
 
   }
 
-  // todo: rewrite function without `this`
-  private _setupCORS(authorizedDomains: any): void {
-    if (this.settings.webTierSecurity && authorizedDomains && authorizedDomains.length) {
+  private _setupCORS(authorizedDomains: any, webTierSecurity: boolean): void {
+    if (webTierSecurity && authorizedDomains && authorizedDomains.length) {
       authorizedDomains.forEach((authorizedDomain) => {
         if (isDefined(authorizedDomain) && authorizedDomain.length) {
           esriConfig.request.corsEnabledServers.push({
@@ -295,45 +324,13 @@ class Boilerplate {
     }
   }
 
-  // todo: rewrite function without `this`
   private _queryPortal() {
-    if (!this.settings.portal.fetch) {
-      return promiseUtils.resolve();
-    }
     // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
     // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
     // the organization by making a self request to the org url which returns details specific to that organization.
     // Examples of the type of information returned are custom roles, units settings, helper services and more.
     // If this fails, the application will continue to function
-    const portal = new Portal();
-    this.portal = portal;
-    return portal.load().then((response) => {
-      this._setupCORS(response.authorizedCrossOriginDomains);
-      const user = response.user;
-      const roleId = user && user.roleId;
-      const userPrivileges = user && user.privileges;
-      const userRegion = user && user.region;
-      const userUnits = user && user.units;
-      const responseUnits = response.units;
-      const responseRegion = response.region;
-      const ipCountryCode = response.ipCntryCode;
-      const isEnglishUnits = (userRegion === "US") ||
-        (userRegion && responseRegion === "US") ||
-        (userRegion && !responseRegion) ||
-        (!user && ipCountryCode === "US") ||
-        (!user && !ipCountryCode && kernel.locale === "en-us");
-      const units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
-      this.units = units;
-      // are any custom roles defined in the organization?
-      if (roleId && isDefined(roleId) && userPrivileges) {
-        this.userPrivileges = userPrivileges;
-      }
-      return { data: response };
-    }).otherwise((error) => {
-      return {
-        error: error || new Error("Boilerplate:: Error retrieving organization information.")
-      };
-    });
+    return new Portal().load();
   }
 
   private _overwriteExtent(itemInfo, extent): void {
@@ -350,52 +347,63 @@ class Boilerplate {
     }
   }
 
-  // todo: rewrite function without `this`
-  private _completeApplication(): void {
-    // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-    // existing extents with the application item extent when set.
-    const applicationExtent = this.config.application_extent;
-    const results = this.results;
-    if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
-      this._overwriteExtent(results.webSceneItem.data, applicationExtent);
-      this._overwriteExtent(results.webMapItem.data, applicationExtent);
-    }
+  private _getGeometryService(config: ApplicationConfig, portal: any) { // todo
     // get helper services
-    const configHelperServices = this.config.helperServices;
-    const portalHelperServices = this.portal && this.portal.helperServices;
+    const configHelperServices = config.helperServices;
+    const portalHelperServices = portal && portal.helperServices;
     // see if config has a geometry service
     const configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
     // seee if portal has a geometry service
     const portalGeometryUrl = portalHelperServices && portalHelperServices.geometry && portalHelperServices.geometry.url;
     // use the portal geometry service or config geometry service
     const geometryUrl = portalGeometryUrl || configGeometryUrl;
-    if (geometryUrl) {
-      // set the esri config to use the geometry service
-      esriConfig.geometryServiceUrl = geometryUrl;
+    if (!geometryUrl) {
+      return;
     }
-    if ((!this.config.webmap || this.config.webmap === DEFAULT_URL_PARAM) && this.settings.defaultWebmap) {
+    // set the esri config to use the geometry service
+    esriConfig.geometryServiceUrl = geometryUrl;
+  }
+
+  // todo: rewrite function without `this`
+  private _completeApplication(): void {
+
+    // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+    // existing extents with the application item extent when set.
+    // todo
+    const applicationExtent = this.config.application_extent;
+    const results = this.results;
+    if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
+      this._overwriteExtent(results.webSceneItem.data, applicationExtent);
+      this._overwriteExtent(results.webMapItem.data, applicationExtent);
+    }
+
+    // todo
+    this._getGeometryService(this.config, this.portal);
+
+    // todo
+    const defaultUrlParam = "default";
+    if ((!this.config.webmap || this.config.webmap === defaultUrlParam) && this.settings.defaultWebmap) {
       this.config.webmap = this.settings.defaultWebmap;
     }
-    if ((!this.config.webscene || this.config.webscene === DEFAULT_URL_PARAM) && this.settings.defaultWebscene) {
+    if ((!this.config.webscene || this.config.webscene === defaultUrlParam) && this.settings.defaultWebscene) {
       this.config.webscene = this.settings.defaultWebscene;
     }
-    if ((!this.config.group || this.config.group === DEFAULT_URL_PARAM) && this.settings.defaultGroup) {
+    if ((!this.config.group || this.config.group === defaultUrlParam) && this.settings.defaultGroup) {
       this.config.group = this.settings.defaultGroup;
     }
   }
 
-  // todo: rewrite function without `this`
-  private _setLangProps() {
-    const isRTL = RTL_LANGS.some((language) => {
+  private _getLanguageDirection(): string {
+    const LTR = "ltr";
+    const RTL = "rtl";
+    const RTLLangs = ["ar", "he"];
+    const isRTL = RTLLangs.some((language) => {
       return kernel.locale.indexOf(language) !== -1;
     });
-    let direction = isRTL ? RTL : LTR;
-    // set boilerplate language direction
-    this.direction = direction;
-    // set boilerplate langauge locale
-    this.locale = kernel.locale;
+    return isRTL ? RTL : LTR;
   }
 
+  // todo: pass in arguments for mixin as MixinParams
   private _mixinAllConfigs() {
     const config = this.config;
     const applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
@@ -409,28 +417,39 @@ class Boilerplate {
     }
   }
 
-  // todo: rewrite function without `this`
-  private _initializeApplication() {
-    if (this.settings.esriEnvironment) {
-      const esriAppsPath = location.pathname.indexOf(ESRI_APPS_PATH);
-      const esriHomePath = location.pathname.indexOf(ESRI_HOME_PATH);
-      const isEsriAppsPath = esriAppsPath !== -1 ? true : false;
-      const isEsriHomePath = esriHomePath !== -1 ? true : false;
-      const appLocation = isEsriAppsPath ? esriAppsPath : isEsriHomePath ? esriHomePath : null;
-      if (appLocation) {
-        const portalInstance = location.pathname.substr(0, appLocation);
-        this.config.portalUrl = "https://" + location.host + portalInstance;
-        this.config.proxyUrl = "https://" + location.host + portalInstance + ESRI_PROXY_PATH;
-      }
+  private _setPortalUrl(portalUrl: string): void {
+    esriConfig.portalUrl = portalUrl;
+  }
+
+  private _setProxyUrl(proxyUrl: string): void {
+    esriConfig.request.proxyUrl = proxyUrl;
+  }
+
+  private _getEsriEnvironmentPortalUrl(): string {
+    const esriAppsPath = "/apps/";
+    const esriHomePath = "/home/";
+    const esriAppsPathIndex = location.pathname.indexOf(esriAppsPath);
+    const esriHomePathIndex = location.pathname.indexOf(esriHomePath);
+    const isEsriAppsPath = esriAppsPathIndex !== -1 ? true : false;
+    const isEsriHomePath = esriHomePathIndex !== -1 ? true : false;
+    const appLocationIndex = isEsriAppsPath ? esriAppsPathIndex : isEsriHomePath ? esriHomePathIndex : null;
+
+    if (!appLocationIndex) {
+      return;
     }
-    esriConfig.portalUrl = this.config.portalUrl;
-    if (this.config.proxyUrl) {
-      esriConfig.request.proxyUrl = this.config.proxyUrl;
-    }
+
+    const portalInstance = location.pathname.substr(0, appLocationIndex);
+    const host = location.host;
+    return `https://${host}${portalInstance}`;
+  }
+
+  private _getEsriEnvironmentProxyUrl(portalUrl: string): string {
+    const esriProxyPath = "/sharing/proxy";
+    return `${portalUrl}${esriProxyPath}`;
   }
 
   private _checkSignIn(oauthappid: string, portalUrl: string) {
-    const SHARING_PATH = "/sharing";
+    const sharingPath = "/sharing";
     const info = oauthappid ?
       new OAuthInfo({
         appId: oauthappid,
@@ -442,7 +461,7 @@ class Boilerplate {
       IdentityManager.registerOAuthInfos([info]);
     }
 
-    const signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
+    const signedIn = IdentityManager.checkSignInStatus(portalUrl + sharingPath);
     return signedIn.always(promiseUtils.resolve);
   }
 

@@ -11,14 +11,6 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
     /// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
-    var ESRI_PROXY_PATH = "/sharing/proxy";
-    var ESRI_APPS_PATH = "/apps/";
-    var ESRI_HOME_PATH = "/home/";
-    var RTL_LANGS = ["ar", "he"];
-    var LTR = "ltr";
-    var RTL = "rtl";
-    var LOCALSTORAGE_PREFIX = "boilerplate_config_";
-    var DEFAULT_URL_PARAM = "default";
     function isDefined(value) {
         return (value !== undefined) && (value !== null);
     }
@@ -38,9 +30,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             };
             this.portal = null;
             this.direction = null;
-            this.locale = null;
+            this.locale = kernel.locale;
             this.units = null;
-            this.userPrivileges = null;
             this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
@@ -71,16 +62,23 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             // application default and configuration info has been applied. Currently these values
             // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
             // supporting additional url parameters in your application.
-            this.results.urlParams = UrlParamHelper_1.getUrlParamValues(this.settings.urlItems);
+            var urlParams = UrlParamHelper_1.getUrlParamValues(this.settings.urlItems);
+            this.results.urlParams = urlParams;
             // config defaults <- standard url params
             // we need the web scene, appid,and oauthappid to query for the data
             this._mixinAllConfigs();
             // Define the portalUrl and other default values like the proxy.
             // The portalUrl defines where to search for the web map and application content. The
             // default value is arcgis.com.
-            this._initializeApplication();
-            // determine boilerplate language properties
-            this._setLangProps();
+            if (this.settings.esriEnvironment) {
+                var portalUrl = this._getEsriEnvironmentPortalUrl();
+                var proxyUrl = this._getEsriEnvironmentProxyUrl(portalUrl);
+                this.config.portalUrl = portalUrl;
+                this.config.proxyUrl = proxyUrl;
+            }
+            this._setPortalUrl(this.config.portalUrl);
+            this._setProxyUrl(this.config.proxyUrl);
+            this.direction = this._getLanguageDirection();
             // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
             return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(function () {
                 // execute these tasks async
@@ -88,15 +86,18 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                     // get application data
                     _this._queryApplicationItem(_this.config.appid),
                     // get org data
-                    _this._queryPortal()
-                ]).always(function (args) {
-                    var applicationResponse = args[0], portalResponse = args[1];
+                    _this.settings.portal.fetch ? _this._queryPortal() : null
+                ]).always(function (applicationArgs) {
+                    var applicationResponse = applicationArgs[0], portalResponse = applicationArgs[1];
                     // gets a temporary config from the users local storage
                     _this.results.localStorageConfig = _this.settings.localConfig.fetch ?
                         _this._getLocalConfig(_this.config.appid) :
                         null;
                     _this.results.applicationItem = applicationResponse.value;
-                    _this.results.portal = portalResponse.value;
+                    var portal = portalResponse.value;
+                    _this.portal = portal;
+                    _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.webTierSecurity);
+                    _this.units = _this._getUnits(portal);
                     // mixin all new settings from org and app
                     _this._mixinAllConfigs();
                     // let's set up a few things
@@ -111,8 +112,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                         _this._queryGroupInfo(),
                         // items within a specific group
                         _this.queryGroupItems()
-                    ]).always(function (args) {
-                        var webMapResponse = args[0], webSceneResponse = args[1], groupInfoResponse = args[2], groupItemsResponse = args[3];
+                    ]).always(function (itemArgs) {
+                        var webMapResponse = itemArgs[0], webSceneResponse = itemArgs[1], groupInfoResponse = itemArgs[2], groupItemsResponse = itemArgs[3];
                         _this.results.webMapItem = webMapResponse.value;
                         _this.results.webSceneItem = webSceneResponse.value;
                         _this.results.group.itemsData = groupItemsResponse.value;
@@ -124,18 +125,33 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                             portal: _this.portal,
                             direction: _this.direction,
                             locale: _this.locale,
-                            units: _this.units,
-                            userPrivileges: _this.userPrivileges
+                            units: _this.units
                         };
                     });
                 });
             });
         };
+        Boilerplate.prototype._getUnits = function (portal) {
+            var user = portal.user;
+            var userRegion = user && user.region;
+            var userUnits = user && user.units;
+            var responseUnits = portal.units;
+            var responseRegion = portal.region;
+            var ipCountryCode = portal.ipCntryCode;
+            var isEnglishUnits = (userRegion === "US") ||
+                (userRegion && responseRegion === "US") ||
+                (userRegion && !responseRegion) ||
+                (!user && ipCountryCode === "US") ||
+                (!user && !ipCountryCode && kernel.locale === "en-us");
+            var units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
+            return units;
+        };
         Boilerplate.prototype._getLocalConfig = function (appid) {
             if (!(window.localStorage && appid)) {
                 return;
             }
-            var lsItem = localStorage.getItem(LOCALSTORAGE_PREFIX + appid);
+            var localStoragePrefix = "boilerplate_config_";
+            var lsItem = localStorage.getItem(localStoragePrefix + appid);
             var localConfig = lsItem && JSON.parse(lsItem);
             return localConfig;
         };
@@ -248,9 +264,8 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 };
             });
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._setupCORS = function (authorizedDomains) {
-            if (this.settings.webTierSecurity && authorizedDomains && authorizedDomains.length) {
+        Boilerplate.prototype._setupCORS = function (authorizedDomains, webTierSecurity) {
+            if (webTierSecurity && authorizedDomains && authorizedDomains.length) {
                 authorizedDomains.forEach(function (authorizedDomain) {
                     if (isDefined(authorizedDomain) && authorizedDomain.length) {
                         esriConfig.request.corsEnabledServers.push({
@@ -261,46 +276,13 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 });
             }
         };
-        // todo: rewrite function without `this`
         Boilerplate.prototype._queryPortal = function () {
-            var _this = this;
-            if (!this.settings.portal.fetch) {
-                return promiseUtils.resolve();
-            }
             // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
             // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
             // the organization by making a self request to the org url which returns details specific to that organization.
             // Examples of the type of information returned are custom roles, units settings, helper services and more.
             // If this fails, the application will continue to function
-            var portal = new Portal();
-            this.portal = portal;
-            return portal.load().then(function (response) {
-                _this._setupCORS(response.authorizedCrossOriginDomains);
-                var user = response.user;
-                var roleId = user && user.roleId;
-                var userPrivileges = user && user.privileges;
-                var userRegion = user && user.region;
-                var userUnits = user && user.units;
-                var responseUnits = response.units;
-                var responseRegion = response.region;
-                var ipCountryCode = response.ipCntryCode;
-                var isEnglishUnits = (userRegion === "US") ||
-                    (userRegion && responseRegion === "US") ||
-                    (userRegion && !responseRegion) ||
-                    (!user && ipCountryCode === "US") ||
-                    (!user && !ipCountryCode && kernel.locale === "en-us");
-                var units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
-                _this.units = units;
-                // are any custom roles defined in the organization?
-                if (roleId && isDefined(roleId) && userPrivileges) {
-                    _this.userPrivileges = userPrivileges;
-                }
-                return { data: response };
-            }).otherwise(function (error) {
-                return {
-                    error: error || new Error("Boilerplate:: Error retrieving organization information.")
-                };
-            });
+            return new Portal().load();
         };
         Boilerplate.prototype._overwriteExtent = function (itemInfo, extent) {
             var item = itemInfo && itemInfo.item;
@@ -315,50 +297,57 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                 ];
             }
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._completeApplication = function () {
-            // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-            // existing extents with the application item extent when set.
-            var applicationExtent = this.config.application_extent;
-            var results = this.results;
-            if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
-                this._overwriteExtent(results.webSceneItem.data, applicationExtent);
-                this._overwriteExtent(results.webMapItem.data, applicationExtent);
-            }
+        Boilerplate.prototype._getGeometryService = function (config, portal) {
             // get helper services
-            var configHelperServices = this.config.helperServices;
-            var portalHelperServices = this.portal && this.portal.helperServices;
+            var configHelperServices = config.helperServices;
+            var portalHelperServices = portal && portal.helperServices;
             // see if config has a geometry service
             var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
             // seee if portal has a geometry service
             var portalGeometryUrl = portalHelperServices && portalHelperServices.geometry && portalHelperServices.geometry.url;
             // use the portal geometry service or config geometry service
             var geometryUrl = portalGeometryUrl || configGeometryUrl;
-            if (geometryUrl) {
-                // set the esri config to use the geometry service
-                esriConfig.geometryServiceUrl = geometryUrl;
+            if (!geometryUrl) {
+                return;
             }
-            if ((!this.config.webmap || this.config.webmap === DEFAULT_URL_PARAM) && this.settings.defaultWebmap) {
+            // set the esri config to use the geometry service
+            esriConfig.geometryServiceUrl = geometryUrl;
+        };
+        // todo: rewrite function without `this`
+        Boilerplate.prototype._completeApplication = function () {
+            // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
+            // existing extents with the application item extent when set.
+            // todo
+            var applicationExtent = this.config.application_extent;
+            var results = this.results;
+            if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
+                this._overwriteExtent(results.webSceneItem.data, applicationExtent);
+                this._overwriteExtent(results.webMapItem.data, applicationExtent);
+            }
+            // todo
+            this._getGeometryService(this.config, this.portal);
+            // todo
+            var defaultUrlParam = "default";
+            if ((!this.config.webmap || this.config.webmap === defaultUrlParam) && this.settings.defaultWebmap) {
                 this.config.webmap = this.settings.defaultWebmap;
             }
-            if ((!this.config.webscene || this.config.webscene === DEFAULT_URL_PARAM) && this.settings.defaultWebscene) {
+            if ((!this.config.webscene || this.config.webscene === defaultUrlParam) && this.settings.defaultWebscene) {
                 this.config.webscene = this.settings.defaultWebscene;
             }
-            if ((!this.config.group || this.config.group === DEFAULT_URL_PARAM) && this.settings.defaultGroup) {
+            if ((!this.config.group || this.config.group === defaultUrlParam) && this.settings.defaultGroup) {
                 this.config.group = this.settings.defaultGroup;
             }
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._setLangProps = function () {
-            var isRTL = RTL_LANGS.some(function (language) {
+        Boilerplate.prototype._getLanguageDirection = function () {
+            var LTR = "ltr";
+            var RTL = "rtl";
+            var RTLLangs = ["ar", "he"];
+            var isRTL = RTLLangs.some(function (language) {
                 return kernel.locale.indexOf(language) !== -1;
             });
-            var direction = isRTL ? RTL : LTR;
-            // set boilerplate language direction
-            this.direction = direction;
-            // set boilerplate langauge locale
-            this.locale = kernel.locale;
+            return isRTL ? RTL : LTR;
         };
+        // todo: pass in arguments for mixin as MixinParams
         Boilerplate.prototype._mixinAllConfigs = function () {
             var config = this.config;
             var applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
@@ -366,27 +355,33 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var urlParams = this.results.urlParams ? this.results.urlParams : null;
             this.config = __assign({}, config, applicationItem, localStorageConfig, urlParams);
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._initializeApplication = function () {
-            if (this.settings.esriEnvironment) {
-                var esriAppsPath = location.pathname.indexOf(ESRI_APPS_PATH);
-                var esriHomePath = location.pathname.indexOf(ESRI_HOME_PATH);
-                var isEsriAppsPath = esriAppsPath !== -1 ? true : false;
-                var isEsriHomePath = esriHomePath !== -1 ? true : false;
-                var appLocation = isEsriAppsPath ? esriAppsPath : isEsriHomePath ? esriHomePath : null;
-                if (appLocation) {
-                    var portalInstance = location.pathname.substr(0, appLocation);
-                    this.config.portalUrl = "https://" + location.host + portalInstance;
-                    this.config.proxyUrl = "https://" + location.host + portalInstance + ESRI_PROXY_PATH;
-                }
+        Boilerplate.prototype._setPortalUrl = function (portalUrl) {
+            esriConfig.portalUrl = portalUrl;
+        };
+        Boilerplate.prototype._setProxyUrl = function (proxyUrl) {
+            esriConfig.request.proxyUrl = proxyUrl;
+        };
+        Boilerplate.prototype._getEsriEnvironmentPortalUrl = function () {
+            var esriAppsPath = "/apps/";
+            var esriHomePath = "/home/";
+            var esriAppsPathIndex = location.pathname.indexOf(esriAppsPath);
+            var esriHomePathIndex = location.pathname.indexOf(esriHomePath);
+            var isEsriAppsPath = esriAppsPathIndex !== -1 ? true : false;
+            var isEsriHomePath = esriHomePathIndex !== -1 ? true : false;
+            var appLocationIndex = isEsriAppsPath ? esriAppsPathIndex : isEsriHomePath ? esriHomePathIndex : null;
+            if (!appLocationIndex) {
+                return;
             }
-            esriConfig.portalUrl = this.config.portalUrl;
-            if (this.config.proxyUrl) {
-                esriConfig.request.proxyUrl = this.config.proxyUrl;
-            }
+            var portalInstance = location.pathname.substr(0, appLocationIndex);
+            var host = location.host;
+            return "https://" + host + portalInstance;
+        };
+        Boilerplate.prototype._getEsriEnvironmentProxyUrl = function (portalUrl) {
+            var esriProxyPath = "/sharing/proxy";
+            return "" + portalUrl + esriProxyPath;
         };
         Boilerplate.prototype._checkSignIn = function (oauthappid, portalUrl) {
-            var SHARING_PATH = "/sharing";
+            var sharingPath = "/sharing";
             var info = oauthappid ?
                 new OAuthInfo({
                     appId: oauthappid,
@@ -396,7 +391,7 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             if (info) {
                 IdentityManager.registerOAuthInfos([info]);
             }
-            var signedIn = IdentityManager.checkSignInStatus(portalUrl + SHARING_PATH);
+            var signedIn = IdentityManager.checkSignInStatus(portalUrl + sharingPath);
             return signedIn.always(promiseUtils.resolve);
         };
         return Boilerplate;
