@@ -7,15 +7,11 @@
   },
   "webscene": {
     "containerId": "viewDiv",
-    "fetch": true,
-    "useLocal": false,
-    "localFile": "./config/demoWebScene.json"
+    "fetch": true
   },
   "webmap": {
     "containerId": "viewDiv",
-    "fetch": true,
-    "useLocal": false,
-    "localFile": "./config/demoWebMap.json"
+    "fetch": true
   },
   "group": {
     "fetchInfo": true,

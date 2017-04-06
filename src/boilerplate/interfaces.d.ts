@@ -1,3 +1,4 @@
+import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 
 export interface ApplicationConfig {
@@ -36,12 +37,10 @@ export interface BoilerplateSettings {
   webscene?: {
     containerId?: string;
     fetch?: boolean;
-    useLocal?: boolean;
   },
   webmap?: {
     containerId?: string;
     fetch?: boolean;
-    useLocal?: boolean;
   },
   group?: {
     itemParams?: {
@@ -94,20 +93,12 @@ export interface BoilerplateResults {
   }
 }
 
-export interface BoilerplateItem {
-  data?: PortalItem;
-  error?: Error;
-  json?: {
-    itemData: any,
-    item: any
-  }
-}
-
 export interface BoilerplateResponse {
   config: ApplicationConfig;
   settings: BoilerplateSettings;
   direction: string;
   results: BoilerplateResults;
-  groupData: GroupData;
+  portal: Portal;
   locale: string;
+  units: string;
 }

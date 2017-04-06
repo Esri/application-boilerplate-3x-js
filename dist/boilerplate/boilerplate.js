@@ -6,15 +6,12 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!config/demoWebScene.json", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams", "boilerplate/UrlParamHelper"], function (require, exports, webmapText, websceneText, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams, UrlParamHelper_1) {
+define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams", "boilerplate/UrlParamHelper"], function (require, exports, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
-    /// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
     function isDefined(value) {
         return (value !== undefined) && (value !== null);
     }
-    // todo: have promise return results instead of setting using `this`
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
             this.settings = {
@@ -35,16 +32,10 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
-        // todo: rewrite function without `this`
-        Boilerplate.prototype.queryGroupItems = function () {
-            if (!this.settings.group.fetchItems || !this.config.group) {
-                return promiseUtils.resolve();
-            }
-            var itemParams = this.settings.group.itemParams;
-            var groupId = this.config.group;
+        Boilerplate.prototype.queryGroupItems = function (groupId, itemParams, portal) {
             var paramOptions = __assign({ query: "group:\"" + groupId + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             var params = new PortalQueryParams(paramOptions);
-            return this.portal.queryItems(params);
+            return portal.queryItems(params);
         };
         Boilerplate.prototype.init = function () {
             var _this = this;
@@ -66,32 +57,40 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             this.results.urlParams = urlParams;
             // config defaults <- standard url params
             // we need the web scene, appid,and oauthappid to query for the data
-            this._mixinAllConfigs();
+            this._mixinAllConfigs(); // todo
             // Define the portalUrl and other default values like the proxy.
             // The portalUrl defines where to search for the web map and application content. The
             // default value is arcgis.com.
             if (this.settings.esriEnvironment) {
-                var portalUrl = this._getEsriEnvironmentPortalUrl();
-                var proxyUrl = this._getEsriEnvironmentProxyUrl(portalUrl);
-                this.config.portalUrl = portalUrl;
-                this.config.proxyUrl = proxyUrl;
+                var esriPortalUrl = this._getEsriEnvironmentPortalUrl();
+                this.config.portalUrl = esriPortalUrl;
+                this.config.proxyUrl = this._getEsriEnvironmentProxyUrl(esriPortalUrl);
             }
             this._setPortalUrl(this.config.portalUrl);
             this._setProxyUrl(this.config.proxyUrl);
             this.direction = this._getLanguageDirection();
+            var checkSignIn = this._checkSignIn(this.config.oauthappid, this.config.portalUrl);
             // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-            return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(function () {
+            return checkSignIn.always(function () {
+                var appId = _this.config.appid;
+                var queryApplicationItem = appId ?
+                    _this._queryApplicationItem(appId) :
+                    promiseUtils.resolve();
+                var queryPortal = _this.settings.portal.fetch ?
+                    _this._queryPortal() :
+                    promiseUtils.resolve();
                 // execute these tasks async
                 return promiseUtils.eachAlways([
                     // get application data
-                    _this._queryApplicationItem(_this.config.appid),
+                    queryApplicationItem,
                     // get org data
-                    _this.settings.portal.fetch ? _this._queryPortal() : null
+                    queryPortal
                 ]).always(function (applicationArgs) {
                     var applicationResponse = applicationArgs[0], portalResponse = applicationArgs[1];
+                    console.log("test2");
                     // gets a temporary config from the users local storage
                     _this.results.localStorageConfig = _this.settings.localConfig.fetch ?
-                        _this._getLocalConfig(_this.config.appid) :
+                        _this._getLocalConfig(appId) :
                         null;
                     _this.results.applicationItem = applicationResponse.value;
                     var portal = portalResponse.value;
@@ -102,16 +101,31 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
                     _this._mixinAllConfigs();
                     // let's set up a few things
                     _this._completeApplication();
+                    var webMapId = _this.config.webmap;
+                    var queryWebMapItem = webMapId && _this.settings.webmap.fetch ?
+                        _this._queryWebMapItem(webMapId) :
+                        promiseUtils.resolve();
+                    var webSceneId = _this.config.webscene;
+                    var queryWebSceneItem = webSceneId && _this.settings.webscene.fetch ?
+                        _this._queryWebSceneItem(webSceneId) :
+                        promiseUtils.resolve();
+                    var groupId = _this.config.group;
+                    var queryGroupInfo = _this.settings.group.fetchInfo && groupId ?
+                        _this._queryGroupInfo(groupId, portal) :
+                        promiseUtils.resolve();
+                    var queryGroupItems = _this.settings.group.fetchItems || groupId ?
+                        _this.queryGroupItems(groupId, _this.settings.group.itemParams, portal) :
+                        promiseUtils.resolve();
                     // then execute these async
                     return promiseUtils.eachAlways([
                         // webmap item
-                        _this._queryWebMapItem(),
+                        queryWebMapItem,
                         // webscene item
-                        _this._queryWebSceneItem(),
+                        queryWebSceneItem,
                         // group information
-                        _this._queryGroupInfo(),
+                        queryGroupInfo,
                         // items within a specific group
-                        _this.queryGroupItems()
+                        queryGroupItems
                     ]).always(function (itemArgs) {
                         var webMapResponse = itemArgs[0], webSceneResponse = itemArgs[1], groupInfoResponse = itemArgs[2], groupItemsResponse = itemArgs[3];
                         _this.results.webMapItem = webMapResponse.value;
@@ -155,77 +169,31 @@ define(["require", "exports", "dojo/text!config/demoWebMap.json", "dojo/text!con
             var localConfig = lsItem && JSON.parse(lsItem);
             return localConfig;
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._queryWebMapItem = function () {
-            // Get details about the specified web map. If the web map is not shared publicly users will
-            // be prompted to log-in by the Identity Manager.
-            if (!this.settings.webmap.fetch) {
-                return promiseUtils.resolve();
-            }
-            // Use local web map instead of portal web map
-            if (this.settings.webmap.useLocal) {
-                var json = JSON.parse(webmapText);
-                return promiseUtils.resolve({ json: json });
-            }
-            // use webmap from id
-            if (this.config.webmap) {
-                var mapItem = new PortalItem({
-                    id: this.config.webmap
-                });
-                return mapItem.load().then(function (itemData) {
-                    return { data: itemData };
-                }).otherwise(function (error) {
-                    return { error: error || new Error("Boilerplate:: Error retrieving webmap item.") };
-                });
-            }
-            return promiseUtils.resolve();
+        Boilerplate.prototype._queryWebMapItem = function (webMapId) {
+            var mapItem = new PortalItem({
+                id: webMapId
+            });
+            return mapItem.load();
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._queryGroupInfo = function () {
+        Boilerplate.prototype._queryGroupInfo = function (groupId, portal) {
             // Get details about the specified group. If the group is not shared publicly users will
             // be prompted to log-in by the Identity Manager.
-            if (!this.settings.group.fetchInfo || !this.config.group) {
-                return promiseUtils.resolve();
-            }
             // group params
             var params = new PortalQueryParams({
-                query: "id:\"" + this.config.group + "\""
+                query: "id:\"" + groupId + "\""
             });
-            return this.portal.queryGroups(params);
+            return portal.queryGroups(params);
         };
-        // todo: rewrite function without `this`
-        Boilerplate.prototype._queryWebSceneItem = function () {
-            // Get details about the specified web scene. If the web scene is not shared publicly users will
-            // be prompted to log-in by the Identity Manager.
-            if (!this.settings.webscene.fetch) {
-                return promiseUtils.resolve();
-            }
-            // Use local web scene instead of portal web scene
-            if (this.settings.webscene.useLocal) {
-                // get web scene js file
-                var json = JSON.parse(websceneText);
-                return promiseUtils.resolve({ json: json });
-            }
-            // use webscene from id
-            if (this.config.webscene) {
-                var sceneItem = new PortalItem({
-                    id: this.config.webscene
-                });
-                return sceneItem.load().then(function (itemData) {
-                    return { data: itemData };
-                }).otherwise(function (error) {
-                    return { error: error || new Error("Boilerplate:: Error retrieving webscene item.") };
-                });
-            }
-            return promiseUtils.resolve();
+        Boilerplate.prototype._queryWebSceneItem = function (webSceneId) {
+            var sceneItem = new PortalItem({
+                id: webSceneId
+            });
+            return sceneItem.load();
         };
         Boilerplate.prototype._queryApplicationItem = function (appid) {
             // Get the application configuration details using the application id. When the response contains
             // itemData.values then we know the app contains configuration information. We'll use these values
             // to overwrite the application defaults.
-            if (!appid) {
-                return promiseUtils.resolve();
-            }
             var appItem = new PortalItem({
                 id: appid
             });

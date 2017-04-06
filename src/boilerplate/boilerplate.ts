@@ -1,8 +1,3 @@
-/// <amd-dependency path="dojo/text!config/demoWebMap.json" name="webmapText" />
-/// <amd-dependency path="dojo/text!config/demoWebScene.json" name="websceneText" />
-declare const webmapText: string;
-declare const websceneText: string;
-
 import kernel = require("dojo/_base/kernel");
 import esriConfig = require("esri/config");
 import EsriPromise = require("esri/core/Promise"); // todo: make this class extend promise
@@ -13,14 +8,11 @@ import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
 import { getUrlParamValues } from "boilerplate/UrlParamHelper";
-import { BoilerplateItem, BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
-
+import { BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
 
 function isDefined(value: any) {
   return (value !== undefined) && (value !== null);
 }
-
-// todo: have promise return results instead of setting using `this`
 
 class Boilerplate {
 
@@ -47,14 +39,7 @@ class Boilerplate {
     this.config = applicationConfigJSON;
   }
 
-  // todo: rewrite function without `this`
-  public queryGroupItems() {
-    if (!this.settings.group.fetchItems || !this.config.group) {
-      return promiseUtils.resolve();
-    }
-
-    const itemParams = this.settings.group.itemParams;
-    const groupId = this.config.group;
+  public queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
     const paramOptions = {
       query: `group:"${groupId}" AND -type:"Code Attachment"`,
       sortField: "modified",
@@ -65,7 +50,7 @@ class Boilerplate {
     };
 
     const params = new PortalQueryParams(paramOptions);
-    return this.portal.queryItems(params);
+    return portal.queryItems(params);
   }
 
   public init(): IPromise<BoilerplateResponse> {
@@ -87,38 +72,53 @@ class Boilerplate {
     this.results.urlParams = urlParams
     // config defaults <- standard url params
     // we need the web scene, appid,and oauthappid to query for the data
-    this._mixinAllConfigs();
+    this._mixinAllConfigs(); // todo
     // Define the portalUrl and other default values like the proxy.
     // The portalUrl defines where to search for the web map and application content. The
     // default value is arcgis.com.
     if (this.settings.esriEnvironment) {
-      const portalUrl = this._getEsriEnvironmentPortalUrl();
-      const proxyUrl = this._getEsriEnvironmentProxyUrl(portalUrl);
-      this.config.portalUrl = portalUrl;
-      this.config.proxyUrl = proxyUrl;
+      const esriPortalUrl = this._getEsriEnvironmentPortalUrl();
+      this.config.portalUrl = esriPortalUrl;
+      this.config.proxyUrl = this._getEsriEnvironmentProxyUrl(esriPortalUrl);
     }
+
     this._setPortalUrl(this.config.portalUrl)
     this._setProxyUrl(this.config.proxyUrl);
 
     this.direction = this._getLanguageDirection();
 
+    const checkSignIn = this._checkSignIn(this.config.oauthappid, this.config.portalUrl);
+
+
+
+
     // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
-    return this._checkSignIn(this.config.oauthappid, this.config.portalUrl).always(() => {
+    return checkSignIn.always(() => {
+
+
+
+      const appId = this.config.appid;
+      const queryApplicationItem = appId ?
+        this._queryApplicationItem(appId) :
+        promiseUtils.resolve();
+
+      const queryPortal = this.settings.portal.fetch ?
+        this._queryPortal() :
+        promiseUtils.resolve();
+
       // execute these tasks async
       return promiseUtils.eachAlways([
         // get application data
-        this._queryApplicationItem(this.config.appid),
+        queryApplicationItem,
         // get org data
-        this.settings.portal.fetch ? this._queryPortal() : null
+        queryPortal
       ]).always(applicationArgs => {
         const [applicationResponse, portalResponse] = applicationArgs;
 
 
-
-
         // gets a temporary config from the users local storage
         this.results.localStorageConfig = this.settings.localConfig.fetch ?
-          this._getLocalConfig(this.config.appid) :
+          this._getLocalConfig(appId) :
           null;
         this.results.applicationItem = applicationResponse.value;
         const portal = portalResponse.value;
@@ -138,16 +138,36 @@ class Boilerplate {
         this._mixinAllConfigs();
         // let's set up a few things
         this._completeApplication();
+
+        const webMapId = this.config.webmap;
+        const queryWebMapItem = webMapId && this.settings.webmap.fetch ?
+          this._queryWebMapItem(webMapId) :
+          promiseUtils.resolve();
+
+        const webSceneId = this.config.webscene;
+        const queryWebSceneItem = webSceneId && this.settings.webscene.fetch ?
+          this._queryWebSceneItem(webSceneId) :
+          promiseUtils.resolve();
+
+        const groupId = this.config.group;
+        const queryGroupInfo = this.settings.group.fetchInfo && groupId ?
+          this._queryGroupInfo(groupId, portal) :
+          promiseUtils.resolve();
+
+        const queryGroupItems = this.settings.group.fetchItems || groupId ?
+          this.queryGroupItems(groupId, this.settings.group.itemParams, portal) :
+          promiseUtils.resolve();
+
         // then execute these async
         return promiseUtils.eachAlways([
           // webmap item
-          this._queryWebMapItem(),
+          queryWebMapItem,
           // webscene item
-          this._queryWebSceneItem(),
+          queryWebSceneItem,
           // group information
-          this._queryGroupInfo(),
+          queryGroupInfo,
           // items within a specific group
-          this.queryGroupItems()
+          queryGroupItems
         ]).always(itemArgs => {
           const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
 
@@ -196,81 +216,34 @@ class Boilerplate {
     return localConfig;
   }
 
-  // todo: rewrite function without `this`
-  private _queryWebMapItem(): BoilerplateItem {
-    // Get details about the specified web map. If the web map is not shared publicly users will
-    // be prompted to log-in by the Identity Manager.
-    if (!this.settings.webmap.fetch) {
-      return promiseUtils.resolve();
-    }
-    // Use local web map instead of portal web map
-    if (this.settings.webmap.useLocal) {
-      const json = JSON.parse(webmapText);
-      return promiseUtils.resolve({ json });
-    }
-    // use webmap from id
-    if (this.config.webmap) {
-      const mapItem = new PortalItem({
-        id: this.config.webmap
-      });
-      return mapItem.load().then((itemData) => {
-        return { data: itemData };
-      }).otherwise((error) => {
-        return { error: error || new Error("Boilerplate:: Error retrieving webmap item.") };
-      });
-    }
-    return promiseUtils.resolve();
+  private _queryWebMapItem(webMapId: string): IPromise<PortalItem> {
+    const mapItem = new PortalItem({
+      id: webMapId
+    });
+    return mapItem.load();
   }
 
-  // todo: rewrite function without `this`
-  private _queryGroupInfo() {
+  private _queryGroupInfo(groupId: string, portal: Portal): IPromise<any> {
     // Get details about the specified group. If the group is not shared publicly users will
     // be prompted to log-in by the Identity Manager.
-    if (!this.settings.group.fetchInfo || !this.config.group) {
-      return promiseUtils.resolve();
-    }
     // group params
     const params = new PortalQueryParams({
-      query: `id:"${this.config.group}"`
+      query: `id:"${groupId}"`
     });
-    return this.portal.queryGroups(params);
+    return portal.queryGroups(params);
   }
 
-  // todo: rewrite function without `this`
-  private _queryWebSceneItem(): BoilerplateItem {
-    // Get details about the specified web scene. If the web scene is not shared publicly users will
-    // be prompted to log-in by the Identity Manager.
-    if (!this.settings.webscene.fetch) {
-      return promiseUtils.resolve();
-    }
-    // Use local web scene instead of portal web scene
-    if (this.settings.webscene.useLocal) {
-      // get web scene js file
-      const json = JSON.parse(websceneText);
-      return promiseUtils.resolve({ json: json });
-    }
-    // use webscene from id
-    if (this.config.webscene) {
-      const sceneItem = new PortalItem({
-        id: this.config.webscene
-      });
-      return sceneItem.load().then((itemData) => {
-        return { data: itemData };
-      }).otherwise((error) => {
-        return { error: error || new Error("Boilerplate:: Error retrieving webscene item.") };
-      });
-    }
-    return promiseUtils.resolve();
+  private _queryWebSceneItem(webSceneId: string): IPromise<PortalItem> {
+    const sceneItem = new PortalItem({
+      id: webSceneId
+    });
+    return sceneItem.load();
   }
 
-  private _queryApplicationItem(appid: string) {
+  private _queryApplicationItem(appid: string): IPromise<any> {
     // Get the application configuration details using the application id. When the response contains
     // itemData.values then we know the app contains configuration information. We'll use these values
     // to overwrite the application defaults.
-    if (!appid) {
-      return promiseUtils.resolve();
-    }
-
     const appItem = new PortalItem({
       id: appid
     });
@@ -324,7 +297,7 @@ class Boilerplate {
     }
   }
 
-  private _queryPortal() {
+  private _queryPortal(): IPromise<Portal> {
     // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
     // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
     // the organization by making a self request to the org url which returns details specific to that organization.
@@ -448,7 +421,7 @@ class Boilerplate {
     return `${portalUrl}${esriProxyPath}`;
   }
 
-  private _checkSignIn(oauthappid: string, portalUrl: string) {
+  private _checkSignIn(oauthappid: string, portalUrl: string): IPromise<any> {
     const sharingPath = "/sharing";
     const info = oauthappid ?
       new OAuthInfo({
