@@ -104,7 +104,7 @@ These are the configuration options for the Boilerplate. `settings.json`
 |group.itemParams|Defines query paramaters for fetching group items|Object|See below|
 |portal|Portal related settings|Object|See below|
 |portal.fetch|When true the application will query arcgis.com for default settings for helper services, units etc. If you want to use custom settings for units or any of the helper services set this to false then enter default values for any items you need using the helper services and units properties.|Boolean|true|
-|urlItems|Defines which URL parameters should be captured and stored into the config for use within the application|String[]|See below|
+|urlParams|Defines which URL parameters should be captured and stored into the config for use within the application|String[]|See below|
 |webTierSecurity|Support sending credentials with AJAX requests to specific domains. This will allow editing of feature services secured with web-tier authentication|Boolean|false|
 |esriEnvironment|Most users will not need to modify this value. For Esri hosting environments only. Will automatically create a `portalUrl` and `proxyUrl` for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the `portalUrl` in `config.json` instead of setting this to true.|   Boolean|false|
 
@@ -135,7 +135,7 @@ These are the configuration options for the Boilerplate. `settings.json`
   "portal": {
     "fetch": true
   },
-  "urlItems": [
+  "urlParams": [
     "appid",
     "group",
     "oauthappid",
@@ -203,7 +203,7 @@ See [boilerplate settings](#boilerplate-settings) for more information.
 |webmap|Object|
 |group|Object|
 |portal|Object|
-|urlItems|String[]|
+|urlParams|String[]|
 |webTierSecurity|Boolean|
 |esriEnvironment|Boolean|
 

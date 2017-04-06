@@ -9,19 +9,19 @@ import requireUtils = require("esri/core/requireUtils");
 import { ApplicationConfig } from "boilerplate/interfaces";
 
 interface ViewProperties {
+  extent?: Extent;
+  camera?: Camera;
+  center?: Point;
   ui?: {
     components?: string[];
   },
-  camera?: Camera;
-  center?: Point;
   zoom?: number;
-  extent?: Extent;
 }
 
 interface CameraProperties {
+  heading?: number;
   position?: Point;
   tilt?: number;
-  heading?: number;
 }
 
 //--------------------------------------------------------------------------

@@ -9,27 +9,17 @@ import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
 import { getUrlParamValues } from "boilerplate/UrlParamHelper";
-import { BoilerplateSettings, ApplicationConfig, BoilerplateResults, BoilerplateResponse } from "boilerplate/interfaces";
-
-function isDefined(value: any) {
-  return (value !== undefined) && (value !== null);
-}
-
-interface Configs {
-  config: any;
-  application?: any;
-  local?: any;
-  url?: any;
-}
+import { ApplicationConfig, ApplicationConfigs, BoilerplateApplicationResult, BoilerplateResults, BoilerplateResponse, BoilerplateSettings } from "boilerplate/interfaces"; // todo: multiline
 
 class Boilerplate {
 
   settings: BoilerplateSettings = {
+    environment: {},
     webscene: {},
     webmap: {},
     group: {},
     portal: {},
-    urlItems: []
+    urlParams: []
   };
   config: ApplicationConfig = null;
   results: BoilerplateResults = {
@@ -61,7 +51,6 @@ class Boilerplate {
     return portal.queryItems(params);
   }
 
-  // todo: cleanup
   public init(): IPromise<BoilerplateResponse> {
     // Set the web scene and appid if they exist but ignore other url params.
     // Additional url parameters may be defined by the application but they need to be mixed in
@@ -77,7 +66,7 @@ class Boilerplate {
     // application default and configuration info has been applied. Currently these values
     // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
     // supporting additional url parameters in your application.
-    const urlParams = getUrlParamValues(this.settings.urlItems);
+    const urlParams = getUrlParamValues(this.settings.urlParams);
     this.results.urlParams = urlParams
 
     this.config = this._mixinAllConfigs({
@@ -85,7 +74,7 @@ class Boilerplate {
       url: urlParams
     });
 
-    if (this.settings.esriEnvironment) {
+    if (this.settings.environment.isEsri) {
       const esriPortalUrl = this._getEsriEnvironmentPortalUrl();
       this.config.portalUrl = esriPortalUrl;
       this.config.proxyUrl = this._getEsriEnvironmentProxyUrl(esriPortalUrl);
@@ -101,7 +90,7 @@ class Boilerplate {
       const appId = this.config.appid;
 
       const queryApplicationItem = appId ?
-        this._queryApplicationItem(appId) :
+        this._queryApplication(appId) :
         promiseUtils.resolve();
 
       const queryPortal = this.settings.portal.fetch ?
@@ -114,26 +103,26 @@ class Boilerplate {
       ]).always(applicationArgs => {
         const [applicationResponse, portalResponse] = applicationArgs;
 
-        const localConfig = this.settings.localConfig.fetch ?
+        const localStorage = this.settings.localStorage.fetch ?
           this._getLocalConfig(appId) :
           null;
-        this.results.localStorageConfig = localConfig;
+        this.results.localStorage = localStorage;
 
         const applicationItem = applicationResponse.value;
-        const applicationConfig = applicationItem ? applicationItem.data.values : null;
+        const applicationConfig = applicationItem ? applicationItem.itemData.values : null;
         this.results.applicationItem = applicationItem;
 
         const portal = portalResponse.value;
         this.portal = portal;
 
-        this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.webTierSecurity);
+        this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.environment.webTierSecurity);
 
         this.units = this._getUnits(portal);
 
         this.config = this._mixinAllConfigs({
           config: this.config,
           url: urlParams,
-          local: localConfig,
+          local: localStorage,
           application: applicationConfig
         });
 
@@ -171,14 +160,14 @@ class Boilerplate {
           this.results.group.itemsData = groupItemsResponse.value || groupItemsResponse.error;
           this.results.group.infoData = groupInfoResponse.value || groupInfoResponse.error;
 
-          this._overwriteItemExtent(webSceneItem, applicationItem.item);
-          this._overwriteItemExtent(webMapItem, applicationItem.item);
+          this._overwriteItemExtent(webSceneItem, applicationItem.itemInfo);
+          this._overwriteItemExtent(webMapItem, applicationItem.itemInfo);
 
           this._setGeometryService(this.config, this.portal);
 
-          this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.defaultWebmap);
-          this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.defaultWebscene);
-          this.config.group = this._getDefaultId(this.config.group, this.settings.defaultGroup);
+          this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.webmap.default);
+          this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.webscene.default);
+          this.config.group = this._getDefaultId(this.config.group, this.settings.group.default);
 
           // todo: do we need these on the class or just returned?
           return {
@@ -211,7 +200,7 @@ class Boilerplate {
     return units;
   }
 
-  private _getLocalConfig(appid: string): BoilerplateSettings {
+  private _getLocalConfig(appid: string): ApplicationConfig {
     if (!(window.localStorage && appid)) {
       return;
     }
@@ -244,12 +233,13 @@ class Boilerplate {
   }
 
   // todo: need to figure out the  layermixins
-  private _queryApplicationItem(appid: string): IPromise<any> {
+  private _queryApplication(appid: string): IPromise<BoilerplateApplicationResult> {
     const appItem = new PortalItem({
       id: appid
     });
     return appItem.load().then((itemInfo) => {
       return itemInfo.fetchData().then((itemData) => {
+        // todo: app proxies
         // const cfg = itemData && itemData.values || {};
         // const appProxies = itemInfo.appProxies;
         // get any app proxies defined on the application item
@@ -265,8 +255,8 @@ class Boilerplate {
         //   cfg.layerMixins = layerMixins;
         // }
         return {
-          item: itemInfo,
-          data: itemData
+          itemInfo: itemInfo,
+          itemData: itemData
         };
       });
     });
@@ -275,7 +265,8 @@ class Boilerplate {
   private _setupCORS(authorizedDomains: any, webTierSecurity: boolean): void {
     if (webTierSecurity && authorizedDomains && authorizedDomains.length) {
       authorizedDomains.forEach((authorizedDomain) => {
-        if (isDefined(authorizedDomain) && authorizedDomain.length) {
+        const isDefined = (authorizedDomain !== undefined) && (authorizedDomain !== null);
+        if (isDefined && authorizedDomain.length) {
           esriConfig.request.corsEnabledServers.push({
             host: authorizedDomain,
             withCredentials: true
@@ -335,7 +326,7 @@ class Boilerplate {
     return isRTL ? RTL : LTR;
   }
 
-  private _mixinAllConfigs(params: Configs): ApplicationConfig {
+  private _mixinAllConfigs(params: ApplicationConfigs): ApplicationConfig {
     const config = params.config || null;
     const appConfig = params.application || null;
     const localConfig = params.local || null;
@@ -379,7 +370,7 @@ class Boilerplate {
     return `${portalUrl}${esriProxyPath}`;
   }
 
-  private _checkSignIn(oauthappid: string, portalUrl: string): IPromise<any> {
+  private _checkSignIn(oauthappid: string, portalUrl: string): IPromise<void> {
     const sharingPath = "/sharing";
     const info = oauthappid ?
       new OAuthInfo({

@@ -1,23 +1,21 @@
 import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 
-// todo: organize all interfaces. alpahbetically
+interface ApplicationConfigs {
+  application?: ApplicationConfig;
+  config: ApplicationConfig;
+  local?: ApplicationConfig;
+  url?: ApplicationConfig;
+}
 
 export interface ApplicationConfig {
-  title?: string;
-  webmap?: string;
-  webscene?: string;
-  application_extent?: string;
-  portalUrl?: string;
-  proxyUrl?: string;
-  group?: string;
   appid?: string;
-  components?: string;
-  viewpoint?: string;
   center?: string;
-  level?: string;
+  components?: string;
+  embed?: boolean;
   extent?: string;
-  oauthappid?: string;
+  find?: string;
+  group?: string;
   helperServices?: {
     geometry?: {
       url: string;
@@ -32,19 +30,28 @@ export interface ApplicationConfig {
       url: string;
     }[],
     [propName: string]: any;
-  }
+  },
+  level?: string;
+  marker?: string;
+  oauthappid?: string;
+  portalUrl?: string;
+  proxyUrl?: string;
+  title?: string;
+  viewpoint?: string;
+  webmap?: string;
+  webscene?: string;
 }
 
 export interface BoilerplateSettings {
-  webscene?: {
-    containerId?: string;
-    fetch?: boolean;
-  },
-  webmap?: {
-    containerId?: string;
+  environment: {
+    isEsri?: boolean;
+    webTierSecurity?: boolean;
+  }
+  localStorage?: {
     fetch?: boolean;
   },
   group?: {
+    default?: string;
     itemParams?: {
       [propname: string]: any;
     },
@@ -54,28 +61,40 @@ export interface BoilerplateSettings {
   portal?: {
     fetch?: boolean;
   },
-  urlItems?: string[];
-  localConfig?: {
+  urlParams?: string[];
+  webmap?: {
+    default?: string;
+    containerId?: string;
     fetch?: boolean;
   },
-  webTierSecurity?: boolean;
-  esriEnvironment?: boolean;
-  defaultWebmap?: string;
-  defaultWebscene?: string;
-  defaultGroup?: string;
+  webscene?: {
+    default?: string;
+    containerId?: string;
+    fetch?: boolean;
+  }
 }
 
+export interface BoilerplateApplicationResult {
+  itemInfo: PortalItem;
+  itemData: any;
+}
+
+
+
+
+// todo
 export interface GroupData {
   itemsData?: any;
   infoData?: any;
 }
 
+// todo
 export interface BoilerplateResults {
   group: GroupData;
   urlParams?: {
     [propName: string]: any;
   },
-  localStorageConfig?: {
+  localStorage?: {
     [propName: string]: any;
   },
   webMapItem?: PortalItem | Error;
@@ -87,6 +106,7 @@ export interface BoilerplateResults {
   portal?: Portal;
 }
 
+// todo
 export interface BoilerplateResponse {
   config: ApplicationConfig;
   settings: BoilerplateSettings;

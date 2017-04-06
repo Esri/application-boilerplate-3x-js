@@ -1,19 +1,13 @@
 {
-  "defaultWebmap": "",
-  "defaultWebscene": "073b9499717c484297a40402a21a28cd",
-  "defaultGroup": "",
-  "localConfig": {
-    "fetch": true
+  "environment": {
+    "isEsri": false,
+    "webTierSecurity": false
   },
-  "webscene": {
-    "containerId": "viewDiv",
-    "fetch": true
-  },
-  "webmap": {
-    "containerId": "viewDiv",
+  "localStorage": {
     "fetch": true
   },
   "group": {
+    "default": "",
     "fetchInfo": true,
     "fetchItems": true,
     "itemParams": {
@@ -26,7 +20,7 @@
   "portal": {
     "fetch": true
   },
-  "urlItems": [
+  "urlParams": [
     "appid",
     "basemapUrl",
     "basemapReferenceUrl",
@@ -37,7 +31,6 @@
     "find",
     "group",
     "level",
-    "mapOnly",
     "marker",
     "oauthappid",
     "portalUrl",
@@ -45,6 +38,14 @@
     "webmap",
     "webscene"
   ],
-  "webTierSecurity": false,
-  "esriEnvironment": false
+  "webmap": {
+    "default": "",
+    "containerId": "sceneViewContainer",
+    "fetch": true
+  },
+  "webscene": {
+    "default": "073b9499717c484297a40402a21a28cd",
+    "containerId": "mapViewContainer",
+    "fetch": true
+  }
 }

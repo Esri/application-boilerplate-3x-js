@@ -9,17 +9,15 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams", "boilerplate/UrlParamHelper"], function (require, exports, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams, UrlParamHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    function isDefined(value) {
-        return (value !== undefined) && (value !== null);
-    }
     var Boilerplate = (function () {
         function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
             this.settings = {
+                environment: {},
                 webscene: {},
                 webmap: {},
                 group: {},
                 portal: {},
-                urlItems: []
+                urlParams: []
             };
             this.config = null;
             this.results = {
@@ -37,7 +35,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             var params = new PortalQueryParams(paramOptions);
             return portal.queryItems(params);
         };
-        // todo: cleanup
         Boilerplate.prototype.init = function () {
             var _this = this;
             // Set the web scene and appid if they exist but ignore other url params.
@@ -54,13 +51,13 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             // application default and configuration info has been applied. Currently these values
             // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
             // supporting additional url parameters in your application.
-            var urlParams = UrlParamHelper_1.getUrlParamValues(this.settings.urlItems);
+            var urlParams = UrlParamHelper_1.getUrlParamValues(this.settings.urlParams);
             this.results.urlParams = urlParams;
             this.config = this._mixinAllConfigs({
                 config: this.config,
                 url: urlParams
             });
-            if (this.settings.esriEnvironment) {
+            if (this.settings.environment.isEsri) {
                 var esriPortalUrl = this._getEsriEnvironmentPortalUrl();
                 this.config.portalUrl = esriPortalUrl;
                 this.config.proxyUrl = this._getEsriEnvironmentProxyUrl(esriPortalUrl);
@@ -72,7 +69,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             return checkSignIn.always(function () {
                 var appId = _this.config.appid;
                 var queryApplicationItem = appId ?
-                    _this._queryApplicationItem(appId) :
+                    _this._queryApplication(appId) :
                     promiseUtils.resolve();
                 var queryPortal = _this.settings.portal.fetch ?
                     _this._queryPortal() :
@@ -82,21 +79,21 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     queryPortal
                 ]).always(function (applicationArgs) {
                     var applicationResponse = applicationArgs[0], portalResponse = applicationArgs[1];
-                    var localConfig = _this.settings.localConfig.fetch ?
+                    var localStorage = _this.settings.localStorage.fetch ?
                         _this._getLocalConfig(appId) :
                         null;
-                    _this.results.localStorageConfig = localConfig;
+                    _this.results.localStorage = localStorage;
                     var applicationItem = applicationResponse.value;
-                    var applicationConfig = applicationItem ? applicationItem.data.values : null;
+                    var applicationConfig = applicationItem ? applicationItem.itemData.values : null;
                     _this.results.applicationItem = applicationItem;
                     var portal = portalResponse.value;
                     _this.portal = portal;
-                    _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.webTierSecurity);
+                    _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.environment.webTierSecurity);
                     _this.units = _this._getUnits(portal);
                     _this.config = _this._mixinAllConfigs({
                         config: _this.config,
                         url: urlParams,
-                        local: localConfig,
+                        local: localStorage,
                         application: applicationConfig
                     });
                     var webMapId = _this.config.webmap;
@@ -127,12 +124,12 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         _this.results.webSceneItem = webSceneItem;
                         _this.results.group.itemsData = groupItemsResponse.value || groupItemsResponse.error;
                         _this.results.group.infoData = groupInfoResponse.value || groupInfoResponse.error;
-                        _this._overwriteItemExtent(webSceneItem, applicationItem.item);
-                        _this._overwriteItemExtent(webMapItem, applicationItem.item);
+                        _this._overwriteItemExtent(webSceneItem, applicationItem.itemInfo);
+                        _this._overwriteItemExtent(webMapItem, applicationItem.itemInfo);
                         _this._setGeometryService(_this.config, _this.portal);
-                        _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.defaultWebmap);
-                        _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.defaultWebscene);
-                        _this.config.group = _this._getDefaultId(_this.config.group, _this.settings.defaultGroup);
+                        _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.webmap.default);
+                        _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.webscene.default);
+                        _this.config.group = _this._getDefaultId(_this.config.group, _this.settings.group.default);
                         // todo: do we need these on the class or just returned?
                         return {
                             settings: _this.settings,
@@ -190,12 +187,13 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             return sceneItem.load();
         };
         // todo: need to figure out the  layermixins
-        Boilerplate.prototype._queryApplicationItem = function (appid) {
+        Boilerplate.prototype._queryApplication = function (appid) {
             var appItem = new PortalItem({
                 id: appid
             });
             return appItem.load().then(function (itemInfo) {
                 return itemInfo.fetchData().then(function (itemData) {
+                    // todo: app proxies
                     // const cfg = itemData && itemData.values || {};
                     // const appProxies = itemInfo.appProxies;
                     // get any app proxies defined on the application item
@@ -211,13 +209,16 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     //   cfg.layerMixins = layerMixins;
                     // }
                     return {
-                        item: itemInfo,
-                        data: itemData
+                        itemInfo: itemInfo,
+                        itemData: itemData
                     };
                 });
             });
         };
         Boilerplate.prototype._setupCORS = function (authorizedDomains, webTierSecurity) {
+            function isDefined(value) {
+                return (value !== undefined) && (value !== null);
+            }
             if (webTierSecurity && authorizedDomains && authorizedDomains.length) {
                 authorizedDomains.forEach(function (authorizedDomain) {
                     if (isDefined(authorizedDomain) && authorizedDomain.length) {
