@@ -3,6 +3,12 @@ import WebMap = require("esri/WebMap");
 import WebScene = require("esri/WebScene");
 import PortalItem = require("esri/portal/PortalItem");
 
+//--------------------------------------------------------------------------
+//
+//  Public Methods
+//
+//--------------------------------------------------------------------------
+
 export function createWebMapFromItem(portalItem: PortalItem): IPromise<WebMap> {
   return requireUtils.when(require, "esri/WebMap").then(WebMap => {
     const wm = new WebMap({

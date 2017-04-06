@@ -1,6 +1,11 @@
 define(["require", "exports", "esri/core/requireUtils"], function (require, exports, requireUtils) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    //--------------------------------------------------------------------------
+    //
+    //  Public Methods
+    //
+    //--------------------------------------------------------------------------
     function createWebMapFromItem(portalItem) {
         return requireUtils.when(require, "esri/WebMap").then(function (WebMap) {
             var wm = new WebMap({
@@ -20,4 +25,4 @@ define(["require", "exports", "esri/core/requireUtils"], function (require, expo
     }
     exports.createWebSceneFromItem = createWebSceneFromItem;
 });
-//# sourceMappingURL=ItemHelper.js.map
+//# sourceMappingURL=itemUtils.js.map

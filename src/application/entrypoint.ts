@@ -1,6 +1,7 @@
-import Application from 'application/application';
-import Boilerplate from 'boilerplate/boilerplate';
+import Application from 'application/Application';
+import Boilerplate from 'boilerplate/Boilerplate';
 
+// todo: should this be a class?
 export = {
   Application,
   Boilerplate,

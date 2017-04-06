@@ -6,23 +6,14 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "esri/views/SceneView", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils"], function (require, exports, Extent, Point, SceneView, Camera, promiseUtils, requireUtils) {
+define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point", "esri/views/SceneView"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point, SceneView) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
     //
-    //  Static constiables
+    //  Public Methods
     //
     //--------------------------------------------------------------------------
-    var URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
-    var TAGS_RE = /<\/?[^>]+>/g;
-    var DEFAULT_MARKER_SYMBOL = {
-        url: "./symbols/mapPin.png",
-        width: "36px",
-        height: "19px",
-        xoffset: "9px",
-        yoffset: "18px" // todo: fix typings in next JS API release.
-    };
     function getUrlParamValues(urlParams) {
         var urlObject = _urlToObject();
         var formattedUrlObject = {};
@@ -71,6 +62,11 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
     }
     exports.setConfigItemsOnView = setConfigItemsOnView;
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
     function _find(view, findString, searchWidget) {
         if (!findString) {
             return;
@@ -216,11 +212,18 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
             var label = markerArray[5];
             var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
             var symbolSize = "32px"; // todo: fix typings in next JS API release.
+            var defaultMarkerSymbol = {
+                url: "./symbols/mapPin.png",
+                width: "36px",
+                height: "19px",
+                xoffset: "9px",
+                yoffset: "18px" // todo: fix typings in next JS API release.
+            };
             var symbolOptions = icon_url ? {
                 url: icon_url,
                 height: symbolSize,
                 width: symbolSize
-            } : DEFAULT_MARKER_SYMBOL;
+            } : defaultMarkerSymbol;
             var markerSymbol = new PictureMarkerSymbol(symbolOptions);
             var point = new Point({
                 "x": x,
@@ -296,7 +299,8 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
     }
     function _stripStringTags(value) {
-        return value.replace(TAGS_RE, "");
+        var tagsRE = /<\/?[^>]+>/g;
+        return value.replace(tagsRE, "");
     }
     function _urlToObject() {
         // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
@@ -307,7 +311,8 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         // information will contain the values the  user selected on the template configuration
         // panel.
         var query = (window.location.search || "?").substr(1), map = {};
-        query.replace(URL_RE, function (match, key, value) {
+        var urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+        query.replace(urlRE, function (match, key, value) {
             map[key] = _stripStringTags(decodeURIComponent(value));
             return "";
         });
@@ -327,4 +332,4 @@ define(["require", "exports", "esri/geometry/Extent", "esri/geometry/Point", "es
         return urlParamValue;
     }
 });
-//# sourceMappingURL=UrlParamHelper.js.map
+//# sourceMappingURL=urlUtils.js.map

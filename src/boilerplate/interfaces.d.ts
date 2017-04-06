@@ -1,7 +1,7 @@
 import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 
-interface ApplicationConfigs {
+export interface ApplicationConfigs {
   application?: ApplicationConfig;
   config: ApplicationConfig;
   local?: ApplicationConfig;
@@ -74,45 +74,28 @@ export interface BoilerplateSettings {
   }
 }
 
+export interface BoilerplateResult {
+  error?: Error;
+  value: any;
+  promise: IPromise<any>;
+}
+
 export interface BoilerplateApplicationResult {
   itemInfo: PortalItem;
   itemData: any;
 }
 
-
-
-
-// todo
-export interface GroupData {
-  itemsData?: any;
-  infoData?: any;
-}
-
-// todo
 export interface BoilerplateResults {
-  group: GroupData;
-  urlParams?: {
-    [propName: string]: any;
-  },
+  application?: BoilerplateResult;
+  groupInfo?: BoilerplateResult;
+  groupItems?: BoilerplateResult;
   localStorage?: {
     [propName: string]: any;
   },
-  webMapItem?: PortalItem | Error;
-  webSceneItem?: PortalItem | Error;
-  applicationItem?: {
-    item: PortalItem | Error,
-    data: any;
-  };
   portal?: Portal;
-}
-
-// todo
-export interface BoilerplateResponse {
-  config: ApplicationConfig;
-  settings: BoilerplateSettings;
-  direction: string;
-  results: BoilerplateResults;
-  portal: Portal;
-  locale: string;
-  units: string;
+  urlParams?: {
+    [propName: string]: any;
+  },
+  webMapItem?: BoilerplateResult;
+  webSceneItem?: BoilerplateResult;
 }

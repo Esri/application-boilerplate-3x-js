@@ -1,17 +1,51 @@
 import kernel = require("dojo/_base/kernel");
+
 import esriConfig = require("esri/config");
+
 import Extent = require("esri/geometry/Extent");
+
 import EsriPromise = require("esri/core/Promise"); // todo: make this class extend promise
 import promiseUtils = require("esri/core/promiseUtils");
+
 import IdentityManager = require("esri/identity/IdentityManager");
 import OAuthInfo = require("esri/identity/OAuthInfo");
+
 import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
-import { getUrlParamValues } from "boilerplate/UrlParamHelper";
-import { ApplicationConfig, ApplicationConfigs, BoilerplateApplicationResult, BoilerplateResults, BoilerplateResponse, BoilerplateSettings } from "boilerplate/interfaces"; // todo: multiline
+
+import { getUrlParamValues } from "boilerplate/urlUtils";
+
+import {
+  ApplicationConfig,
+  ApplicationConfigs,
+  BoilerplateApplicationResult,
+  BoilerplateResults,
+  BoilerplateSettings
+} from "boilerplate/interfaces";
+
+type Direction = "ltr" | "rtl";
 
 class Boilerplate {
+
+  //--------------------------------------------------------------------------
+  //
+  //  Lifecycle
+  //
+  //--------------------------------------------------------------------------
+
+  constructor(applicationConfigJSON, boilerplateConfigJSON) {
+    this.settings = {
+      ...boilerplateConfigJSON
+    }
+    this.config = applicationConfigJSON;
+  }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
 
   settings: BoilerplateSettings = {
     environment: {},
@@ -22,20 +56,17 @@ class Boilerplate {
     urlParams: []
   };
   config: ApplicationConfig = null;
-  results: BoilerplateResults = {
-    group: {}
-  };
-  portal: any = null;
-  direction: string = null;
-  locale: string = kernel.locale;
+  results: BoilerplateResults = {};
+  portal: Portal = null;
+  direction: Direction = null;
+  locale = kernel.locale;
   units: string = null;
 
-  constructor(applicationConfigJSON, boilerplateConfigJSON) {
-    this.settings = {
-      ...boilerplateConfigJSON
-    }
-    this.config = applicationConfigJSON;
-  }
+  //--------------------------------------------------------------------------
+  //
+  //  Public Methods
+  //
+  //--------------------------------------------------------------------------
 
   public queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
     const paramOptions = {
@@ -51,21 +82,7 @@ class Boilerplate {
     return portal.queryItems(params);
   }
 
-  public init(): IPromise<BoilerplateResponse> {
-    // Set the web scene and appid if they exist but ignore other url params.
-    // Additional url parameters may be defined by the application but they need to be mixed in
-    // to the config object after we retrieve the application configuration info. As an example,
-    // we'll mix in some commonly used url parameters after
-    // the application configuration has been applied so that the url parameters overwrite any
-    // configured settings. It's up to the application developer to update the application to take
-    // advantage of these parameters.
-    // This demonstrates how to handle additional custom url parameters. For example
-    // if you want users to be able to specify lat/lon coordinates that define the map's center or
-    // specify an alternate basemap via a url parameter.
-    // If these options are also configurable these updates need to be added after any
-    // application default and configuration info has been applied. Currently these values
-    // (center, basemap, theme) are only here as examples and can be removed if you don't plan on
-    // supporting additional url parameters in your application.
+  public init(): IPromise<Boilerplate> {
     const urlParams = getUrlParamValues(this.settings.urlParams);
     this.results.urlParams = urlParams
 
@@ -108,9 +125,11 @@ class Boilerplate {
           null;
         this.results.localStorage = localStorage;
 
-        const applicationItem = applicationResponse.value;
-        const applicationConfig = applicationItem ? applicationItem.itemData.values : null;
-        this.results.applicationItem = applicationItem;
+        const applicationItem = applicationResponse.value as BoilerplateApplicationResult;
+        const applicationItemData = applicationItem.itemData;
+        const applicationConfig = applicationItem ? applicationItemData.values : null;
+        const applicationInfo = applicationItem ? applicationItem.itemInfo : null;
+        this.results.application = applicationResponse;
 
         const portal = portalResponse.value;
         this.portal = portal;
@@ -128,12 +147,12 @@ class Boilerplate {
 
         const webMapId = this.config.webmap;
         const queryWebMapItem = webMapId && this.settings.webmap.fetch ?
-          this._queryWebMapItem(webMapId) :
+          this._queryItem(webMapId) :
           promiseUtils.resolve();
 
         const webSceneId = this.config.webscene;
         const queryWebSceneItem = webSceneId && this.settings.webscene.fetch ?
-          this._queryWebSceneItem(webSceneId) :
+          this._queryItem(webSceneId) :
           promiseUtils.resolve();
 
         const groupId = this.config.group;
@@ -141,7 +160,7 @@ class Boilerplate {
           this._queryGroupInfo(groupId, portal) :
           promiseUtils.resolve();
 
-        const queryGroupItems = this.settings.group.fetchItems || groupId ?
+        const queryGroupItems = this.settings.group.fetchItems && groupId ?
           this.queryGroupItems(groupId, this.settings.group.itemParams, portal) :
           promiseUtils.resolve();
 
@@ -153,12 +172,28 @@ class Boilerplate {
         ]).always(itemArgs => {
           const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
 
-          const webSceneItem = webSceneResponse.value || webSceneResponse.error;
-          const webMapItem = webMapResponse.value || webMapResponse.error;
-          this.results.webMapItem = webMapItem;
-          this.results.webSceneItem = webSceneItem;
-          this.results.group.itemsData = groupItemsResponse.value || groupItemsResponse.error;
-          this.results.group.infoData = groupInfoResponse.value || groupInfoResponse.error;
+          const webSceneItem = webSceneResponse.value;
+          const webMapItem = webMapResponse.value;
+
+          // todo
+          // const appProxies = applicationInfo.appProxies;
+          // get any app proxies defined on the application item
+          // if (appProxies) {
+          //   const layerMixins = appProxies.map((p) => {
+          //     return {
+          //       "url": p.sourceUrl,
+          //       "mixin": {
+          //         "url": p.proxyUrl
+          //       }
+          //     };
+          //   });
+          //   cfg.layerMixins = layerMixins;
+          // }
+
+          this.results.webMapItem = webMapResponse;
+          this.results.webSceneItem = webSceneResponse;
+          this.results.groupItems = groupItemsResponse;
+          this.results.groupInfo = groupInfoResponse;
 
           this._overwriteItemExtent(webSceneItem, applicationItem.itemInfo);
           this._overwriteItemExtent(webMapItem, applicationItem.itemInfo);
@@ -169,20 +204,17 @@ class Boilerplate {
           this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.webscene.default);
           this.config.group = this._getDefaultId(this.config.group, this.settings.group.default);
 
-          // todo: do we need these on the class or just returned?
-          return {
-            settings: this.settings,
-            config: this.config,
-            results: this.results,
-            portal: this.portal,
-            direction: this.direction,
-            locale: this.locale,
-            units: this.units
-          };
+          return this;
         });
       });
     });
   }
+
+  //--------------------------------------------------------------------------
+  //
+  //  Private Methods
+  //
+  //--------------------------------------------------------------------------
 
   private _getUnits(portal: Portal): string {
     const user = portal.user;
@@ -211,11 +243,11 @@ class Boilerplate {
     return localConfig;
   }
 
-  private _queryWebMapItem(webMapId: string): IPromise<PortalItem> {
-    const mapItem = new PortalItem({
-      id: webMapId
+  private _queryItem(id: string): IPromise<PortalItem> {
+    const item = new PortalItem({
+      id: id
     });
-    return mapItem.load();
+    return item.load();
   }
 
   private _queryGroupInfo(groupId: string, portal: Portal): IPromise<any> {
@@ -225,35 +257,12 @@ class Boilerplate {
     return portal.queryGroups(params);
   }
 
-  private _queryWebSceneItem(webSceneId: string): IPromise<PortalItem> {
-    const sceneItem = new PortalItem({
-      id: webSceneId
-    });
-    return sceneItem.load();
-  }
-
-  // todo: need to figure out the  layermixins
   private _queryApplication(appid: string): IPromise<BoilerplateApplicationResult> {
     const appItem = new PortalItem({
       id: appid
     });
     return appItem.load().then((itemInfo) => {
       return itemInfo.fetchData().then((itemData) => {
-        // todo: app proxies
-        // const cfg = itemData && itemData.values || {};
-        // const appProxies = itemInfo.appProxies;
-        // get any app proxies defined on the application item
-        // if (appProxies) {
-        //   const layerMixins = appProxies.map((p) => {
-        //     return {
-        //       "url": p.sourceUrl,
-        //       "mixin": {
-        //         "url": p.proxyUrl
-        //       }
-        //     };
-        //   });
-        //   cfg.layerMixins = layerMixins;
-        // }
         return {
           itemInfo: itemInfo,
           itemData: itemData
@@ -263,25 +272,27 @@ class Boilerplate {
   }
 
   private _setupCORS(authorizedDomains: any, webTierSecurity: boolean): void {
-    if (webTierSecurity && authorizedDomains && authorizedDomains.length) {
-      authorizedDomains.forEach((authorizedDomain) => {
-        const isDefined = (authorizedDomain !== undefined) && (authorizedDomain !== null);
-        if (isDefined && authorizedDomain.length) {
-          esriConfig.request.corsEnabledServers.push({
-            host: authorizedDomain,
-            withCredentials: true
-          });
-        }
-      });
+    if (!webTierSecurity || !authorizedDomains || !authorizedDomains.length) {
+      return;
     }
+
+    authorizedDomains.forEach((authorizedDomain) => {
+      const isDefined = (authorizedDomain !== undefined) && (authorizedDomain !== null);
+      if (isDefined && authorizedDomain.length) {
+        esriConfig.request.corsEnabledServers.push({
+          host: authorizedDomain,
+          withCredentials: true
+        });
+      }
+    });
   }
 
   private _queryPortal(): IPromise<Portal> {
     return new Portal().load();
   }
 
-  private _overwriteItemExtent(item: PortalItem | Error, applicationItem: PortalItem | Error): void {
-    if (applicationItem instanceof Error || item instanceof Error || !applicationItem || !item) {
+  private _overwriteItemExtent(item: PortalItem, applicationItem: PortalItem): void {
+    if (!applicationItem || !item) {
       return;
     }
 
@@ -291,19 +302,14 @@ class Boilerplate {
   }
 
   private _setGeometryService(config: ApplicationConfig, portal: any) { // todo: fix next api release
-    // get helper services
     const configHelperServices = config.helperServices;
     const portalHelperServices = portal && portal.helperServices;
-    // see if config has a geometry service
     const configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
-    // seee if portal has a geometry service
     const portalGeometryUrl = portalHelperServices && portalHelperServices.geometry && portalHelperServices.geometry.url;
-    // use the portal geometry service or config geometry service
     const geometryUrl = portalGeometryUrl || configGeometryUrl;
     if (!geometryUrl) {
       return;
     }
-    // set the esri config to use the geometry service
     esriConfig.geometryServiceUrl = geometryUrl;
   }
 
@@ -316,7 +322,7 @@ class Boilerplate {
     return id;
   }
 
-  private _getLanguageDirection(): string {
+  private _getLanguageDirection(): Direction {
     const LTR = "ltr";
     const RTL = "rtl";
     const RTLLangs = ["ar", "he"];

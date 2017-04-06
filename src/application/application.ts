@@ -1,11 +1,22 @@
 /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
 declare const i18n: any;
+
 import requireUtils = require("esri/core/requireUtils");
+
+import Boilerplate from 'boilerplate/Boilerplate';
+
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
-import { BoilerplateResponse, BoilerplateSettings, GroupData, ApplicationConfig } from "boilerplate/interfaces";
-import { createWebMapFromItem, createWebSceneFromItem } from "boilerplate/ItemHelper";
-import { setConfigItemsOnView, getUrlViewProperties } from "boilerplate/UrlParamHelper";
+
+import {
+  createWebMapFromItem,
+  createWebSceneFromItem
+} from "boilerplate/itemUtils";
+
+import {
+  setConfigItemsOnView,
+  getUrlViewProperties
+} from "boilerplate/urlUtils";
 
 const CSS = {
   loading: "boilerplate--loading",
@@ -13,63 +24,90 @@ const CSS = {
   errorIcon: "esri-icon-notice-round"
 };
 
+// todo: should this be a class?
 class Application {
 
-  config: ApplicationConfig = null;
-  settings: BoilerplateSettings = null;
+  //--------------------------------------------------------------------------
+  //
+  //  Properties
+  //
+  //--------------------------------------------------------------------------
 
-  public init(boilerplateResponse: BoilerplateResponse): void {
+  boilerplate: Boilerplate = null;
 
-    if (!boilerplateResponse) {
+  //--------------------------------------------------------------------------
+  //
+  //  Public Methods
+  //
+  //--------------------------------------------------------------------------
+
+  public init(boilerplate: Boilerplate): void {
+
+    if (!boilerplate) {
       this.reportError(new Error("app:: Boilerplate is not defined"));
       return;
     }
 
-    this.config = boilerplateResponse.config;
-    this.settings = boilerplateResponse.settings;
+    this.boilerplate = boilerplate;
 
     // todo
-    const boilerplateResults = boilerplateResponse.results;
-    const webMapItem = boilerplateResults.webMapItem;
-    const webSceneItem = boilerplateResults.webSceneItem;
-    const groupData = boilerplateResults.group;
+    const boilerplateResults = boilerplate.results;
+    const webMapItem = boilerplateResults.webMapItem.value;
+    const webSceneItem = boilerplateResults.webSceneItem.value;
+    const groupItems = boilerplateResults.groupItems.value;
+    const groupInfo = boilerplateResults.groupInfo.value;
 
-    if (!webMapItem && !webSceneItem && !groupData) {
+    if (!webMapItem && !webSceneItem && !groupItems) {
       this.reportError(new Error("app:: Could not load an item to display"));
       return;
     }
 
-    this._setDocumentLocale(boilerplateResponse.locale);
-    this._setDirection(boilerplateResponse.direction);
+    this._setDocumentLocale(boilerplate.locale);
+    this._setDirection(boilerplate.direction);
+
+    const config = this.boilerplate.config;
+    const settings = this.boilerplate.settings;
+
+    // todo
+    if (!config.title && webMapItem && webMapItem.title) {
+      config.title = webMapItem.title;
+    }
+
+    if (!config.title && webSceneItem && webSceneItem.title) {
+      config.title = webSceneItem.title;
+    }
+
 
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
-      this._createWebMap(webMapItem).then((view) => {
-        setConfigItemsOnView(view, this.config);
-        this._ready();
+      this._createWebMap(webMapItem, config, settings).then((view) => {
+        setConfigItemsOnView(view, config);
+        this._setTitle(config.title);
+        this._removeLoading();
       }).otherwise(this.reportError);
     }
     else if (webSceneItem) {
-      this._createWebScene(webSceneItem).then((view) => {
-        setConfigItemsOnView(view, this.config);
-        this._ready();
+      this._createWebScene(webSceneItem, config, settings).then((view) => {
+        setConfigItemsOnView(view, config);
+        this._setTitle(config.title);
+        this._removeLoading();
       }).otherwise(this.reportError);
     }
-    else if (groupData) {
-      const galleryHTML = this._createGroupGallery(groupData);
+    else if (groupItems) {
+      const galleryHTML = this._createGroupGallery(groupInfo, groupItems);
       if (galleryHTML instanceof Error) {
         this.reportError(galleryHTML);
       }
       else {
         document.body.innerHTML = galleryHTML;
-        this._ready();
+        this._setTitle(config.title);
+        this._removeLoading();
       }
     }
   }
 
   public reportError(error) {
-    // remove loading class from body
-    document.body.removeAttribute('class');
+    this._removeLoading();
     document.body.className = CSS.error;
     // an error occurred - notify the user. In this example we pull the string from the
     // resource.js file located in the nls folder because we've set the application up
@@ -83,6 +121,12 @@ class Application {
     return error;
   }
 
+  //--------------------------------------------------------------------------
+  //
+  //  Private Methods
+  //
+  //--------------------------------------------------------------------------
+
   private _setDocumentLocale(locale: string): void {
     document.documentElement.lang = locale;
   }
@@ -92,25 +136,24 @@ class Application {
     dirNode.setAttribute("dir", direction);
   }
 
-  private _ready() {
-    document.body.removeAttribute('class');
-    document.title = this.config.title;
+  private _setTitle(title: string) {
+    document.title = title;
   }
 
-  private _createWebMap(webMapItem): IPromise<MapView> {
+  private _removeLoading() {
+    document.body.className = document.body.className.replace(CSS.loading, "");
+  }
+
+  private _createWebMap(webMapItem, config, settings): IPromise<MapView> {
     return createWebMapFromItem(webMapItem).then(map => {
 
-      const urlViewProperties = getUrlViewProperties(this.config);
+      const urlViewProperties = getUrlViewProperties(config);
 
       const viewProperties = {
         map,
-        container: this.settings.webmap.containerId,
+        container: settings.webmap.containerId,
         ...urlViewProperties
       };
-
-      if (!this.config.title && map.portalItem && map.portalItem.title) {
-        this.config.title = map.portalItem.title;
-      }
 
       return requireUtils.when(require, "esri/views/MapView").then(MapView => {
         return new MapView(viewProperties);
@@ -118,19 +161,15 @@ class Application {
     });
   }
 
-  private _createWebScene(webSceneItem): IPromise<SceneView> {
+  private _createWebScene(webSceneItem, config, settings): IPromise<SceneView> {
     return createWebSceneFromItem(webSceneItem).then(map => {
-      const urlViewProperties = getUrlViewProperties(this.config);
+      const urlViewProperties = getUrlViewProperties(config);
 
       const viewProperties = {
         map,
-        container: this.settings.webscene.containerId,
+        container: settings.webscene.containerId,
         ...urlViewProperties
       };
-
-      if (!this.config.title && map.portalItem && map.portalItem.title) {
-        this.config.title = map.portalItem.title;
-      }
 
       return requireUtils.when(require, "esri/views/SceneView").then(SceneView => {
         return new SceneView(viewProperties);
@@ -138,16 +177,13 @@ class Application {
     });
   }
 
-  private _createGroupGallery(groupData: GroupData): string | Error {
-    const groupInfoData = groupData.infoData;
-    const groupItemsData = groupData.itemsData;
-
-    if (!groupInfoData || !groupItemsData || groupInfoData.total === 0 || groupInfoData instanceof Error) {
+  private _createGroupGallery(groupInfo: any, groupItems: any): string | Error {
+    if (!groupInfo || !groupItems || groupInfo.total === 0 || groupInfo instanceof Error) {
       return new Error("app:: group data does not exist.");
     }
 
-    const info = groupInfoData.results[0];
-    const items = groupItemsData.results;
+    const info = groupItems.results[0];
+    const items = groupItems.results;
 
     if (info && items) {
       const listItems = items.map((item: any) => {

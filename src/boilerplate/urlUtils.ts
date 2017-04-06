@@ -1,11 +1,16 @@
-import Extent = require("esri/geometry/Extent");
-import Point = require("esri/geometry/Point");
-import MapView = require("esri/views/MapView");
-import SceneView = require("esri/views/SceneView");
 import Camera = require("esri/Camera");
-import Search = require("esri/widgets/Search");
+
 import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
+
+import Extent = require("esri/geometry/Extent");
+import Point = require("esri/geometry/Point");
+
+import MapView = require("esri/views/MapView");
+import SceneView = require("esri/views/SceneView");
+
+import Search = require("esri/widgets/Search");
+
 import { ApplicationConfig } from "boilerplate/interfaces";
 
 interface ViewProperties {
@@ -26,22 +31,11 @@ interface CameraProperties {
 
 //--------------------------------------------------------------------------
 //
-//  Static constiables
+//  Public Methods
 //
 //--------------------------------------------------------------------------
 
-const URL_RE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
-const TAGS_RE = /<\/?[^>]+>/g;
-
-const DEFAULT_MARKER_SYMBOL = {
-  url: "./symbols/mapPin.png",
-  width: "36px" as any as number, // todo: fix typings in next JS API release.
-  height: "19px" as any as number, // todo: fix typings in next JS API release.
-  xoffset: "9px" as any as number, // todo: fix typings in next JS API release.
-  yoffset: "18px" as any as number // todo: fix typings in next JS API release.
-};
-
-export function getUrlParamValues(urlParams: string[]) {
+export function getUrlParamValues(urlParams: string[]): ApplicationConfig {
   const urlObject = _urlToObject();
   const formattedUrlObject = {};
 
@@ -97,6 +91,12 @@ export function setConfigItemsOnView(view: MapView | SceneView, config, searchWi
   _find(view, config.find, searchWidget);
   _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
 }
+
+//--------------------------------------------------------------------------
+//
+//  Private Methods
+//
+//--------------------------------------------------------------------------
 
 function _find(view: MapView | SceneView, findString, searchWidget?: Search): Search {
   if (!findString) {
@@ -273,11 +273,20 @@ function _addMarkerToView(view: MapView | SceneView, markerString: string): void
     const label = markerArray[5];
     const wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
     const symbolSize = "32px" as any as number; // todo: fix typings in next JS API release.
+
+    const defaultMarkerSymbol = {
+      url: "./symbols/mapPin.png",
+      width: "36px" as any as number, // todo: fix typings in next JS API release.
+      height: "19px" as any as number, // todo: fix typings in next JS API release.
+      xoffset: "9px" as any as number, // todo: fix typings in next JS API release.
+      yoffset: "18px" as any as number // todo: fix typings in next JS API release.
+    };
+
     const symbolOptions = icon_url ? {
       url: icon_url,
       height: symbolSize,
       width: symbolSize
-    } : DEFAULT_MARKER_SYMBOL;
+    } : defaultMarkerSymbol;
     const markerSymbol = new PictureMarkerSymbol(symbolOptions);
     const point = new Point({
       "x": x,
@@ -373,10 +382,11 @@ function _getCameraProperties(cameraString: string, tiltAndHeading: string): Cam
 }
 
 function _stripStringTags(value: string) {
-  return value.replace(TAGS_RE, "");
+  const tagsRE = /<\/?[^>]+>/g;
+  return value.replace(tagsRE, "");
 }
 
-function _urlToObject() {
+function _urlToObject(): any {
   // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
   // resource to work with.
   // Scene templates use the webscene param to define the scene to display
@@ -386,7 +396,8 @@ function _urlToObject() {
   // panel.
   const query = (window.location.search || "?").substr(1),
     map = {};
-  query.replace(URL_RE, (match, key, value) => {
+  const urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+  query.replace(urlRE, (match, key, value) => {
     map[key] = _stripStringTags(decodeURIComponent(value));
     return "";
   });
