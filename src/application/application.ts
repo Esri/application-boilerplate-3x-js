@@ -28,6 +28,7 @@ class Application {
     this.config = boilerplateResponse.config;
     this.settings = boilerplateResponse.settings;
 
+    // todo
     const boilerplateResults = boilerplateResponse.results;
     const webMapItem = boilerplateResults.webMapItem;
     const webSceneItem = boilerplateResults.webSceneItem;

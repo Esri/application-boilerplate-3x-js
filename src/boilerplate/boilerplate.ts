@@ -1,5 +1,6 @@
 import kernel = require("dojo/_base/kernel");
 import esriConfig = require("esri/config");
+import Extent = require("esri/geometry/Extent");
 import EsriPromise = require("esri/core/Promise"); // todo: make this class extend promise
 import promiseUtils = require("esri/core/promiseUtils");
 import IdentityManager = require("esri/identity/IdentityManager");
@@ -12,6 +13,13 @@ import { BoilerplateSettings, ApplicationConfig, BoilerplateResults, Boilerplate
 
 function isDefined(value: any) {
   return (value !== undefined) && (value !== null);
+}
+
+interface Configs {
+  config: any;
+  application?: any;
+  local?: any;
+  url?: any;
 }
 
 class Boilerplate {
@@ -53,6 +61,7 @@ class Boilerplate {
     return portal.queryItems(params);
   }
 
+  // todo: cleanup
   public init(): IPromise<BoilerplateResponse> {
     // Set the web scene and appid if they exist but ignore other url params.
     // Additional url parameters may be defined by the application but they need to be mixed in
@@ -70,12 +79,12 @@ class Boilerplate {
     // supporting additional url parameters in your application.
     const urlParams = getUrlParamValues(this.settings.urlItems);
     this.results.urlParams = urlParams
-    // config defaults <- standard url params
-    // we need the web scene, appid,and oauthappid to query for the data
-    this._mixinAllConfigs(); // todo
-    // Define the portalUrl and other default values like the proxy.
-    // The portalUrl defines where to search for the web map and application content. The
-    // default value is arcgis.com.
+
+    this.config = this._mixinAllConfigs({
+      config: this.config,
+      url: urlParams
+    });
+
     if (this.settings.esriEnvironment) {
       const esriPortalUrl = this._getEsriEnvironmentPortalUrl();
       this.config.portalUrl = esriPortalUrl;
@@ -88,16 +97,9 @@ class Boilerplate {
     this.direction = this._getLanguageDirection();
 
     const checkSignIn = this._checkSignIn(this.config.oauthappid, this.config.portalUrl);
-
-
-
-
-    // check if signed in. Once we know if we're signed in, we can get data and create a portal if needed.
     return checkSignIn.always(() => {
-
-
-
       const appId = this.config.appid;
+
       const queryApplicationItem = appId ?
         this._queryApplicationItem(appId) :
         promiseUtils.resolve();
@@ -106,38 +108,34 @@ class Boilerplate {
         this._queryPortal() :
         promiseUtils.resolve();
 
-      // execute these tasks async
       return promiseUtils.eachAlways([
-        // get application data
         queryApplicationItem,
-        // get org data
         queryPortal
       ]).always(applicationArgs => {
         const [applicationResponse, portalResponse] = applicationArgs;
 
-
-        // gets a temporary config from the users local storage
-        this.results.localStorageConfig = this.settings.localConfig.fetch ?
+        const localConfig = this.settings.localConfig.fetch ?
           this._getLocalConfig(appId) :
           null;
-        this.results.applicationItem = applicationResponse.value;
+        this.results.localStorageConfig = localConfig;
+
+        const applicationItem = applicationResponse.value;
+        const applicationConfig = applicationItem ? applicationItem.data.values : null;
+        this.results.applicationItem = applicationItem;
+
         const portal = portalResponse.value;
         this.portal = portal;
+
         this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.webTierSecurity);
 
         this.units = this._getUnits(portal);
 
-
-
-
-
-
-
-
-        // mixin all new settings from org and app
-        this._mixinAllConfigs();
-        // let's set up a few things
-        this._completeApplication();
+        this.config = this._mixinAllConfigs({
+          config: this.config,
+          url: urlParams,
+          local: localConfig,
+          application: applicationConfig
+        });
 
         const webMapId = this.config.webmap;
         const queryWebMapItem = webMapId && this.settings.webmap.fetch ?
@@ -158,24 +156,31 @@ class Boilerplate {
           this.queryGroupItems(groupId, this.settings.group.itemParams, portal) :
           promiseUtils.resolve();
 
-        // then execute these async
         return promiseUtils.eachAlways([
-          // webmap item
           queryWebMapItem,
-          // webscene item
           queryWebSceneItem,
-          // group information
           queryGroupInfo,
-          // items within a specific group
           queryGroupItems
         ]).always(itemArgs => {
           const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
 
-          this.results.webMapItem = webMapResponse.value;
-          this.results.webSceneItem = webSceneResponse.value;
-          this.results.group.itemsData = groupItemsResponse.value;
-          this.results.group.infoData = groupInfoResponse.value;
+          const webSceneItem = webSceneResponse.value || webSceneResponse.error;
+          const webMapItem = webMapResponse.value || webMapResponse.error;
+          this.results.webMapItem = webMapItem;
+          this.results.webSceneItem = webSceneItem;
+          this.results.group.itemsData = groupItemsResponse.value || groupItemsResponse.error;
+          this.results.group.infoData = groupInfoResponse.value || groupInfoResponse.error;
 
+          this._overwriteItemExtent(webSceneItem, applicationItem.item);
+          this._overwriteItemExtent(webMapItem, applicationItem.item);
+
+          this._setGeometryService(this.config, this.portal);
+
+          this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.defaultWebmap);
+          this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.defaultWebscene);
+          this.config.group = this._getDefaultId(this.config.group, this.settings.defaultGroup);
+
+          // todo: do we need these on the class or just returned?
           return {
             settings: this.settings,
             config: this.config,
@@ -205,6 +210,7 @@ class Boilerplate {
     const units = userUnits ? userUnits : responseUnits ? responseUnits : isEnglishUnits ? "english" : "metric";
     return units;
   }
+
   private _getLocalConfig(appid: string): BoilerplateSettings {
     if (!(window.localStorage && appid)) {
       return;
@@ -224,9 +230,6 @@ class Boilerplate {
   }
 
   private _queryGroupInfo(groupId: string, portal: Portal): IPromise<any> {
-    // Get details about the specified group. If the group is not shared publicly users will
-    // be prompted to log-in by the Identity Manager.
-    // group params
     const params = new PortalQueryParams({
       query: `id:"${groupId}"`
     });
@@ -240,48 +243,33 @@ class Boilerplate {
     return sceneItem.load();
   }
 
+  // todo: need to figure out the  layermixins
   private _queryApplicationItem(appid: string): IPromise<any> {
-    // Get the application configuration details using the application id. When the response contains
-    // itemData.values then we know the app contains configuration information. We'll use these values
-    // to overwrite the application defaults.
     const appItem = new PortalItem({
       id: appid
     });
     return appItem.load().then((itemInfo) => {
-      return itemInfo.fetchData().then((data) => {
-        const cfg = data && data.values || {};
-        const appProxies = itemInfo.appProxies;
-        // get the extent for the application item. This can be used to override the default web map extent
-        if (itemInfo.extent) {
-          cfg.application_extent = itemInfo.extent;
-        }
+      return itemInfo.fetchData().then((itemData) => {
+        // const cfg = itemData && itemData.values || {};
+        // const appProxies = itemInfo.appProxies;
         // get any app proxies defined on the application item
-        if (appProxies) {
-          const layerMixins = appProxies.map((p) => {
-            return {
-              "url": p.sourceUrl,
-              "mixin": {
-                "url": p.proxyUrl
-              }
-            };
-          });
-          cfg.layerMixins = layerMixins;
-        }
+        // if (appProxies) {
+        //   const layerMixins = appProxies.map((p) => {
+        //     return {
+        //       "url": p.sourceUrl,
+        //       "mixin": {
+        //         "url": p.proxyUrl
+        //       }
+        //     };
+        //   });
+        //   cfg.layerMixins = layerMixins;
+        // }
         return {
-          data: itemInfo,
-          config: cfg
-        };
-      }).otherwise((error) => {
-        return {
-          error: error || new Error("Boilerplate:: Error retrieving application configuration data.")
+          item: itemInfo,
+          data: itemData
         };
       });
-    }).otherwise((error) => {
-      return {
-        error: error || new Error("Boilerplate:: Error retrieving application configuration.")
-      };
     });
-
   }
 
   private _setupCORS(authorizedDomains: any, webTierSecurity: boolean): void {
@@ -298,29 +286,20 @@ class Boilerplate {
   }
 
   private _queryPortal(): IPromise<Portal> {
-    // Query the ArcGIS.com organization. This is defined by the portalUrl that is specified. For example if you
-    // are a member of an org you'll want to set the portalUrl to be http://<your org name>.arcgis.com. We query
-    // the organization by making a self request to the org url which returns details specific to that organization.
-    // Examples of the type of information returned are custom roles, units settings, helper services and more.
-    // If this fails, the application will continue to function
     return new Portal().load();
   }
 
-  private _overwriteExtent(itemInfo, extent): void {
-    const item = itemInfo && itemInfo.item;
-    if (item && item.extent) {
-      item.extent = [
-        [
-          parseFloat(extent[0][0]), parseFloat(extent[0][1])
-        ],
-        [
-          parseFloat(extent[1][0]), parseFloat(extent[1][1])
-        ]
-      ];
+  private _overwriteItemExtent(item: PortalItem | Error, applicationItem: PortalItem | Error): void {
+    if (applicationItem instanceof Error || item instanceof Error || !applicationItem || !item) {
+      return;
     }
+
+    const applicationExtent = applicationItem.extent;
+
+    item.extent = applicationExtent ? applicationExtent : item.extent;
   }
 
-  private _getGeometryService(config: ApplicationConfig, portal: any) { // todo
+  private _setGeometryService(config: ApplicationConfig, portal: any) { // todo: fix next api release
     // get helper services
     const configHelperServices = config.helperServices;
     const portalHelperServices = portal && portal.helperServices;
@@ -337,33 +316,13 @@ class Boilerplate {
     esriConfig.geometryServiceUrl = geometryUrl;
   }
 
-  // todo: rewrite function without `this`
-  private _completeApplication(): void {
-
-    // ArcGIS.com allows you to set an application extent on the application item. Overwrite the
-    // existing extents with the application item extent when set.
-    // todo
-    const applicationExtent = this.config.application_extent;
-    const results = this.results;
-    if (this.config.appid && applicationExtent && applicationExtent.length > 0) {
-      this._overwriteExtent(results.webSceneItem.data, applicationExtent);
-      this._overwriteExtent(results.webMapItem.data, applicationExtent);
-    }
-
-    // todo
-    this._getGeometryService(this.config, this.portal);
-
-    // todo
+  private _getDefaultId(id: string, defaultId: string): string {
     const defaultUrlParam = "default";
-    if ((!this.config.webmap || this.config.webmap === defaultUrlParam) && this.settings.defaultWebmap) {
-      this.config.webmap = this.settings.defaultWebmap;
+    const useDefaultId = (!id || id === defaultUrlParam) && defaultId;
+    if (useDefaultId) {
+      return defaultId;
     }
-    if ((!this.config.webscene || this.config.webscene === defaultUrlParam) && this.settings.defaultWebscene) {
-      this.config.webscene = this.settings.defaultWebscene;
-    }
-    if ((!this.config.group || this.config.group === defaultUrlParam) && this.settings.defaultGroup) {
-      this.config.group = this.settings.defaultGroup;
-    }
+    return id;
   }
 
   private _getLanguageDirection(): string {
@@ -376,17 +335,16 @@ class Boilerplate {
     return isRTL ? RTL : LTR;
   }
 
-  // todo: pass in arguments for mixin as MixinParams
-  private _mixinAllConfigs() {
-    const config = this.config;
-    const applicationItem = this.results.applicationItem ? this.results.applicationItem.config : null;
-    const localStorageConfig = this.results.localStorageConfig;
-    const urlParams = this.results.urlParams ? this.results.urlParams : null;
-    this.config = {
+  private _mixinAllConfigs(params: Configs): ApplicationConfig {
+    const config = params.config || null;
+    const appConfig = params.application || null;
+    const localConfig = params.local || null;
+    const urlConfig = params.url || null;
+    return {
       ...config,
-      ...applicationItem,
-      ...localStorageConfig,
-      ...urlParams
+      ...appConfig,
+      ...localConfig,
+      ...urlConfig
     }
   }
 

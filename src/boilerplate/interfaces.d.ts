@@ -1,6 +1,8 @@
 import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 
+// todo: organize all interfaces. alpahbetically
+
 export interface ApplicationConfig {
   title?: string;
   webmap?: string;
@@ -76,21 +78,13 @@ export interface BoilerplateResults {
   localStorageConfig?: {
     [propName: string]: any;
   },
-  webMapItem?: {
-    data?: any;
-    [propName: string]: any;
-  },
-  webSceneItem?: {
-    data?: any;
-    [propName: string]: any;
-  },
+  webMapItem?: PortalItem | Error;
+  webSceneItem?: PortalItem | Error;
   applicationItem?: {
+    item: PortalItem | Error,
     data: any;
-    config: any;
-  },
-  portal?: {
-    data: any;
-  }
+  };
+  portal?: Portal;
 }
 
 export interface BoilerplateResponse {

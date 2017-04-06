@@ -28,6 +28,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             }
             this.config = boilerplateResponse.config;
             this.settings = boilerplateResponse.settings;
+            // todo
             var boilerplateResults = boilerplateResponse.results;
             var webMapItem = boilerplateResults.webMapItem;
             var webSceneItem = boilerplateResults.webSceneItem;
