@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point", "esri/views/SceneView"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point, SceneView) {
+define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -29,90 +29,11 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         return formattedUrlObject;
     }
     exports.getUrlParamValues = getUrlParamValues;
-    function getUrlViewProperties(config) {
-        var viewProperties = {};
-        if (config.components) {
-            var components = config.components.split(",");
-            viewProperties.ui = {
-                components: components
-            };
-        }
-        var camera = _viewpointStringToCamera(config.viewpoint);
-        if (camera) {
-            viewProperties.camera = camera;
-        }
-        var center = _centerStringToPoint(config.center);
-        if (center) {
-            viewProperties.center = center;
-        }
-        var level = _levelStringToLevel(config.level);
-        if (level) {
-            viewProperties.zoom = level;
-        }
-        var extent = _extentStringToExtent(config.extent);
-        if (extent) {
-            viewProperties.extent = extent;
-        }
-        return viewProperties;
+    function getComponents(components) {
+        return components.split(",");
     }
-    exports.getUrlViewProperties = getUrlViewProperties;
-    function setConfigItemsOnView(view, config, searchWidget) {
-        _addMarkerToView(view, config.marker);
-        _find(view, config.find, searchWidget);
-        _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
-    }
-    exports.setConfigItemsOnView = setConfigItemsOnView;
-    //--------------------------------------------------------------------------
-    //
-    //  Private Methods
-    //
-    //--------------------------------------------------------------------------
-    function _find(view, findString, searchWidget) {
-        if (!findString) {
-            return;
-        }
-        if (searchWidget) {
-            searchWidget.search(findString);
-        }
-        else {
-            requireUtils.when(require, "esri/widgets/Search").then(function (Search) {
-                searchWidget = new Search({
-                    view: view
-                });
-                searchWidget.search(findString);
-            });
-        }
-        return searchWidget;
-    }
-    function _setBasemapOnView(view, basemapUrl, basemapReferenceUrl) {
-        if (!basemapUrl || !view) {
-            return;
-        }
-        requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(function (modules) {
-            var Layer = modules[0], Basemap = modules[1];
-            var getBaseLayers = promiseUtils.eachAlways({
-                baseLayer: Layer.fromArcGISServerUrl({
-                    url: basemapUrl
-                }),
-                referenceLayer: Layer.fromArcGISServerUrl({
-                    url: basemapReferenceUrl
-                })
-            });
-            getBaseLayers.then(function (response) {
-                var baseLayer = response.baseLayer;
-                var referenceLayer = response.referenceLayer;
-                if (!baseLayer) {
-                    return;
-                }
-                var basemapOptions = {
-                    baseLayers: baseLayer,
-                    referenceLayers: referenceLayer
-                };
-                view.map.basemap = new Basemap(basemapOptions);
-            });
-        });
-    }
-    function _viewpointStringToCamera(viewpointString) {
+    exports.getComponents = getComponents;
+    function getCamera(viewpointString) {
         // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
         var viewpointArray = viewpointString && viewpointString.split(";");
         if (!viewpointArray || !viewpointArray.length) {
@@ -128,13 +49,44 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         }
         return;
     }
-    function _extentStringToExtent(extentString) {
-        //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-        //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
-        if (!extentString) {
+    exports.getCamera = getCamera;
+    function getPoint(center) {
+        //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
+        //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
+        if (!center) {
             return null;
         }
-        var extentArray = _splitURLString(extentString);
+        var centerArray = _splitURLString(center);
+        var centerLength = centerArray.length;
+        if (centerLength < 2) {
+            return null;
+        }
+        var x = parseFloat(centerArray[0]);
+        var y = parseFloat(centerArray[1]);
+        if (isNaN(x) || isNaN(y)) {
+            return null;
+        }
+        var wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
+        return new Point({
+            x: x,
+            y: y,
+            spatialReference: {
+                wkid: wkid
+            }
+        });
+    }
+    exports.getPoint = getPoint;
+    function getZoom(level) {
+        return level && parseInt(level, 10);
+    }
+    exports.getZoom = getZoom;
+    function getExtent(extent) {
+        //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+        //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
+        if (!extent) {
+            return null;
+        }
+        var extentArray = _splitURLString(extent);
         var extentLength = extentArray.length;
         if (extentLength < 4) {
             return null;
@@ -155,35 +107,9 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         });
         return ext;
     }
-    function _centerStringToPoint(centerString) {
-        //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
-        //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
-        if (!centerString) {
-            return null;
-        }
-        var centerArray = _splitURLString(centerString);
-        var centerLength = centerArray.length;
-        if (centerLength < 2) {
-            return null;
-        }
-        var x = parseFloat(centerArray[0]);
-        var y = parseFloat(centerArray[1]);
-        if (isNaN(x) || isNaN(y)) {
-            return null;
-        }
-        var wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
-        return new Point({
-            x: x,
-            y: y,
-            spatialReference: {
-                wkid: wkid
-            }
-        });
-    }
-    function _levelStringToLevel(levelString) {
-        return levelString && parseInt(levelString, 10);
-    }
-    function _addMarkerToView(view, markerString) {
+    exports.getExtent = getExtent;
+    // todo: test this functionality
+    function getGraphic(marker) {
         // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
         // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
         // ?marker=-13044705.25,4036227.41,102100,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
@@ -191,15 +117,15 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         // ?marker=-117,34,,,,My%20location&level=10
         // ?marker=-117,34&level=10
         // ?marker=10406557.402,6590748.134,2526
-        if (!markerString) {
+        if (!marker) {
             return null;
         }
-        var markerArray = _splitURLString(markerString);
+        var markerArray = _splitURLString(marker);
         var markerLength = markerArray.length;
         if (markerLength < 2) {
             return null;
         }
-        requireUtils.when(require, [
+        return requireUtils.when(require, [
             "esri/Graphic",
             "esri/PopupTemplate",
             "esri/symbols/PictureMarkerSymbol"
@@ -243,19 +169,57 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
                 symbol: markerSymbol,
                 popupTemplate: popupTemplate
             });
-            if (!graphic) {
-                return null;
-            }
-            view.graphics.add(graphic);
-            // todo: will be cleaned up in next JS API release.
-            if (view instanceof SceneView) {
-                view.goTo(graphic);
-            }
-            else {
-                view.goTo(graphic);
-            }
+            return graphic;
         });
     }
+    exports.getGraphic = getGraphic;
+    // todo: test this functionality
+    function getBasemap(basemapUrl, basemapReferenceUrl) {
+        if (!basemapUrl) {
+            return promiseUtils.resolve();
+        }
+        return requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(function (modules) {
+            var Layer = modules[0], Basemap = modules[1];
+            var getBaseLayer = Layer.fromArcGISServerUrl({
+                url: basemapUrl
+            });
+            var getReferenceLayer = basemapReferenceUrl ? Layer.fromArcGISServerUrl({
+                url: basemapReferenceUrl
+            }) : promiseUtils.resolve();
+            var getBaseLayers = promiseUtils.eachAlways({
+                baseLayer: getBaseLayer,
+                referenceLayer: getReferenceLayer
+            });
+            return getBaseLayers.then(function (response) {
+                var baseLayer = response.baseLayer;
+                var referenceLayer = response.referenceLayer;
+                var basemapOptions = {
+                    baseLayers: baseLayer ? [baseLayer] : [],
+                    referenceLayers: referenceLayer ? [referenceLayer] : []
+                };
+                return new Basemap(basemapOptions);
+            });
+        });
+    }
+    exports.getBasemap = getBasemap;
+    // todo: test
+    function find(find, view) {
+        if (!find || !view) {
+            return promiseUtils.resolve();
+        }
+        return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(function (SearchViewModel) {
+            var searchVM = new SearchViewModel({
+                view: view
+            });
+            return searchVM.search(find);
+        });
+    }
+    exports.find = find;
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
     function _splitURLString(value) {
         if (!value) {
             return null;

@@ -14,8 +14,14 @@ import {
 } from "boilerplate/itemUtils";
 
 import {
-  setConfigItemsOnView,
-  getUrlViewProperties
+  getComponents,
+  getCamera,
+  getPoint,
+  getExtent,
+  getZoom,
+  getBasemap,
+  getGraphic,
+  find
 } from "boilerplate/urlUtils";
 
 const CSS = {
@@ -81,14 +87,14 @@ class Application {
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
       this._createWebMap(webMapItem, config, settings).then((view) => {
-        setConfigItemsOnView(view, config);
+        find(config.find, view);
         this._setTitle(config.title);
         this._removeLoading();
       }).otherwise(this.reportError);
     }
     else if (webSceneItem) {
       this._createWebScene(webSceneItem, config, settings).then((view) => {
-        setConfigItemsOnView(view, config);
+        find(config.find, view);
         this._setTitle(config.title);
         this._removeLoading();
       }).otherwise(this.reportError);
@@ -147,7 +153,16 @@ class Application {
   private _createWebMap(webMapItem, config, settings): IPromise<MapView> {
     return createWebMapFromItem(webMapItem).then(map => {
 
-      const urlViewProperties = getUrlViewProperties(config);
+      const urlViewProperties = {
+        // ui: { components: getComponents(config.components) },
+        // camera: getCamera(config.camera),
+        // center: getPoint(config.center),
+        // zoom: getZoom(config.level),
+        // extent: getExtent(config.extent)
+      };
+
+      const graphic = getGraphic(config.marker);
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl);
 
       const viewProperties = {
         map,
@@ -163,7 +178,16 @@ class Application {
 
   private _createWebScene(webSceneItem, config, settings): IPromise<SceneView> {
     return createWebSceneFromItem(webSceneItem).then(map => {
-      const urlViewProperties = getUrlViewProperties(config);
+      const urlViewProperties = {
+        ui: { components: getComponents(config.components) },
+        camera: getCamera(config.camera),
+        center: getPoint(config.center),
+        zoom: getZoom(config.level),
+        extent: getExtent(config.extent)
+      };
+
+      const graphic = getGraphic(config.marker);
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl);
 
       const viewProperties = {
         map,

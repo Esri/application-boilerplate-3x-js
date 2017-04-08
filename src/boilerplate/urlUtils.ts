@@ -1,4 +1,6 @@
+import Basemap = require("esri/Basemap");
 import Camera = require("esri/Camera");
+import Graphic = require("esri/Graphic");
 
 import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
@@ -8,8 +10,6 @@ import Point = require("esri/geometry/Point");
 
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
-
-import Search = require("esri/widgets/Search");
 
 import { ApplicationConfig } from "boilerplate/interfaces";
 
@@ -53,102 +53,11 @@ export function getUrlParamValues(urlParams: string[]): ApplicationConfig {
   return formattedUrlObject;
 }
 
-export function getUrlViewProperties(config: ApplicationConfig): ViewProperties {
-  const viewProperties: ViewProperties = {};
-
-  if (config.components) {
-    const components = config.components.split(",");
-    viewProperties.ui = {
-      components: components
-    };
-  }
-
-  const camera = _viewpointStringToCamera(config.viewpoint);
-  if (camera) {
-    viewProperties.camera = camera;
-  }
-
-  const center = _centerStringToPoint(config.center);
-  if (center) {
-    viewProperties.center = center;
-  }
-
-  const level = _levelStringToLevel(config.level);
-  if (level) {
-    viewProperties.zoom = level;
-  }
-
-  const extent = _extentStringToExtent(config.extent);
-  if (extent) {
-    viewProperties.extent = extent;
-  }
-
-  return viewProperties;
+export function getComponents(components: string) {
+  return components.split(",");
 }
 
-export function setConfigItemsOnView(view: MapView | SceneView, config, searchWidget?: Search): void {
-  _addMarkerToView(view, config.marker);
-  _find(view, config.find, searchWidget);
-  _setBasemapOnView(view, config.basemapUrl, config.basemapReferenceUrl);
-}
-
-//--------------------------------------------------------------------------
-//
-//  Private Methods
-//
-//--------------------------------------------------------------------------
-
-function _find(view: MapView | SceneView, findString, searchWidget?: Search): Search {
-  if (!findString) {
-    return;
-  }
-
-  if (searchWidget) {
-    searchWidget.search(findString);
-  }
-  else {
-    requireUtils.when(require, "esri/widgets/Search").then(Search => {
-      searchWidget = new Search({
-        view: view
-      });
-      searchWidget.search(findString);
-    });
-  }
-
-  return searchWidget;
-}
-
-function _setBasemapOnView(view: MapView | SceneView, basemapUrl, basemapReferenceUrl): void {
-  if (!basemapUrl || !view) {
-    return;
-  }
-
-  requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(modules => {
-    const [Layer, Basemap] = modules;
-    const getBaseLayers = promiseUtils.eachAlways({
-      baseLayer: Layer.fromArcGISServerUrl({
-        url: basemapUrl
-      }),
-      referenceLayer: Layer.fromArcGISServerUrl({
-        url: basemapReferenceUrl
-      })
-    });
-    getBaseLayers.then((response) => {
-      const baseLayer = response.baseLayer;
-      const referenceLayer = response.referenceLayer;
-      if (!baseLayer) {
-        return;
-      }
-      const basemapOptions = {
-        baseLayers: baseLayer,
-        referenceLayers: referenceLayer
-      };
-      view.map.basemap = new Basemap(basemapOptions);
-    });
-  });
-}
-
-function _viewpointStringToCamera(viewpointString: string): Camera {
+export function getCamera(viewpointString: string): Camera {
   // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
   const viewpointArray = viewpointString && viewpointString.split(";");
 
@@ -169,14 +78,49 @@ function _viewpointStringToCamera(viewpointString: string): Camera {
   return;
 }
 
-function _extentStringToExtent(extentString: string): Extent {
-  //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-  //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
-  if (!extentString) {
+export function getPoint(center: string): Point {
+  //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
+  //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
+  if (!center) {
     return null;
   }
 
-  const extentArray = _splitURLString(extentString);
+  const centerArray = _splitURLString(center);
+  const centerLength = centerArray.length;
+
+  if (centerLength < 2) {
+    return null;
+  }
+
+  const x = parseFloat(centerArray[0]);
+  const y = parseFloat(centerArray[1]);
+
+  if (isNaN(x) || isNaN(y)) {
+    return null;
+  }
+
+  const wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
+  return new Point({
+    x: x,
+    y: y,
+    spatialReference: {
+      wkid: wkid
+    }
+  });
+}
+
+export function getZoom(level: string): number {
+  return level && parseInt(level, 10);
+}
+
+export function getExtent(extent: string): Extent {
+  //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+  //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
+  if (!extent) {
+    return null;
+  }
+
+  const extentArray = _splitURLString(extent);
   const extentLength = extentArray.length;
 
   if (extentLength < 4) {
@@ -205,42 +149,8 @@ function _extentStringToExtent(extentString: string): Extent {
   return ext;
 }
 
-function _centerStringToPoint(centerString: string): Point {
-  //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
-  //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
-  if (!centerString) {
-    return null;
-  }
-
-  const centerArray = _splitURLString(centerString);
-  const centerLength = centerArray.length;
-
-  if (centerLength < 2) {
-    return null;
-  }
-
-  const x = parseFloat(centerArray[0]);
-  const y = parseFloat(centerArray[1]);
-
-  if (isNaN(x) || isNaN(y)) {
-    return null;
-  }
-
-  const wkid = centerLength === 3 ? parseInt(centerArray[2], 10) : 4326;
-  return new Point({
-    x: x,
-    y: y,
-    spatialReference: {
-      wkid: wkid
-    }
-  });
-}
-
-function _levelStringToLevel(levelString: string): number {
-  return levelString && parseInt(levelString, 10);
-}
-
-function _addMarkerToView(view: MapView | SceneView, markerString: string): void {
+// todo: test this functionality
+export function getGraphic(marker: string): IPromise<Graphic> {
   // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
   // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
   // ?marker=-13044705.25,4036227.41,102100,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
@@ -249,18 +159,18 @@ function _addMarkerToView(view: MapView | SceneView, markerString: string): void
   // ?marker=-117,34&level=10
   // ?marker=10406557.402,6590748.134,2526
 
-  if (!markerString) {
+  if (!marker) {
     return null;
   }
 
-  const markerArray = _splitURLString(markerString);
+  const markerArray = _splitURLString(marker);
   const markerLength = markerArray.length;
 
   if (markerLength < 2) {
     return null;
   }
 
-  requireUtils.when(require, [
+  return requireUtils.when(require, [
     "esri/Graphic",
     "esri/PopupTemplate",
     "esri/symbols/PictureMarkerSymbol"
@@ -307,20 +217,64 @@ function _addMarkerToView(view: MapView | SceneView, markerString: string): void
       symbol: markerSymbol,
       popupTemplate: popupTemplate
     });
-
-    if (!graphic) {
-      return null;
-    }
-    view.graphics.add(graphic);
-    // todo: will be cleaned up in next JS API release.
-    if (view instanceof SceneView) {
-      view.goTo(graphic);
-    }
-    else {
-      view.goTo(graphic);
-    }
+    return graphic;
   });
 }
+
+// todo: test this functionality
+export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPromise<Basemap> {
+  if (!basemapUrl) {
+    return promiseUtils.resolve();
+  }
+
+  return requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(modules => {
+    const [Layer, Basemap] = modules;
+
+    const getBaseLayer = Layer.fromArcGISServerUrl({
+      url: basemapUrl
+    });
+
+    const getReferenceLayer = basemapReferenceUrl ? Layer.fromArcGISServerUrl({
+      url: basemapReferenceUrl
+    }) : promiseUtils.resolve();
+
+    const getBaseLayers = promiseUtils.eachAlways({
+      baseLayer: getBaseLayer,
+      referenceLayer: getReferenceLayer
+    });
+
+    return getBaseLayers.then((response) => {
+      const baseLayer = response.baseLayer;
+      const referenceLayer = response.referenceLayer;
+      const basemapOptions = {
+        baseLayers: baseLayer ? [baseLayer] : [],
+        referenceLayers: referenceLayer ? [referenceLayer] : []
+      };
+      return new Basemap(basemapOptions);
+    });
+  });
+}
+
+
+// todo: test
+export function find(find: string, view: MapView | SceneView): IPromise<{}> {
+  if (!find || !view) {
+    return promiseUtils.resolve();
+  }
+
+  return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(SearchViewModel => {
+    const searchVM = new SearchViewModel({
+      view: view
+    });
+    return searchVM.search(find);
+  });
+}
+
+//--------------------------------------------------------------------------
+//
+//  Private Methods
+//
+//--------------------------------------------------------------------------
 
 function _splitURLString(value: string): string[] {
   if (!value) {

@@ -61,14 +61,14 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             // todo: support multiple webscenes, webmaps, groups.
             if (webMapItem) {
                 this._createWebMap(webMapItem, config, settings).then(function (view) {
-                    urlUtils_1.setConfigItemsOnView(view, config);
+                    urlUtils_1.find(config.find, view);
                     _this._setTitle(config.title);
                     _this._removeLoading();
                 }).otherwise(this.reportError);
             }
             else if (webSceneItem) {
                 this._createWebScene(webSceneItem, config, settings).then(function (view) {
-                    urlUtils_1.setConfigItemsOnView(view, config);
+                    urlUtils_1.find(config.find, view);
                     _this._setTitle(config.title);
                     _this._removeLoading();
                 }).otherwise(this.reportError);
@@ -119,7 +119,9 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         };
         Application.prototype._createWebMap = function (webMapItem, config, settings) {
             return itemUtils_1.createWebMapFromItem(webMapItem).then(function (map) {
-                var urlViewProperties = urlUtils_1.getUrlViewProperties(config);
+                var urlViewProperties = {};
+                var graphic = urlUtils_1.getGraphic(config.marker);
+                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl);
                 var viewProperties = __assign({ map: map, container: settings.webmap.containerId }, urlViewProperties);
                 return requireUtils.when(require, "esri/views/MapView").then(function (MapView) {
                     return new MapView(viewProperties);
@@ -128,7 +130,15 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         };
         Application.prototype._createWebScene = function (webSceneItem, config, settings) {
             return itemUtils_1.createWebSceneFromItem(webSceneItem).then(function (map) {
-                var urlViewProperties = urlUtils_1.getUrlViewProperties(config);
+                var urlViewProperties = {
+                    ui: { components: urlUtils_1.getComponents(config.components) },
+                    camera: urlUtils_1.getCamera(config.camera),
+                    center: urlUtils_1.getPoint(config.center),
+                    zoom: urlUtils_1.getZoom(config.level),
+                    extent: urlUtils_1.getExtent(config.extent)
+                };
+                var graphic = urlUtils_1.getGraphic(config.marker);
+                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl);
                 var viewProperties = __assign({ map: map, container: settings.webscene.containerId }, urlViewProperties);
                 return requireUtils.when(require, "esri/views/SceneView").then(function (SceneView) {
                     return new SceneView(viewProperties);

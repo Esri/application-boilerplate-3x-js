@@ -68,7 +68,7 @@ class Boilerplate {
   //
   //--------------------------------------------------------------------------
 
-  public queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
+  queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
     const paramOptions = {
       query: `group:"${groupId}" AND -type:"Code Attachment"`,
       sortField: "modified",
@@ -82,7 +82,7 @@ class Boilerplate {
     return portal.queryItems(params);
   }
 
-  public init(): IPromise<Boilerplate> {
+  load(): IPromise<Boilerplate> {
     const urlParams = getUrlParamValues(this.settings.urlParams);
     this.results.urlParams = urlParams
 
@@ -175,20 +175,8 @@ class Boilerplate {
           const webSceneItem = webSceneResponse.value;
           const webMapItem = webMapResponse.value;
 
-          // todo
+          // todo: mixin sourceUrl with proxyUrl
           // const appProxies = applicationInfo.appProxies;
-          // get any app proxies defined on the application item
-          // if (appProxies) {
-          //   const layerMixins = appProxies.map((p) => {
-          //     return {
-          //       "url": p.sourceUrl,
-          //       "mixin": {
-          //         "url": p.proxyUrl
-          //       }
-          //     };
-          //   });
-          //   cfg.layerMixins = layerMixins;
-          // }
 
           this.results.webMapItem = webMapResponse;
           this.results.webSceneItem = webSceneResponse;
@@ -301,7 +289,8 @@ class Boilerplate {
     item.extent = applicationExtent ? applicationExtent : item.extent;
   }
 
-  private _setGeometryService(config: ApplicationConfig, portal: any) { // todo: fix next api release
+  private _setGeometryService(config: ApplicationConfig, ptl: Portal) {
+    const portal = ptl as any; // todo: fix next api release
     const configHelperServices = config.helperServices;
     const portalHelperServices = portal && portal.helperServices;
     const configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;

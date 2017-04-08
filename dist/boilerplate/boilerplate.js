@@ -48,7 +48,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             var params = new PortalQueryParams(paramOptions);
             return portal.queryItems(params);
         };
-        Boilerplate.prototype.init = function () {
+        Boilerplate.prototype.load = function () {
             var _this = this;
             var urlParams = urlUtils_1.getUrlParamValues(this.settings.urlParams);
             this.results.urlParams = urlParams;
@@ -121,20 +121,8 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         var webMapResponse = itemArgs[0], webSceneResponse = itemArgs[1], groupInfoResponse = itemArgs[2], groupItemsResponse = itemArgs[3];
                         var webSceneItem = webSceneResponse.value;
                         var webMapItem = webMapResponse.value;
-                        // todo
+                        // todo: mixin sourceUrl with proxyUrl
                         // const appProxies = applicationInfo.appProxies;
-                        // get any app proxies defined on the application item
-                        // if (appProxies) {
-                        //   const layerMixins = appProxies.map((p) => {
-                        //     return {
-                        //       "url": p.sourceUrl,
-                        //       "mixin": {
-                        //         "url": p.proxyUrl
-                        //       }
-                        //     };
-                        //   });
-                        //   cfg.layerMixins = layerMixins;
-                        // }
                         _this.results.webMapItem = webMapResponse;
                         _this.results.webSceneItem = webSceneResponse;
                         _this.results.groupItems = groupItemsResponse;
@@ -228,7 +216,8 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             var applicationExtent = applicationItem.extent;
             item.extent = applicationExtent ? applicationExtent : item.extent;
         };
-        Boilerplate.prototype._setGeometryService = function (config, portal) {
+        Boilerplate.prototype._setGeometryService = function (config, ptl) {
+            var portal = ptl; // todo: fix next api release
             var configHelperServices = config.helperServices;
             var portalHelperServices = portal && portal.helperServices;
             var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
