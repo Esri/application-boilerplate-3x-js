@@ -24,5 +24,11 @@ define(["require", "exports", "esri/core/requireUtils"], function (require, expo
         });
     }
     exports.createWebSceneFromItem = createWebSceneFromItem;
+    function getItemTitle(item) {
+        if (item && item.title) {
+            return item.title;
+        }
+    }
+    exports.getItemTitle = getItemTitle;
 });
 //# sourceMappingURL=itemUtils.js.map

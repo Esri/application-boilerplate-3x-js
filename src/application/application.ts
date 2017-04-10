@@ -9,9 +9,18 @@ import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
 
 import {
+  getItemTitle,
   createWebMapFromItem,
   createWebSceneFromItem
 } from "boilerplate/itemUtils";
+
+import {
+  setPageLocale,
+  setPageDirection,
+  setPageTitle,
+  removePageLoading,
+  addPageError
+} from "boilerplate/domUtils";
 
 import {
   getComponents,
@@ -24,13 +33,6 @@ import {
   find
 } from "boilerplate/urlUtils";
 
-const CSS = {
-  loading: "boilerplate--loading",
-  error: "boilerplate--error",
-  errorIcon: "esri-icon-notice-round"
-};
-
-// todo: should this be a class?
 class Application {
 
   //--------------------------------------------------------------------------
@@ -53,80 +55,55 @@ class Application {
   public init(boilerplate: Boilerplate): void {
 
     if (!boilerplate) {
-      this.reportError(new Error("app:: Boilerplate is not defined"));
+      addPageError(new Error("app:: Boilerplate is not defined"));
       return;
     }
 
     this.boilerplate = boilerplate;
 
-    // todo
-    const boilerplateResults = boilerplate.results;
-    const webMapItem = boilerplateResults.webMapItem.value;
-    const webSceneItem = boilerplateResults.webSceneItem.value;
-    const groupItems = boilerplateResults.groupItems.value;
-    const groupInfo = boilerplateResults.groupInfo.value;
+    const { config, results, settings } = boilerplate;
+    const webMapItem = results.webMapItem.value;
+    const webSceneItem = results.webSceneItem.value;
+    const groupItems = results.groupItems.value;
+    const groupInfo = results.groupInfo.value;
 
     if (!webMapItem && !webSceneItem && !groupItems) {
-      this.reportError(new Error("app:: Could not load an item to display"));
+      addPageError(new Error("app:: Could not load an item to display"));
       return;
     }
 
-    this._setDocumentLocale(boilerplate.locale);
-    this._setDirection(boilerplate.direction);
+    setPageLocale(boilerplate.locale);
+    setPageDirection(boilerplate.direction);
 
-    const config = this.boilerplate.config;
-    const settings = this.boilerplate.settings;
-
-    // todo
-    if (!config.title && webMapItem && webMapItem.title) {
-      config.title = webMapItem.title;
-    }
-
-    if (!config.title && webSceneItem && webSceneItem.title) {
-      config.title = webSceneItem.title;
-    }
 
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
+      config.title = getItemTitle(webMapItem) || config.title;
       this._createWebMap(webMapItem, config, settings).then((view) => {
         find(config.find, view);
-        this._setTitle(config.title);
-        this._removeLoading();
-      }).otherwise(this.reportError);
+        setPageTitle(config.title);
+        removePageLoading();
+      }).otherwise(addPageError);
     }
     else if (webSceneItem) {
+      config.title = getItemTitle(webSceneItem) || config.title;
       this._createWebScene(webSceneItem, config, settings).then((view) => {
         find(config.find, view);
-        this._setTitle(config.title);
-        this._removeLoading();
-      }).otherwise(this.reportError);
+        setPageTitle(config.title);
+        removePageLoading();
+      }).otherwise(addPageError);
     }
     else if (groupItems) {
       const galleryHTML = this._createGroupGallery(groupInfo, groupItems);
       if (galleryHTML instanceof Error) {
-        this.reportError(galleryHTML);
+        addPageError(galleryHTML);
       }
       else {
         document.body.innerHTML = galleryHTML;
-        this._setTitle(config.title);
-        this._removeLoading();
+        setPageTitle(config.title);
+        removePageLoading();
       }
     }
-  }
-
-  public reportError(error) {
-    this._removeLoading();
-    document.body.className = CSS.error;
-    // an error occurred - notify the user. In this example we pull the string from the
-    // resource.js file located in the nls folder because we've set the application up
-    // for localization. If you don't need to support multiple languages you can hardcode the
-    // strings here and comment out the call in index.html to get the localization strings.
-    // set message
-    const node = document.getElementById("loading_message");
-    if (node) {
-      node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
-    }
-    return error;
   }
 
   //--------------------------------------------------------------------------
@@ -134,23 +111,6 @@ class Application {
   //  Private Methods
   //
   //--------------------------------------------------------------------------
-
-  private _setDocumentLocale(locale: string): void {
-    document.documentElement.lang = locale;
-  }
-
-  private _setDirection(direction: string) {
-    const dirNode = document.getElementsByTagName("html")[0];
-    dirNode.setAttribute("dir", direction);
-  }
-
-  private _setTitle(title: string) {
-    document.title = title;
-  }
-
-  private _removeLoading() {
-    document.body.className = document.body.className.replace(CSS.loading, "");
-  }
 
   private _createWebMap(webMapItem, config, settings): IPromise<MapView> {
     return createWebMapFromItem(webMapItem).then(map => {
@@ -170,11 +130,6 @@ class Application {
         // };
       }
 
-      const graphic = getGraphic(config.marker).then(graphic => {
-        if (graphic) {
-          console.log(graphic);
-        }
-      });
       const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
         if (basemap) {
           map.basemap = basemap;
@@ -189,7 +144,16 @@ class Application {
       };
 
       return requireUtils.when(require, "esri/views/MapView").then(MapView => {
-        return new MapView(viewProperties);
+        const mapView = new MapView(viewProperties);
+        mapView.then(() => {
+          const graphic = getGraphic(config.marker).then(graphic => {
+            if (graphic) {
+              mapView.graphics.add(graphic);
+              mapView.goTo(graphic);
+            }
+          });
+        });
+        return mapView;
       });
     });
   }
@@ -204,11 +168,6 @@ class Application {
         extent: getExtent(config.extent)
       };
 
-      const graphic = getGraphic(config.marker).then(graphic => {
-        if (graphic) {
-          console.log(graphic);
-        }
-      });
       const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
         if (basemap) {
           map.basemap = basemap;
@@ -222,7 +181,16 @@ class Application {
       };
 
       return requireUtils.when(require, "esri/views/SceneView").then(SceneView => {
-        return new SceneView(viewProperties);
+        const sceneView = new SceneView(viewProperties);
+        sceneView.then(() => {
+          const graphic = getGraphic(config.marker).then(graphic => {
+            if (graphic) {
+              sceneView.graphics.add(graphic);
+              sceneView.goTo(graphic);
+            }
+          });
+        });
+        return sceneView;
       });
     });
   }

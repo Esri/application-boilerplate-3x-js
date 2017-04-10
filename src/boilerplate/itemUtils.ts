@@ -26,3 +26,9 @@ export function createWebSceneFromItem(portalItem: PortalItem): IPromise<WebScen
     return ws.load();
   });
 }
+
+export function getItemTitle(item: PortalItem): string {
+  if (item && item.title) {
+    return item.title;
+  }
+}

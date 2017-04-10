@@ -111,7 +111,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         return ext;
     }
     exports.getExtent = getExtent;
-    // todo: test this functionality
     function getGraphic(marker) {
         // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
         // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10

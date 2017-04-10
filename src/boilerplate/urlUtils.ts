@@ -152,7 +152,6 @@ export function getExtent(extent: string): Extent {
   return ext;
 }
 
-// todo: test this functionality
 export function getGraphic(marker: string): IPromise<Graphic> {
   // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
   // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
