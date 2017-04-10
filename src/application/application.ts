@@ -39,6 +39,9 @@ class Application {
   //
   //--------------------------------------------------------------------------
 
+  //----------------------------------
+  //  boilerplate
+  //----------------------------------
   boilerplate: Boilerplate = null;
 
   //--------------------------------------------------------------------------
@@ -82,7 +85,6 @@ class Application {
     if (!config.title && webSceneItem && webSceneItem.title) {
       config.title = webSceneItem.title;
     }
-
 
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
@@ -154,15 +156,27 @@ class Application {
     return createWebMapFromItem(webMapItem).then(map => {
 
       const urlViewProperties = {
-        // ui: { components: getComponents(config.components) },
-        // camera: getCamera(config.camera),
-        // center: getPoint(config.center),
-        // zoom: getZoom(config.level),
-        // extent: getExtent(config.extent)
+        camera: getCamera(config.camera),
+        center: getPoint(config.center),
+        zoom: getZoom(config.level),
+        extent: getExtent(config.extent)
       };
 
+      const uiComponents = getComponents(config.components);
+      if (uiComponents) {
+        // todo: fix in new typings
+        // urlViewProperties.ui = {
+        //   components: uiComponents
+        // };
+      }
+
       const graphic = getGraphic(config.marker);
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl);
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then((basemap) => {
+        if (basemap) {
+          map.basemap = basemap;
+        }
+      });
+
 
       const viewProperties = {
         map,
@@ -187,7 +201,11 @@ class Application {
       };
 
       const graphic = getGraphic(config.marker);
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl);
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then((basemap) => {
+        if (basemap) {
+          map.basemap = basemap;
+        }
+      });
 
       const viewProperties = {
         map,

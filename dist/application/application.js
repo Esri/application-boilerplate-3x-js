@@ -23,6 +23,9 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             //  Properties
             //
             //--------------------------------------------------------------------------
+            //----------------------------------
+            //  boilerplate
+            //----------------------------------
             this.boilerplate = null;
         }
         //--------------------------------------------------------------------------
@@ -119,9 +122,25 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         };
         Application.prototype._createWebMap = function (webMapItem, config, settings) {
             return itemUtils_1.createWebMapFromItem(webMapItem).then(function (map) {
-                var urlViewProperties = {};
+                var urlViewProperties = {
+                    camera: urlUtils_1.getCamera(config.camera),
+                    center: urlUtils_1.getPoint(config.center),
+                    zoom: urlUtils_1.getZoom(config.level),
+                    extent: urlUtils_1.getExtent(config.extent)
+                };
+                var uiComponents = urlUtils_1.getComponents(config.components);
+                if (uiComponents) {
+                    // todo: fix in new typings
+                    // urlViewProperties.ui = {
+                    //   components: uiComponents
+                    // };
+                }
                 var graphic = urlUtils_1.getGraphic(config.marker);
-                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl);
+                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(function (basemap) {
+                    if (basemap) {
+                        map.basemap = basemap;
+                    }
+                });
                 var viewProperties = __assign({ map: map, container: settings.webmap.containerId }, urlViewProperties);
                 return requireUtils.when(require, "esri/views/MapView").then(function (MapView) {
                     return new MapView(viewProperties);
@@ -138,7 +157,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     extent: urlUtils_1.getExtent(config.extent)
                 };
                 var graphic = urlUtils_1.getGraphic(config.marker);
-                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl);
+                var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(function (basemap) {
+                    if (basemap) {
+                        map.basemap = basemap;
+                    }
+                });
                 var viewProperties = __assign({ map: map, container: settings.webscene.containerId }, urlViewProperties);
                 return requireUtils.when(require, "esri/views/SceneView").then(function (SceneView) {
                     return new SceneView(viewProperties);

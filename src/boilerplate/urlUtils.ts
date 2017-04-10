@@ -54,6 +54,9 @@ export function getUrlParamValues(urlParams: string[]): ApplicationConfig {
 }
 
 export function getComponents(components: string) {
+  if (!components) {
+    return;
+  }
   return components.split(",");
 }
 
@@ -160,14 +163,19 @@ export function getGraphic(marker: string): IPromise<Graphic> {
   // ?marker=10406557.402,6590748.134,2526
 
   if (!marker) {
-    return null;
+    return promiseUtils.resolve();
   }
 
+  console.log("yes", marker);
+
   const markerArray = _splitURLString(marker);
+  console.log(markerArray);
   const markerLength = markerArray.length;
 
+  console.log(markerArray, markerLength);
+
   if (markerLength < 2) {
-    return null;
+    return promiseUtils.resolve();
   }
 
   return requireUtils.when(require, [
@@ -176,6 +184,10 @@ export function getGraphic(marker: string): IPromise<Graphic> {
     "esri/symbols/PictureMarkerSymbol"
   ]).then(modules => {
     const [Graphic, PopupTemplate, PictureMarkerSymbol] = modules;
+
+
+    console.log(markerArray, markerLength);
+
     const x = parseFloat(markerArray[0]);
     const y = parseFloat(markerArray[1]);
     const content = markerArray[3];
@@ -221,13 +233,13 @@ export function getGraphic(marker: string): IPromise<Graphic> {
   });
 }
 
-// todo: test this functionality
 export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPromise<Basemap> {
+  // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
   if (!basemapUrl) {
     return promiseUtils.resolve();
   }
 
-  return requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(modules => {
+  return requireUtils.when(require, ["esri/layers/Layer", "esri/Basemap"]).then(modules => {
     const [Layer, Basemap] = modules;
 
     const getBaseLayer = Layer.fromArcGISServerUrl({
@@ -247,18 +259,17 @@ export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPr
       const baseLayer = response.baseLayer;
       const referenceLayer = response.referenceLayer;
       const basemapOptions = {
-        baseLayers: baseLayer ? [baseLayer] : [],
-        referenceLayers: referenceLayer ? [referenceLayer] : []
+        baseLayers: [baseLayer.value],
+        referenceLayers: referenceLayer.value ? [referenceLayer.value] : []
       };
-      return new Basemap(basemapOptions);
+      return new Basemap(basemapOptions).load();;
     });
   });
 }
 
-
-// todo: test
-export function find(find: string, view: MapView | SceneView): IPromise<{}> {
-  if (!find || !view) {
+export function find(query: string, view: MapView | SceneView): IPromise<{}> {
+  // ?webmap=7e2b9be8a9c94e45b7f87857d8d168d6&find=redlands,%20ca
+  if (!query || !view) {
     return promiseUtils.resolve();
   }
 
@@ -266,7 +277,7 @@ export function find(find: string, view: MapView | SceneView): IPromise<{}> {
     const searchVM = new SearchViewModel({
       view: view
     });
-    return searchVM.search(find);
+    return searchVM.search(query);
   });
 }
 
@@ -341,13 +352,6 @@ function _stripStringTags(value: string) {
 }
 
 function _urlToObject(): any {
-  // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
-  // resource to work with.
-  // Scene templates use the webscene param to define the scene to display
-  // appid is the id of the application based on the template. We use this
-  // id to retrieve application specific configuration information. The configuration
-  // information will contain the values the  user selected on the template configuration
-  // panel.
   const query = (window.location.search || "?").substr(1),
     map = {};
   const urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;

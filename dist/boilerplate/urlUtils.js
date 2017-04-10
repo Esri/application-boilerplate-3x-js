@@ -30,6 +30,9 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getUrlParamValues = getUrlParamValues;
     function getComponents(components) {
+        if (!components) {
+            return;
+        }
         return components.split(",");
     }
     exports.getComponents = getComponents;
@@ -118,12 +121,15 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         // ?marker=-117,34&level=10
         // ?marker=10406557.402,6590748.134,2526
         if (!marker) {
-            return null;
+            return promiseUtils.resolve();
         }
+        console.log("yes", marker);
         var markerArray = _splitURLString(marker);
+        console.log(markerArray);
         var markerLength = markerArray.length;
+        console.log(markerArray, markerLength);
         if (markerLength < 2) {
-            return null;
+            return promiseUtils.resolve();
         }
         return requireUtils.when(require, [
             "esri/Graphic",
@@ -131,6 +137,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             "esri/symbols/PictureMarkerSymbol"
         ]).then(function (modules) {
             var Graphic = modules[0], PopupTemplate = modules[1], PictureMarkerSymbol = modules[2];
+            console.log(markerArray, markerLength);
             var x = parseFloat(markerArray[0]);
             var y = parseFloat(markerArray[1]);
             var content = markerArray[3];
@@ -173,12 +180,12 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         });
     }
     exports.getGraphic = getGraphic;
-    // todo: test this functionality
     function getBasemap(basemapUrl, basemapReferenceUrl) {
+        // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
         if (!basemapUrl) {
             return promiseUtils.resolve();
         }
-        return requireUtils.when(require, ["esri/Layer", "esri/Basemap"]).then(function (modules) {
+        return requireUtils.when(require, ["esri/layers/Layer", "esri/Basemap"]).then(function (modules) {
             var Layer = modules[0], Basemap = modules[1];
             var getBaseLayer = Layer.fromArcGISServerUrl({
                 url: basemapUrl
@@ -194,24 +201,25 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
                 var baseLayer = response.baseLayer;
                 var referenceLayer = response.referenceLayer;
                 var basemapOptions = {
-                    baseLayers: baseLayer ? [baseLayer] : [],
-                    referenceLayers: referenceLayer ? [referenceLayer] : []
+                    baseLayers: [baseLayer.value],
+                    referenceLayers: referenceLayer.value ? [referenceLayer.value] : []
                 };
-                return new Basemap(basemapOptions);
+                return new Basemap(basemapOptions).load();
+                ;
             });
         });
     }
     exports.getBasemap = getBasemap;
-    // todo: test
-    function find(find, view) {
-        if (!find || !view) {
+    function find(query, view) {
+        // ?webmap=7e2b9be8a9c94e45b7f87857d8d168d6&find=redlands,%20ca
+        if (!query || !view) {
             return promiseUtils.resolve();
         }
         return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(function (SearchViewModel) {
             var searchVM = new SearchViewModel({
                 view: view
             });
-            return searchVM.search(find);
+            return searchVM.search(query);
         });
     }
     exports.find = find;
@@ -267,13 +275,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         return value.replace(tagsRE, "");
     }
     function _urlToObject() {
-        // retrieve url parameters. Templates all use url parameters to determine which arcgis.com
-        // resource to work with.
-        // Scene templates use the webscene param to define the scene to display
-        // appid is the id of the application based on the template. We use this
-        // id to retrieve application specific configuration information. The configuration
-        // information will contain the values the  user selected on the template configuration
-        // panel.
         var query = (window.location.search || "?").substr(1), map = {};
         var urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
         query.replace(urlRE, function (match, key, value) {

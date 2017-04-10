@@ -4,7 +4,6 @@ import esriConfig = require("esri/config");
 
 import Extent = require("esri/geometry/Extent");
 
-import EsriPromise = require("esri/core/Promise"); // todo: make this class extend promise
 import promiseUtils = require("esri/core/promiseUtils");
 
 import IdentityManager = require("esri/identity/IdentityManager");
@@ -47,6 +46,9 @@ class Boilerplate {
   //
   //--------------------------------------------------------------------------
 
+  //----------------------------------
+  //  settings
+  //----------------------------------
   settings: BoilerplateSettings = {
     environment: {},
     webscene: {},
@@ -55,11 +57,35 @@ class Boilerplate {
     portal: {},
     urlParams: []
   };
+
+  //----------------------------------
+  //  config
+  //----------------------------------
   config: ApplicationConfig = null;
+
+  //----------------------------------
+  //  results
+  //----------------------------------
   results: BoilerplateResults = {};
+
+  //----------------------------------
+  //  portal
+  //----------------------------------
   portal: Portal = null;
+
+  //----------------------------------
+  //  direction
+  //----------------------------------
   direction: Direction = null;
+
+  //----------------------------------
+  //  locale
+  //----------------------------------
   locale = kernel.locale;
+
+  //----------------------------------
+  //  units
+  //----------------------------------
   units: string = null;
 
   //--------------------------------------------------------------------------
@@ -69,6 +95,11 @@ class Boilerplate {
   //--------------------------------------------------------------------------
 
   queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
+
+    if (!portal) {
+      portal = this.portal;
+    }
+
     const paramOptions = {
       query: `group:"${groupId}" AND -type:"Code Attachment"`,
       sortField: "modified",
@@ -125,15 +156,14 @@ class Boilerplate {
           null;
         this.results.localStorage = localStorage;
 
-        const applicationItem = applicationResponse.value as BoilerplateApplicationResult;
-        const applicationItemData = applicationItem.itemData;
+        const applicationItem = applicationResponse ? applicationResponse.value as BoilerplateApplicationResult : null;
+        const applicationItemData = applicationItem ? applicationItem.itemData : null;
         const applicationConfig = applicationItem ? applicationItemData.values : null;
         const applicationInfo = applicationItem ? applicationItem.itemInfo : null;
         this.results.application = applicationResponse;
 
-        const portal = portalResponse.value;
+        const portal = portalResponse ? portalResponse.value : null;
         this.portal = portal;
-
         this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.environment.webTierSecurity);
 
         this.units = this._getUnits(portal);
@@ -172,8 +202,8 @@ class Boilerplate {
         ]).always(itemArgs => {
           const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
 
-          const webSceneItem = webSceneResponse.value;
-          const webMapItem = webMapResponse.value;
+          const webSceneItem = webSceneResponse ? webSceneResponse.value : null;
+          const webMapItem = webMapResponse ? webMapResponse.value : null;
 
           // todo: mixin sourceUrl with proxyUrl
           // const appProxies = applicationInfo.appProxies;
@@ -183,8 +213,10 @@ class Boilerplate {
           this.results.groupItems = groupItemsResponse;
           this.results.groupInfo = groupInfoResponse;
 
-          this._overwriteItemExtent(webSceneItem, applicationItem.itemInfo);
-          this._overwriteItemExtent(webMapItem, applicationItem.itemInfo);
+          const itemInfo = applicationItem ? applicationItem.itemInfo : null;
+
+          this._overwriteItemExtent(webSceneItem, itemInfo);
+          this._overwriteItemExtent(webMapItem, itemInfo);
 
           this._setGeometryService(this.config, this.portal);
 
@@ -280,7 +312,7 @@ class Boilerplate {
   }
 
   private _overwriteItemExtent(item: PortalItem, applicationItem: PortalItem): void {
-    if (!applicationItem || !item) {
+    if (!item || !applicationItem) {
       return;
     }
 

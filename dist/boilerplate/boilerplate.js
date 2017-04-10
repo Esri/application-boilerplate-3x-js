@@ -21,6 +21,9 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             //  Properties
             //
             //--------------------------------------------------------------------------
+            //----------------------------------
+            //  settings
+            //----------------------------------
             this.settings = {
                 environment: {},
                 webscene: {},
@@ -29,11 +32,29 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                 portal: {},
                 urlParams: []
             };
+            //----------------------------------
+            //  config
+            //----------------------------------
             this.config = null;
+            //----------------------------------
+            //  results
+            //----------------------------------
             this.results = {};
+            //----------------------------------
+            //  portal
+            //----------------------------------
             this.portal = null;
+            //----------------------------------
+            //  direction
+            //----------------------------------
             this.direction = null;
+            //----------------------------------
+            //  locale
+            //----------------------------------
             this.locale = kernel.locale;
+            //----------------------------------
+            //  units
+            //----------------------------------
             this.units = null;
             this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
@@ -44,6 +65,9 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         //
         //--------------------------------------------------------------------------
         Boilerplate.prototype.queryGroupItems = function (groupId, itemParams, portal) {
+            if (!portal) {
+                portal = this.portal;
+            }
             var paramOptions = __assign({ query: "group:\"" + groupId + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             var params = new PortalQueryParams(paramOptions);
             return portal.queryItems(params);
@@ -82,12 +106,12 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         _this._getLocalConfig(appId) :
                         null;
                     _this.results.localStorage = localStorage;
-                    var applicationItem = applicationResponse.value;
-                    var applicationItemData = applicationItem.itemData;
+                    var applicationItem = applicationResponse ? applicationResponse.value : null;
+                    var applicationItemData = applicationItem ? applicationItem.itemData : null;
                     var applicationConfig = applicationItem ? applicationItemData.values : null;
                     var applicationInfo = applicationItem ? applicationItem.itemInfo : null;
                     _this.results.application = applicationResponse;
-                    var portal = portalResponse.value;
+                    var portal = portalResponse ? portalResponse.value : null;
                     _this.portal = portal;
                     _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.environment.webTierSecurity);
                     _this.units = _this._getUnits(portal);
@@ -119,16 +143,17 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         queryGroupItems
                     ]).always(function (itemArgs) {
                         var webMapResponse = itemArgs[0], webSceneResponse = itemArgs[1], groupInfoResponse = itemArgs[2], groupItemsResponse = itemArgs[3];
-                        var webSceneItem = webSceneResponse.value;
-                        var webMapItem = webMapResponse.value;
+                        var webSceneItem = webSceneResponse ? webSceneResponse.value : null;
+                        var webMapItem = webMapResponse ? webMapResponse.value : null;
                         // todo: mixin sourceUrl with proxyUrl
                         // const appProxies = applicationInfo.appProxies;
                         _this.results.webMapItem = webMapResponse;
                         _this.results.webSceneItem = webSceneResponse;
                         _this.results.groupItems = groupItemsResponse;
                         _this.results.groupInfo = groupInfoResponse;
-                        _this._overwriteItemExtent(webSceneItem, applicationItem.itemInfo);
-                        _this._overwriteItemExtent(webMapItem, applicationItem.itemInfo);
+                        var itemInfo = applicationItem ? applicationItem.itemInfo : null;
+                        _this._overwriteItemExtent(webSceneItem, itemInfo);
+                        _this._overwriteItemExtent(webMapItem, itemInfo);
                         _this._setGeometryService(_this.config, _this.portal);
                         _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.webmap.default);
                         _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.webscene.default);
@@ -210,7 +235,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             return new Portal().load();
         };
         Boilerplate.prototype._overwriteItemExtent = function (item, applicationItem) {
-            if (!applicationItem || !item) {
+            if (!item || !applicationItem) {
                 return;
             }
             var applicationExtent = applicationItem.extent;
