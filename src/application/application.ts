@@ -170,8 +170,12 @@ class Application {
         // };
       }
 
-      const graphic = getGraphic(config.marker);
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then((basemap) => {
+      const graphic = getGraphic(config.marker).then(graphic => {
+        if (graphic) {
+          console.log(graphic);
+        }
+      });
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
         if (basemap) {
           map.basemap = basemap;
         }
@@ -200,8 +204,12 @@ class Application {
         extent: getExtent(config.extent)
       };
 
-      const graphic = getGraphic(config.marker);
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then((basemap) => {
+      const graphic = getGraphic(config.marker).then(graphic => {
+        if (graphic) {
+          console.log(graphic);
+        }
+      });
+      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
         if (basemap) {
           map.basemap = basemap;
         }

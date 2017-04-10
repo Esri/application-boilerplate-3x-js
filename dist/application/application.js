@@ -135,7 +135,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     //   components: uiComponents
                     // };
                 }
-                var graphic = urlUtils_1.getGraphic(config.marker);
+                var graphic = urlUtils_1.getGraphic(config.marker).then(function (graphic) {
+                    if (graphic) {
+                        console.log(graphic);
+                    }
+                });
                 var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(function (basemap) {
                     if (basemap) {
                         map.basemap = basemap;
@@ -156,7 +160,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     zoom: urlUtils_1.getZoom(config.level),
                     extent: urlUtils_1.getExtent(config.extent)
                 };
-                var graphic = urlUtils_1.getGraphic(config.marker);
+                var graphic = urlUtils_1.getGraphic(config.marker).then(function (graphic) {
+                    if (graphic) {
+                        console.log(graphic);
+                    }
+                });
                 var basemap = urlUtils_1.getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(function (basemap) {
                     if (basemap) {
                         map.basemap = basemap;

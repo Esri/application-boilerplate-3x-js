@@ -123,11 +123,8 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         if (!marker) {
             return promiseUtils.resolve();
         }
-        console.log("yes", marker);
         var markerArray = _splitURLString(marker);
-        console.log(markerArray);
         var markerLength = markerArray.length;
-        console.log(markerArray, markerLength);
         if (markerLength < 2) {
             return promiseUtils.resolve();
         }
@@ -137,7 +134,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             "esri/symbols/PictureMarkerSymbol"
         ]).then(function (modules) {
             var Graphic = modules[0], PopupTemplate = modules[1], PictureMarkerSymbol = modules[2];
-            console.log(markerArray, markerLength);
             var x = parseFloat(markerArray[0]);
             var y = parseFloat(markerArray[1]);
             var content = markerArray[3];
@@ -233,7 +229,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             return null;
         }
         var splitValues = value.split(";");
-        return splitValues.length === 1 ? value.split(",") : null;
+        return splitValues.length === 1 ? value.split(",") : splitValues;
     }
     function _getCameraPosition(cameraString) {
         if (!cameraString) {

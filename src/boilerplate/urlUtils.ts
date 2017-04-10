@@ -166,13 +166,8 @@ export function getGraphic(marker: string): IPromise<Graphic> {
     return promiseUtils.resolve();
   }
 
-  console.log("yes", marker);
-
   const markerArray = _splitURLString(marker);
-  console.log(markerArray);
   const markerLength = markerArray.length;
-
-  console.log(markerArray, markerLength);
 
   if (markerLength < 2) {
     return promiseUtils.resolve();
@@ -184,9 +179,6 @@ export function getGraphic(marker: string): IPromise<Graphic> {
     "esri/symbols/PictureMarkerSymbol"
   ]).then(modules => {
     const [Graphic, PopupTemplate, PictureMarkerSymbol] = modules;
-
-
-    console.log(markerArray, markerLength);
 
     const x = parseFloat(markerArray[0]);
     const y = parseFloat(markerArray[1]);
@@ -294,7 +286,7 @@ function _splitURLString(value: string): string[] {
 
   const splitValues = value.split(";");
 
-  return splitValues.length === 1 ? value.split(",") : null;
+  return splitValues.length === 1 ? value.split(",") : splitValues;
 }
 
 function _getCameraPosition(cameraString: string): Point {
