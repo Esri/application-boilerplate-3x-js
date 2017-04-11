@@ -1,13 +1,9 @@
-import Application from 'application/Application';
-import Boilerplate from 'boilerplate/Boilerplate';
+import boilerFactory from "boilerplate/boilerFactory";
 
-// todo: should this be a class?
-export = {
-  Application,
-  Boilerplate,
-  init: (applicationConfigJSON, boilerplateConfigJSON) => {
-    const application = new Application();
-    const boilerplate = new Boilerplate(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
-    boilerplate.init().then(response => application.init(response));
-  }
+import Main from "./widgets/Main";
+
+export = (applicationConfigJSON, boilerplateConfigJSON) => {
+    const boilerplate = boilerFactory(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
+    const MainComponent = new Main(boilerplate);
+    MainComponent.container = "viewDiv";
 };

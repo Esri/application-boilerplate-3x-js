@@ -1,0 +1,1 @@
+{"version":3,"file":"CustomApplication.js","sourceRoot":"","sources":["../../../src/application/widgets/CustomApplication.tsx"],"names":[],"mappings":";;;IAEA,kBAAe,UAAC,iBAAiB;QAC7B,OAAO,CAAC,GAAG,CAAC,iBAAiB,CAAC,CAAC;QAC/B,MAAM,CAAC;YACH,MAAM;gBACF,MAAM,CAAC,CACH,2CAAK,KAAK,EAAC,cAAc;oBACrB,mEAA2B;oBAC3B,wFAAgD,CAC9C,CACT,CAAC;YACN,CAAC;SACJ,CAAC;IACN,CAAC,CAAA"}

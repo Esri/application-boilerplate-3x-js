@@ -1,13 +1,9 @@
-define(["require", "exports", "application/Application", "boilerplate/Boilerplate"], function (require, exports, Application_1, Boilerplate_1) {
+define(["require", "exports", "boilerplate/boilerFactory", "./widgets/Main"], function (require, exports, boilerFactory_1, Main_1) {
     "use strict";
-    return {
-        Application: Application_1.default,
-        Boilerplate: Boilerplate_1.default,
-        init: function (applicationConfigJSON, boilerplateConfigJSON) {
-            var application = new Application_1.default();
-            var boilerplate = new Boilerplate_1.default(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
-            boilerplate.init().then(function (response) { return application.init(response); });
-        }
+    return function (applicationConfigJSON, boilerplateConfigJSON) {
+        var boilerplate = boilerFactory_1.default(JSON.parse(applicationConfigJSON), JSON.parse(boilerplateConfigJSON));
+        var MainComponent = new Main_1.default(boilerplate);
+        MainComponent.container = "viewDiv";
     };
 });
 //# sourceMappingURL=entrypoint.js.map

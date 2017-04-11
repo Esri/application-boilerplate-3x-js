@@ -1,0 +1,31 @@
+.center-style {
+    position: absolute;
+    text-align: center;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+
+.hug-bottom {
+    position: absolute;
+    bottom: 10px;
+}
+
+.card-image {
+    cursor: pointer;
+}
+
+.card-fade {
+    border: 1px solid #cccccc;
+    box-shadow: 0px 0px 0px #959595;
+    transition: box-shadow 300ms ease-in-out;
+}
+
+.card-fade:hover {
+    box-shadow: 0px 0px 20px #959595;
+}
+
+.card-image-caption {
+    transition: all 0.3s ease-in-out;
+}
