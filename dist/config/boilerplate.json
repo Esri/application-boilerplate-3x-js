@@ -40,12 +40,12 @@
   ],
   "webmap": {
     "default": "",
-    "containerId": "sceneViewContainer",
+    "containerId": "viewContainer",
     "fetch": true
   },
   "webscene": {
     "default": "073b9499717c484297a40402a21a28cd",
-    "containerId": "mapViewContainer",
+    "containerId": "viewContainer",
     "fetch": true
   }
 }

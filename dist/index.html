@@ -25,9 +25,7 @@
   </div>
 
   <!-- todo: figure these out -->
-  <div id="mapViewContainer" class="boilerplate-view"></div>
-  <div id="sceneViewContainer" class="boilerplate-view"></div>
-
+  <div id="viewContainer" class="boilerplate-view"></div>
 
   <script type="text/javascript" src="./config/dojo.js"></script>
   <script type="text/javascript" src="https://js.arcgis.com/4.3/"></script>
@@ -41,11 +39,9 @@
       boilerplateConfig,
       entrypoint
     ) {
-      entrypoint.init(applicationConfig, boilerplateConfig);
-    });
-
+        entrypoint.init(applicationConfig, boilerplateConfig);
+      });
   </script>
 </body>
 
 </html>
-

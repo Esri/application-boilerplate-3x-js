@@ -10,6 +10,9 @@ export interface ApplicationConfigs {
 
 export interface ApplicationConfig {
   appid?: string;
+  basemapUrl?: string;
+  basemapReferenceUrl?: string;
+  camera?: string;
   center?: string;
   components?: string;
   embed?: boolean;

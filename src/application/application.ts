@@ -2,11 +2,15 @@
 declare const i18n: any;
 
 import requireUtils = require("esri/core/requireUtils");
+import promiseUtils = require("esri/core/promiseUtils");
 
 import Boilerplate from 'boilerplate/Boilerplate';
 
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
+
+import WebMap = require("esri/WebMap");
+import WebScene = require("esri/WebScene");
 
 import PortalItem = require("esri/portal/PortalItem");
 
@@ -34,6 +38,11 @@ import {
   getGraphic,
   find
 } from "application/urlHelper";
+
+import {
+  ApplicationConfig,
+  BoilerplateSettings
+} from "boilerplate/interfaces";
 
 class Application {
 
@@ -76,18 +85,17 @@ class Application {
       return;
     }
 
-    setPageLocale(boilerplate.locale);
-    setPageDirection(boilerplate.direction);
-
     if (!config.title) {
       config.title = getItemTitle(webSceneItem || webMapItem || groupInfoItem);
     }
 
+    setPageLocale(boilerplate.locale);
+    setPageDirection(boilerplate.direction);
     setPageTitle(config.title);
 
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
-      this._createWebMap(webMapItem, config, settings).then(view => {
+      this._createView(webMapItem, config, settings).then(view => {
         if (config.find) {
           find(config.find, view);
         }
@@ -97,7 +105,7 @@ class Application {
       });
     }
     else if (webSceneItem) {
-      this._createWebScene(webSceneItem, config, settings).then(view => {
+      this._createView(webSceneItem, config, settings).then(view => {
         if (config.find) {
           find(config.find, view);
         }
@@ -116,6 +124,9 @@ class Application {
         removePageLoading();
       }
     }
+
+
+
   }
 
   //--------------------------------------------------------------------------
@@ -124,82 +135,72 @@ class Application {
   //
   //--------------------------------------------------------------------------
 
-  private _createWebMap(webMapItem, config, settings): IPromise<MapView> {
-    return createWebMapFromItem(webMapItem).then(map => {
-      const ui = config.components ? { components: getComponents(config.components) } : {};
-
-      const urlViewProperties = {
-        ui,
-        camera: getCamera(config.camera),
-        center: getPoint(config.center),
-        zoom: getZoom(config.level),
-        extent: getExtent(config.extent)
-      };
-
-      const { basemapUrl, basemapReferenceUrl, marker } = config;
-      if (basemapUrl) {
-        getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
-          map.basemap = basemap;
-        });
-      }
-
-      const viewProperties = {
-        map,
-        container: settings.webmap.containerId,
-        ...urlViewProperties
-      };
-
-      return requireUtils.when(require, "esri/views/MapView").then(MapView => {
-        const mapView = new MapView(viewProperties);
-        mapView.then(() => {
-          if (marker) {
-            getGraphic(marker).then(graphic => {
-              mapView.graphics.add(graphic);
-              mapView.goTo(graphic);
-            });
-          }
-        });
-        return mapView;
+  private _setBasemap(config: ApplicationConfig, map: WebMap | WebScene): void {
+    const { basemapUrl, basemapReferenceUrl } = config;
+    if (basemapUrl) {
+      getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
+        map.basemap = basemap;
       });
-    });
+    }
   }
 
-  private _createWebScene(webSceneItem, config, settings): IPromise<SceneView> {
-    return createWebSceneFromItem(webSceneItem).then(map => {
-      const ui = config.components ? { components: getComponents(config.components) } : {};
+  private _addMarker(config: ApplicationConfig, view: MapView | SceneView): void {
+    const { marker } = config;
+    if (marker) {
+      getGraphic(marker).then(graphic => {
+        view.graphics.add(graphic);
+        if (view instanceof MapView) { // todo: will fix in next API release.
+          view.goTo(graphic);
+        }
+        else {
+          view.goTo(graphic);
+        }
+      });
+    }
+  }
 
-      const urlViewProperties = {
-        ui,
-        camera: getCamera(config.camera),
-        center: getPoint(config.center),
-        zoom: getZoom(config.level),
-        extent: getExtent(config.extent),
-      };
+  private _getViewProperties(config: ApplicationConfig, containerId: string, map: WebMap | WebScene) {
+    const { camera, center, components, extent, level } = config;
+    const ui = components ? { components: getComponents(components) } : {};
 
-      const { basemapUrl, basemapReferenceUrl, marker } = config;
-      if (basemapUrl) {
-        getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
-          map.basemap = basemap;
+    const urlViewProperties = {
+      ui,
+      camera: getCamera(camera),
+      center: getPoint(center),
+      zoom: getZoom(level),
+      extent: getExtent(extent)
+    };
+
+    return {
+      map,
+      container: containerId,
+      ...urlViewProperties
+    };
+  }
+
+  private _createView(item: PortalItem, config: ApplicationConfig, settings: BoilerplateSettings): IPromise<MapView | SceneView> {
+    const isWebMap = item.type === "Web Map";
+    const isWebScene = item.type === "Web Scene";
+
+    if (!isWebMap && !isWebScene) {
+      return promiseUtils.reject();
+    }
+
+    const createItem = isWebMap ? createWebMapFromItem(item) : createWebSceneFromItem(item) as IPromise<WebMap | WebScene>;
+    const containerId = isWebMap ? settings.webmap.containerId : settings.webscene.containerId;
+    const viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
+
+    return createItem.then((map) => {
+      this._setBasemap(config, map);
+
+      const viewProperties = this._getViewProperties(config, containerId, map);
+
+      return requireUtils.when(require, viewTypePath).then(ViewType => {
+        const view = new ViewType(viewProperties);
+        view.then(() => {
+          this._addMarker(config, view);
         });
-      }
-
-      const viewProperties = {
-        map,
-        container: settings.webscene.containerId,
-        ...urlViewProperties
-      };
-
-      return requireUtils.when(require, "esri/views/SceneView").then(SceneView => {
-        const sceneView = new SceneView(viewProperties);
-        sceneView.then(() => {
-          if (marker) {
-            getGraphic(marker).then(graphic => {
-              sceneView.graphics.add(graphic);
-              sceneView.goTo(graphic);
-            });
-          }
-        });
-        return sceneView;
+        return view;
       });
     });
   }

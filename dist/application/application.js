@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "application/itemHelper", "application/domHelper", "application/urlHelper"], function (require, exports, i18n, requireUtils, itemHelper_1, domHelper_1, urlHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "application/itemHelper", "application/domHelper", "application/urlHelper"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemHelper_1, domHelper_1, urlHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -44,15 +44,15 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 domHelper_1.addPageError(i18n.error, "app:: Could not load an item to display");
                 return;
             }
-            domHelper_1.setPageLocale(boilerplate.locale);
-            domHelper_1.setPageDirection(boilerplate.direction);
             if (!config.title) {
                 config.title = itemHelper_1.getItemTitle(webSceneItem || webMapItem || groupInfoItem);
             }
+            domHelper_1.setPageLocale(boilerplate.locale);
+            domHelper_1.setPageDirection(boilerplate.direction);
             domHelper_1.setPageTitle(config.title);
             // todo: support multiple webscenes, webmaps, groups.
             if (webMapItem) {
-                this._createWebMap(webMapItem, config, settings).then(function (view) {
+                this._createView(webMapItem, config, settings).then(function (view) {
                     if (config.find) {
                         urlHelper_1.find(config.find, view);
                     }
@@ -62,7 +62,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 });
             }
             else if (webSceneItem) {
-                this._createWebScene(webSceneItem, config, settings).then(function (view) {
+                this._createView(webSceneItem, config, settings).then(function (view) {
                     if (config.find) {
                         urlHelper_1.find(config.find, view);
                     }
@@ -87,64 +87,59 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         //  Private Methods
         //
         //--------------------------------------------------------------------------
-        Application.prototype._createWebMap = function (webMapItem, config, settings) {
-            return itemHelper_1.createWebMapFromItem(webMapItem).then(function (map) {
-                var ui = config.components ? { components: urlHelper_1.getComponents(config.components) } : {};
-                var urlViewProperties = {
-                    ui: ui,
-                    camera: urlHelper_1.getCamera(config.camera),
-                    center: urlHelper_1.getPoint(config.center),
-                    zoom: urlHelper_1.getZoom(config.level),
-                    extent: urlHelper_1.getExtent(config.extent)
-                };
-                var basemapUrl = config.basemapUrl, basemapReferenceUrl = config.basemapReferenceUrl, marker = config.marker;
-                if (basemapUrl) {
-                    urlHelper_1.getBasemap(basemapUrl, basemapReferenceUrl).then(function (basemap) {
-                        map.basemap = basemap;
-                    });
-                }
-                var viewProperties = __assign({ map: map, container: settings.webmap.containerId }, urlViewProperties);
-                return requireUtils.when(require, "esri/views/MapView").then(function (MapView) {
-                    var mapView = new MapView(viewProperties);
-                    mapView.then(function () {
-                        if (marker) {
-                            urlHelper_1.getGraphic(marker).then(function (graphic) {
-                                mapView.graphics.add(graphic);
-                                mapView.goTo(graphic);
-                            });
-                        }
-                    });
-                    return mapView;
+        Application.prototype._setBasemap = function (config, map) {
+            var basemapUrl = config.basemapUrl, basemapReferenceUrl = config.basemapReferenceUrl;
+            if (basemapUrl) {
+                urlHelper_1.getBasemap(basemapUrl, basemapReferenceUrl).then(function (basemap) {
+                    map.basemap = basemap;
                 });
-            });
+            }
         };
-        Application.prototype._createWebScene = function (webSceneItem, config, settings) {
-            return itemHelper_1.createWebSceneFromItem(webSceneItem).then(function (map) {
-                var urlViewProperties = {
-                    ui: { components: urlHelper_1.getComponents(config.components) },
-                    camera: urlHelper_1.getCamera(config.camera),
-                    center: urlHelper_1.getPoint(config.center),
-                    zoom: urlHelper_1.getZoom(config.level),
-                    extent: urlHelper_1.getExtent(config.extent),
-                };
-                var basemapUrl = config.basemapUrl, basemapReferenceUrl = config.basemapReferenceUrl, marker = config.marker;
-                if (basemapUrl) {
-                    urlHelper_1.getBasemap(basemapUrl, basemapReferenceUrl).then(function (basemap) {
-                        map.basemap = basemap;
+        Application.prototype._addMarker = function (config, view) {
+            var marker = config.marker;
+            if (marker) {
+                urlHelper_1.getGraphic(marker).then(function (graphic) {
+                    view.graphics.add(graphic);
+                    if (view instanceof MapView) {
+                        view.goTo(graphic);
+                    }
+                    else {
+                        view.goTo(graphic);
+                    }
+                });
+            }
+        };
+        Application.prototype._getViewProperties = function (config, containerId, map) {
+            var camera = config.camera, center = config.center, components = config.components, extent = config.extent, level = config.level;
+            var ui = components ? { components: urlHelper_1.getComponents(components) } : {};
+            var urlViewProperties = {
+                ui: ui,
+                camera: urlHelper_1.getCamera(camera),
+                center: urlHelper_1.getPoint(center),
+                zoom: urlHelper_1.getZoom(level),
+                extent: urlHelper_1.getExtent(extent)
+            };
+            return __assign({ map: map, container: containerId }, urlViewProperties);
+        };
+        Application.prototype._createView = function (item, config, settings) {
+            var _this = this;
+            var isWebMap = item.type === "Web Map";
+            var isWebScene = item.type === "Web Scene";
+            if (!isWebMap && !isWebScene) {
+                return promiseUtils.reject();
+            }
+            var createItem = isWebMap ? itemHelper_1.createWebMapFromItem(item) : itemHelper_1.createWebSceneFromItem(item);
+            var containerId = isWebMap ? settings.webmap.containerId : settings.webscene.containerId;
+            var viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
+            return createItem.then(function (map) {
+                _this._setBasemap(config, map);
+                var viewProperties = _this._getViewProperties(config, containerId, map);
+                return requireUtils.when(require, viewTypePath).then(function (ViewType) {
+                    var view = new ViewType(viewProperties);
+                    view.then(function () {
+                        _this._addMarker(config, view);
                     });
-                }
-                var viewProperties = __assign({ map: map, container: settings.webscene.containerId }, urlViewProperties);
-                return requireUtils.when(require, "esri/views/SceneView").then(function (SceneView) {
-                    var sceneView = new SceneView(viewProperties);
-                    sceneView.then(function () {
-                        if (marker) {
-                            urlHelper_1.getGraphic(marker).then(function (graphic) {
-                                sceneView.graphics.add(graphic);
-                                sceneView.goTo(graphic);
-                            });
-                        }
-                    });
-                    return sceneView;
+                    return view;
                 });
             });
         };
