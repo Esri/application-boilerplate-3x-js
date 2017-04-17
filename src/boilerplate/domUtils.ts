@@ -1,6 +1,3 @@
-/// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
-declare const i18n: any;
-
 const CSS = {
   loading: "boilerplate--loading",
   error: "boilerplate--error",
@@ -30,11 +27,11 @@ export function removePageLoading(): void {
   document.body.classList.remove(CSS.loading);
 }
 
-export function addPageError(error: Error): void {
+export function addPageError(title: string, message: string): void {
   removePageLoading();
   document.body.classList.add(CSS.error);
   const node = document.getElementById("loading_message");
   if (node) {
-    node.innerHTML = `<h1><span class="${CSS.errorIcon}"></span> ${i18n.error}</h1><p>${error.message}</p>`;
+    node.innerHTML = `<h1><span class="${CSS.errorIcon}"></span> ${title}</h1><p>${message}</p>`;
   }
 }

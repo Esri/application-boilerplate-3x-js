@@ -322,7 +322,7 @@ class Boilerplate {
   }
 
   private _setGeometryService(config: ApplicationConfig, ptl: Portal) {
-    const portal = ptl as any; // todo: fix next api release
+    const portal = ptl as any; // todo: fix next api release. helperServices are not on portal currently.
     const configHelperServices = config.helperServices;
     const portalHelperServices = portal && portal.helperServices;
     const configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;

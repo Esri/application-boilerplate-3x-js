@@ -242,7 +242,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             item.extent = applicationExtent ? applicationExtent : item.extent;
         };
         Boilerplate.prototype._setGeometryService = function (config, ptl) {
-            var portal = ptl; // todo: fix next api release
+            var portal = ptl; // todo: fix next api release. helperServices are not on portal currently.
             var configHelperServices = config.helperServices;
             var portalHelperServices = portal && portal.helperServices;
             var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;

@@ -55,7 +55,7 @@ class Application {
   public init(boilerplate: Boilerplate): void {
 
     if (!boilerplate) {
-      addPageError(new Error("app:: Boilerplate is not defined"));
+      addPageError(i18n.error, "app:: Boilerplate is not defined");
       return;
     }
 
@@ -68,7 +68,7 @@ class Application {
     const groupInfo = results.groupInfo.value;
 
     if (!webMapItem && !webSceneItem && !groupItems) {
-      addPageError(new Error("app:: Could not load an item to display"));
+      addPageError(i18n.error, "app:: Could not load an item to display");
       return;
     }
 
@@ -83,7 +83,9 @@ class Application {
         find(config.find, view);
         setPageTitle(config.title);
         removePageLoading();
-      }).otherwise(addPageError);
+      }).otherwise((error) => {
+        addPageError(i18n.error, error.message);
+      });
     }
     else if (webSceneItem) {
       config.title = getItemTitle(webSceneItem) || config.title;
@@ -91,12 +93,14 @@ class Application {
         find(config.find, view);
         setPageTitle(config.title);
         removePageLoading();
-      }).otherwise(addPageError);
+      }).otherwise((error) => {
+        addPageError(i18n.error, error.message);
+      });
     }
     else if (groupItems) {
       const galleryHTML = this._createGroupGallery(groupInfo, groupItems);
       if (galleryHTML instanceof Error) {
-        addPageError(galleryHTML);
+        addPageError(i18n.error, galleryHTML.message);
       }
       else {
         document.body.innerHTML = galleryHTML;

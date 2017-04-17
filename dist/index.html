@@ -14,7 +14,7 @@
   <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
   <link rel="stylesheet" href="https://js.arcgis.com/4.3/esri/css/main.css">
   <!-- Load any application specific styles -->
-  <link rel="stylesheet" href="./bundle.css">
+  <link rel="stylesheet" href="./styles/bundle.css">
 </head>
 
 <body class="boilerplate--loading">
@@ -41,9 +41,11 @@
       boilerplateConfig,
       entrypoint
     ) {
-        entrypoint.init(applicationConfig, boilerplateConfig);
-      });
+      entrypoint.init(applicationConfig, boilerplateConfig);
+    });
+
   </script>
 </body>
 
 </html>
+

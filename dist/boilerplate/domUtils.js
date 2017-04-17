@@ -1,7 +1,6 @@
-define(["require", "exports", "dojo/i18n!application/nls/resources.js"], function (require, exports, i18n) {
+define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
     var CSS = {
         loading: "boilerplate--loading",
         error: "boilerplate--error",
@@ -29,12 +28,12 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js"], functio
         document.body.classList.remove(CSS.loading);
     }
     exports.removePageLoading = removePageLoading;
-    function addPageError(error) {
+    function addPageError(title, message) {
         removePageLoading();
         document.body.classList.add(CSS.error);
         var node = document.getElementById("loading_message");
         if (node) {
-            node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + i18n.error + "</h1><p>" + error.message + "</p>";
+            node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + title + "</h1><p>" + message + "</p>";
         }
     }
     exports.addPageError = addPageError;

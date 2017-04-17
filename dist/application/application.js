@@ -29,7 +29,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         //--------------------------------------------------------------------------
         Application.prototype.init = function (boilerplate) {
             if (!boilerplate) {
-                domUtils_1.addPageError(new Error("app:: Boilerplate is not defined"));
+                domUtils_1.addPageError(i18n.error, "app:: Boilerplate is not defined");
                 return;
             }
             this.boilerplate = boilerplate;
@@ -39,7 +39,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             var groupItems = results.groupItems.value;
             var groupInfo = results.groupInfo.value;
             if (!webMapItem && !webSceneItem && !groupItems) {
-                domUtils_1.addPageError(new Error("app:: Could not load an item to display"));
+                domUtils_1.addPageError(i18n.error, "app:: Could not load an item to display");
                 return;
             }
             domUtils_1.setPageLocale(boilerplate.locale);
@@ -51,7 +51,9 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     urlUtils_1.find(config.find, view);
                     domUtils_1.setPageTitle(config.title);
                     domUtils_1.removePageLoading();
-                }).otherwise(domUtils_1.addPageError);
+                }).otherwise(function (error) {
+                    domUtils_1.addPageError(i18n.error, error.message);
+                });
             }
             else if (webSceneItem) {
                 config.title = itemUtils_1.getItemTitle(webSceneItem) || config.title;
@@ -59,12 +61,14 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     urlUtils_1.find(config.find, view);
                     domUtils_1.setPageTitle(config.title);
                     domUtils_1.removePageLoading();
-                }).otherwise(domUtils_1.addPageError);
+                }).otherwise(function (error) {
+                    domUtils_1.addPageError(i18n.error, error.message);
+                });
             }
             else if (groupItems) {
                 var galleryHTML = this._createGroupGallery(groupInfo, groupItems);
                 if (galleryHTML instanceof Error) {
-                    domUtils_1.addPageError(galleryHTML);
+                    domUtils_1.addPageError(i18n.error, galleryHTML.message);
                 }
                 else {
                     document.body.innerHTML = galleryHTML;
