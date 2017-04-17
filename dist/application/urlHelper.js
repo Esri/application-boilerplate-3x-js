@@ -14,21 +14,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     //  Public Methods
     //
     //--------------------------------------------------------------------------
-    function getUrlParamValues(urlParams) {
-        var urlObject = _urlToObject();
-        var formattedUrlObject = {};
-        if (!urlObject || !urlParams || !urlParams.length) {
-            return;
-        }
-        urlParams.forEach(function (param) {
-            var urlParamValue = urlObject[param];
-            if (urlParamValue) {
-                formattedUrlObject[param] = _foramatUrlParamValue(urlParamValue);
-            }
-        });
-        return formattedUrlObject;
-    }
-    exports.getUrlParamValues = getUrlParamValues;
     function getComponents(components) {
         if (!components) {
             return;
@@ -120,12 +105,12 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         // ?marker=-117,34&level=10
         // ?marker=10406557.402,6590748.134,2526
         if (!marker) {
-            return promiseUtils.resolve();
+            return promiseUtils.reject();
         }
         var markerArray = _splitURLString(marker);
         var markerLength = markerArray.length;
         if (markerLength < 2) {
-            return promiseUtils.resolve();
+            return promiseUtils.reject();
         }
         return requireUtils.when(require, [
             "esri/Graphic",
@@ -178,7 +163,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     function getBasemap(basemapUrl, basemapReferenceUrl) {
         // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
         if (!basemapUrl) {
-            return promiseUtils.resolve();
+            return promiseUtils.reject();
         }
         return requireUtils.when(require, ["esri/layers/Layer", "esri/Basemap"]).then(function (modules) {
             var Layer = modules[0], Basemap = modules[1];
@@ -208,7 +193,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     function find(query, view) {
         // ?webmap=7e2b9be8a9c94e45b7f87857d8d168d6&find=redlands,%20ca
         if (!query || !view) {
-            return promiseUtils.resolve();
+            return promiseUtils.reject();
         }
         return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(function (SearchViewModel) {
             var searchVM = new SearchViewModel({
@@ -265,31 +250,5 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         var tiltAndHeadingProperties = _getTiltAndHeading(tiltAndHeading);
         return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
     }
-    function _stripStringTags(value) {
-        var tagsRE = /<\/?[^>]+>/g;
-        return value.replace(tagsRE, "");
-    }
-    function _urlToObject() {
-        var query = (window.location.search || "?").substr(1), map = {};
-        var urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
-        query.replace(urlRE, function (match, key, value) {
-            map[key] = _stripStringTags(decodeURIComponent(value));
-            return "";
-        });
-        return map;
-    }
-    function _foramatUrlParamValue(urlParamValue) {
-        if (typeof urlParamValue === "string") {
-            switch (urlParamValue.toLowerCase()) {
-                case "true":
-                    return true;
-                case "false":
-                    return false;
-                default:
-                    return urlParamValue;
-            }
-        }
-        return urlParamValue;
-    }
 });
-//# sourceMappingURL=urlUtils.js.map
+//# sourceMappingURL=urlHelper.js.map

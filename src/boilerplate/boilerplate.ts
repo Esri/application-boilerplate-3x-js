@@ -13,8 +13,6 @@ import Portal = require("esri/portal/Portal");
 import PortalItem = require("esri/portal/PortalItem");
 import PortalQueryParams = require("esri/portal/PortalQueryParams");
 
-import { getUrlParamValues } from "boilerplate/urlUtils";
-
 import {
   ApplicationConfig,
   ApplicationConfigs,
@@ -26,6 +24,8 @@ import {
 type Direction = "ltr" | "rtl";
 
 class Boilerplate {
+
+  // todo: support multiple webscenes, webmaps, groups.
 
   //--------------------------------------------------------------------------
   //
@@ -114,7 +114,7 @@ class Boilerplate {
   }
 
   load(): IPromise<Boilerplate> {
-    const urlParams = getUrlParamValues(this.settings.urlParams);
+    const urlParams = this._getUrlParamValues(this.settings.urlParams);
     this.results.urlParams = urlParams
 
     this.config = this._mixinAllConfigs({
@@ -281,8 +281,8 @@ class Boilerplate {
     const appItem = new PortalItem({
       id: appid
     });
-    return appItem.load().then((itemInfo) => {
-      return itemInfo.fetchData().then((itemData) => {
+    return appItem.load().then(itemInfo => {
+      return itemInfo.fetchData().then(itemData => {
         return {
           itemInfo: itemInfo,
           itemData: itemData
@@ -296,7 +296,7 @@ class Boilerplate {
       return;
     }
 
-    authorizedDomains.forEach((authorizedDomain) => {
+    authorizedDomains.forEach(authorizedDomain => {
       const isDefined = (authorizedDomain !== undefined) && (authorizedDomain !== null);
       if (isDefined && authorizedDomain.length) {
         esriConfig.request.corsEnabledServers.push({
@@ -347,7 +347,7 @@ class Boilerplate {
     const LTR = "ltr";
     const RTL = "rtl";
     const RTLLangs = ["ar", "he"];
-    const isRTL = RTLLangs.some((language) => {
+    const isRTL = RTLLangs.some(language => {
       return kernel.locale.indexOf(language) !== -1;
     });
     return isRTL ? RTL : LTR;
@@ -412,6 +412,54 @@ class Boilerplate {
 
     const signedIn = IdentityManager.checkSignInStatus(portalUrl + sharingPath);
     return signedIn.always(promiseUtils.resolve);
+  }
+
+  private _getUrlParamValues(urlParams: string[]): ApplicationConfig {
+    const urlObject = this._urlToObject();
+    const formattedUrlObject = {};
+
+    if (!urlObject || !urlParams || !urlParams.length) {
+      return;
+    }
+
+    urlParams.forEach(param => {
+      const urlParamValue = urlObject[param];
+      if (urlParamValue) {
+        formattedUrlObject[param] = this._foramatUrlParamValue(urlParamValue);
+      }
+    });
+
+    return formattedUrlObject;
+  }
+
+  private _urlToObject(): any {
+    const query = (window.location.search || "?").substr(1),
+      map = {};
+    const urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+    query.replace(urlRE, (match, key, value) => {
+      map[key] = this._stripStringTags(decodeURIComponent(value));
+      return "";
+    });
+    return map;
+  }
+
+  private _foramatUrlParamValue(urlParamValue: any): any {
+    if (typeof urlParamValue === "string") {
+      switch (urlParamValue.toLowerCase()) {
+        case "true":
+          return true;
+        case "false":
+          return false;
+        default:
+          return urlParamValue;
+      }
+    }
+    return urlParamValue;
+  }
+
+  private _stripStringTags(value: string) {
+    const tagsRE = /<\/?[^>]+>/g;
+    return value.replace(tagsRE, "");
   }
 
 }

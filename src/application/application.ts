@@ -8,11 +8,13 @@ import Boilerplate from 'boilerplate/Boilerplate';
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
 
+import PortalItem = require("esri/portal/PortalItem");
+
 import {
   getItemTitle,
   createWebMapFromItem,
   createWebSceneFromItem
-} from "boilerplate/itemUtils";
+} from "application/itemHelper";
 
 import {
   setPageLocale,
@@ -20,7 +22,7 @@ import {
   setPageTitle,
   removePageLoading,
   addPageError
-} from "boilerplate/domUtils";
+} from "application/domHelper";
 
 import {
   getComponents,
@@ -31,7 +33,7 @@ import {
   getBasemap,
   getGraphic,
   find
-} from "boilerplate/urlUtils";
+} from "application/urlHelper";
 
 class Application {
 
@@ -64,10 +66,12 @@ class Application {
     const { config, results, settings } = boilerplate;
     const webMapItem = results.webMapItem.value;
     const webSceneItem = results.webSceneItem.value;
-    const groupItems = results.groupItems.value;
-    const groupInfo = results.groupInfo.value;
+    const groupItemsValue = results.groupItems.value;
+    const groupInfoValue = results.groupInfo.value;
+    const groupItems = groupItemsValue && groupItemsValue.results;
+    const groupInfoItem = groupInfoValue && groupInfoValue.results && groupInfoValue.results[0];
 
-    if (!webMapItem && !webSceneItem && !groupItems) {
+    if (!webMapItem && !webSceneItem && !groupInfoItem) {
       addPageError(i18n.error, "app:: Could not load an item to display");
       return;
     }
@@ -75,36 +79,40 @@ class Application {
     setPageLocale(boilerplate.locale);
     setPageDirection(boilerplate.direction);
 
+    if (!config.title) {
+      config.title = getItemTitle(webSceneItem || webMapItem || groupInfoItem);
+    }
+
+    setPageTitle(config.title);
 
     // todo: support multiple webscenes, webmaps, groups.
     if (webMapItem) {
-      config.title = getItemTitle(webMapItem) || config.title;
-      this._createWebMap(webMapItem, config, settings).then((view) => {
-        find(config.find, view);
-        setPageTitle(config.title);
+      this._createWebMap(webMapItem, config, settings).then(view => {
+        if (config.find) {
+          find(config.find, view);
+        }
         removePageLoading();
-      }).otherwise((error) => {
+      }).otherwise(error => {
         addPageError(i18n.error, error.message);
       });
     }
     else if (webSceneItem) {
-      config.title = getItemTitle(webSceneItem) || config.title;
-      this._createWebScene(webSceneItem, config, settings).then((view) => {
-        find(config.find, view);
-        setPageTitle(config.title);
+      this._createWebScene(webSceneItem, config, settings).then(view => {
+        if (config.find) {
+          find(config.find, view);
+        }
         removePageLoading();
-      }).otherwise((error) => {
+      }).otherwise(error => {
         addPageError(i18n.error, error.message);
       });
     }
     else if (groupItems) {
-      const galleryHTML = this._createGroupGallery(groupInfo, groupItems);
-      if (galleryHTML instanceof Error) {
-        addPageError(i18n.error, galleryHTML.message);
+      const galleryHTML = this._createGroupGallery(groupInfoItem, groupItems);
+      if (!galleryHTML) {
+        addPageError(i18n.error, "app:: group data does not exist.");
       }
       else {
         document.body.innerHTML = galleryHTML;
-        setPageTitle(config.title);
         removePageLoading();
       }
     }
@@ -118,28 +126,22 @@ class Application {
 
   private _createWebMap(webMapItem, config, settings): IPromise<MapView> {
     return createWebMapFromItem(webMapItem).then(map => {
+      const ui = config.components ? { components: getComponents(config.components) } : {};
 
       const urlViewProperties = {
+        ui,
         camera: getCamera(config.camera),
         center: getPoint(config.center),
         zoom: getZoom(config.level),
         extent: getExtent(config.extent)
       };
 
-      const uiComponents = getComponents(config.components);
-      if (uiComponents) {
-        // todo: fix in new typings
-        // urlViewProperties.ui = {
-        //   components: uiComponents
-        // };
-      }
-
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
-        if (basemap) {
+      const { basemapUrl, basemapReferenceUrl, marker } = config;
+      if (basemapUrl) {
+        getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
           map.basemap = basemap;
-        }
-      });
-
+        });
+      }
 
       const viewProperties = {
         map,
@@ -150,12 +152,12 @@ class Application {
       return requireUtils.when(require, "esri/views/MapView").then(MapView => {
         const mapView = new MapView(viewProperties);
         mapView.then(() => {
-          const graphic = getGraphic(config.marker).then(graphic => {
-            if (graphic) {
+          if (marker) {
+            getGraphic(marker).then(graphic => {
               mapView.graphics.add(graphic);
               mapView.goTo(graphic);
-            }
-          });
+            });
+          }
         });
         return mapView;
       });
@@ -164,19 +166,22 @@ class Application {
 
   private _createWebScene(webSceneItem, config, settings): IPromise<SceneView> {
     return createWebSceneFromItem(webSceneItem).then(map => {
+      const ui = config.components ? { components: getComponents(config.components) } : {};
+
       const urlViewProperties = {
-        ui: { components: getComponents(config.components) },
+        ui,
         camera: getCamera(config.camera),
         center: getPoint(config.center),
         zoom: getZoom(config.level),
-        extent: getExtent(config.extent)
+        extent: getExtent(config.extent),
       };
 
-      const basemap = getBasemap(config.basemapUrl, config.basemapReferenceUrl).then(basemap => {
-        if (basemap) {
+      const { basemapUrl, basemapReferenceUrl, marker } = config;
+      if (basemapUrl) {
+        getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
           map.basemap = basemap;
-        }
-      });
+        });
+      }
 
       const viewProperties = {
         map,
@@ -187,35 +192,30 @@ class Application {
       return requireUtils.when(require, "esri/views/SceneView").then(SceneView => {
         const sceneView = new SceneView(viewProperties);
         sceneView.then(() => {
-          const graphic = getGraphic(config.marker).then(graphic => {
-            if (graphic) {
+          if (marker) {
+            getGraphic(marker).then(graphic => {
               sceneView.graphics.add(graphic);
               sceneView.goTo(graphic);
-            }
-          });
+            });
+          }
         });
         return sceneView;
       });
     });
   }
 
-  private _createGroupGallery(groupInfo: any, groupItems: any): string | Error {
-    if (!groupInfo || !groupItems || groupInfo.total === 0 || groupInfo instanceof Error) {
-      return new Error("app:: group data does not exist.");
+  private _createGroupGallery(groupInfoItem: PortalItem, groupItems: PortalItem[]): string {
+    if (!groupInfoItem || !groupItems) {
+      return;
     }
 
-    const info = groupItems.results[0];
-    const items = groupItems.results;
+    const listItems = groupItems.map(item => {
+      return `<li>${item.title}</li>`;
+    });
 
-    if (info && items) {
-      const listItems = items.map((item: any) => {
-        return `<li>${item.title}</li>`;
-      });
-      const listHTML = listItems.join("");
+    const listHTML = listItems.join("");
 
-      const html = `<h1>${info.title}</h1><ol>${listHTML}</ol>`;
-      return html;
-    }
+    return `<h1>${groupInfoItem.title}</h1><ol>${listHTML}</ol>`;
   }
 }
 

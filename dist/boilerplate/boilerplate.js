@@ -6,10 +6,11 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams", "boilerplate/urlUtils"], function (require, exports, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams, urlUtils_1) {
+define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Boilerplate = (function () {
+        // todo: support multiple webscenes, webmaps, groups.
         //--------------------------------------------------------------------------
         //
         //  Lifecycle
@@ -74,7 +75,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         };
         Boilerplate.prototype.load = function () {
             var _this = this;
-            var urlParams = urlUtils_1.getUrlParamValues(this.settings.urlParams);
+            var urlParams = this._getUrlParamValues(this.settings.urlParams);
             this.results.urlParams = urlParams;
             this.config = this._mixinAllConfigs({
                 config: this.config,
@@ -315,6 +316,48 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             }
             var signedIn = IdentityManager.checkSignInStatus(portalUrl + sharingPath);
             return signedIn.always(promiseUtils.resolve);
+        };
+        Boilerplate.prototype._getUrlParamValues = function (urlParams) {
+            var _this = this;
+            var urlObject = this._urlToObject();
+            var formattedUrlObject = {};
+            if (!urlObject || !urlParams || !urlParams.length) {
+                return;
+            }
+            urlParams.forEach(function (param) {
+                var urlParamValue = urlObject[param];
+                if (urlParamValue) {
+                    formattedUrlObject[param] = _this._foramatUrlParamValue(urlParamValue);
+                }
+            });
+            return formattedUrlObject;
+        };
+        Boilerplate.prototype._urlToObject = function () {
+            var _this = this;
+            var query = (window.location.search || "?").substr(1), map = {};
+            var urlRE = /([^&=]+)=?([^&]*)(?:&+|$)/g;
+            query.replace(urlRE, function (match, key, value) {
+                map[key] = _this._stripStringTags(decodeURIComponent(value));
+                return "";
+            });
+            return map;
+        };
+        Boilerplate.prototype._foramatUrlParamValue = function (urlParamValue) {
+            if (typeof urlParamValue === "string") {
+                switch (urlParamValue.toLowerCase()) {
+                    case "true":
+                        return true;
+                    case "false":
+                        return false;
+                    default:
+                        return urlParamValue;
+                }
+            }
+            return urlParamValue;
+        };
+        Boilerplate.prototype._stripStringTags = function (value) {
+            var tagsRE = /<\/?[^>]+>/g;
+            return value.replace(tagsRE, "");
         };
         return Boilerplate;
     }());
