@@ -130,9 +130,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     });
                     _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.environment.webTierSecurity);
                     _this._setGeometryService(_this.config, portal);
-                    _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.webmap.default);
-                    _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.webscene.default);
-                    _this.config.group = _this._getDefaultId(_this.config.group, _this.settings.group.default);
                     var _a = _this.config, webmap = _a.webmap, webscene = _a.webscene, group = _a.group;
                     var webmapPromises = [];
                     var webscenePromises = [];
@@ -143,22 +140,28 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     var isGroupInfoEnabled = _this.settings.group.fetchInfo && group;
                     var isGroupItemsEnabled = _this.settings.group.fetchItems && group;
                     var itemParams = _this.settings.group.itemParams;
+                    var defaultWebMap = _this.settings.webmap.default;
+                    var defaultWebScene = _this.settings.webscene.default;
+                    var defaultGroup = _this.settings.group.default;
                     if (isWebMapEnabled) {
                         var webmaps = _this._getPropertyArray(webmap);
                         webmaps.forEach(function (id) {
-                            webmapPromises.push(_this._queryItem(id));
+                            var webMapId = _this._getDefaultId(id, defaultWebMap);
+                            webmapPromises.push(_this._queryItem(webMapId));
                         });
                     }
                     if (isWebSceneEnabled) {
                         var webscenes = _this._getPropertyArray(webscene);
                         webscenes.forEach(function (id) {
-                            webscenePromises.push(_this._queryItem(id));
+                            var webSceneId = _this._getDefaultId(id, defaultWebScene);
+                            webscenePromises.push(_this._queryItem(webSceneId));
                         });
                     }
                     if (isGroupInfoEnabled) {
                         var groups = _this._getPropertyArray(group);
                         groups.forEach(function (id) {
-                            groupInfoPromises.push(_this._queryGroupInfo(id, portal));
+                            var groupId = _this._getDefaultId(id, defaultGroup);
+                            groupInfoPromises.push(_this._queryGroupInfo(groupId, portal));
                         });
                     }
                     if (isGroupItemsEnabled) {
@@ -312,9 +315,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             esriConfig.geometryServiceUrl = geometryUrl;
         };
         Boilerplate.prototype._getDefaultId = function (id, defaultId) {
-            if (typeof id !== "string") {
-                return id;
-            }
             var defaultUrlParam = "default";
             var useDefaultId = (!id || id === defaultUrlParam) && defaultId;
             if (useDefaultId) {

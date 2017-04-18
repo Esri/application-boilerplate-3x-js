@@ -191,10 +191,6 @@ class Boilerplate {
         this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.environment.webTierSecurity);
         this._setGeometryService(this.config, portal);
 
-        this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.webmap.default);
-        this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.webscene.default);
-        this.config.group = this._getDefaultId(this.config.group, this.settings.group.default);
-
         const { webmap, webscene, group } = this.config;
 
         const webmapPromises = [];
@@ -207,25 +203,31 @@ class Boilerplate {
         const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
         const isGroupItemsEnabled = this.settings.group.fetchItems && group;
         const itemParams = this.settings.group.itemParams;
+        const defaultWebMap = this.settings.webmap.default;
+        const defaultWebScene = this.settings.webscene.default;
+        const defaultGroup = this.settings.group.default;
 
         if (isWebMapEnabled) {
           const webmaps = this._getPropertyArray(webmap);
           webmaps.forEach(id => {
-            webmapPromises.push(this._queryItem(id));
+            const webMapId = this._getDefaultId(id, defaultWebMap);
+            webmapPromises.push(this._queryItem(webMapId));
           });
         }
 
         if (isWebSceneEnabled) {
           const webscenes = this._getPropertyArray(webscene);
           webscenes.forEach(id => {
-            webscenePromises.push(this._queryItem(id));
+            const webSceneId = this._getDefaultId(id, defaultWebScene);
+            webscenePromises.push(this._queryItem(webSceneId));
           });
         }
 
         if (isGroupInfoEnabled) {
           const groups = this._getPropertyArray(group);
           groups.forEach(id => {
-            groupInfoPromises.push(this._queryGroupInfo(id, portal));
+            const groupId = this._getDefaultId(id, defaultGroup);
+            groupInfoPromises.push(this._queryGroupInfo(groupId, portal));
           });
         }
 
@@ -403,11 +405,7 @@ class Boilerplate {
     esriConfig.geometryServiceUrl = geometryUrl;
   }
 
-  private _getDefaultId(id: string | string[], defaultId: string): string | string[] {
-    if (typeof id !== "string") {
-      return id;
-    }
-
+  private _getDefaultId(id: string, defaultId: string): string {
     const defaultUrlParam = "default";
     const useDefaultId = (!id || id === defaultUrlParam) && defaultId;
     if (useDefaultId) {

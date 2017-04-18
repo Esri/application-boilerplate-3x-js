@@ -4,6 +4,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
     var Application = (function () {
         function Application() {
+            //todo: make this simplfied with options.
             //--------------------------------------------------------------------------
             //
             //  Properties
@@ -51,15 +52,19 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             config.title = !config.title ? itemUtils_1.getItemTitle(firstItem) : "";
             domHelper_1.setPageTitle(config.title);
             var viewContainerNode = document.getElementById("viewContainer");
+            var viewNodes = [];
             validWebMaps.forEach(function (webmap) {
                 var viewNode = document.createElement("div");
-                viewContainerNode.appendChild(viewNode);
+                viewNodes.push(viewNode);
                 _this._createView(webmap, config, viewNode);
             });
             validWebScenes.forEach(function (webscene) {
                 var viewNode = document.createElement("div");
-                viewContainerNode.appendChild(viewNode);
+                viewNodes.push(viewNode);
                 _this._createView(webscene, config, viewNode);
+            });
+            viewNodes.forEach(function (viewNode) {
+                viewContainerNode.appendChild(viewNode);
             });
         };
         //--------------------------------------------------------------------------

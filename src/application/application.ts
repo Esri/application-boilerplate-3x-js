@@ -42,6 +42,8 @@ import {
 
 class Application {
 
+  //todo: make this simplfied with options.
+
   //--------------------------------------------------------------------------
   //
   //  Properties
@@ -102,17 +104,24 @@ class Application {
 
     const viewContainerNode = document.getElementById("viewContainer");
 
+    const viewNodes = [];
+
     validWebMaps.forEach(webmap => {
       const viewNode = document.createElement("div");
-      viewContainerNode.appendChild(viewNode);
+      viewNodes.push(viewNode);
       this._createView(webmap, config, viewNode);
     });
 
     validWebScenes.forEach(webscene => {
       const viewNode = document.createElement("div");
-      viewContainerNode.appendChild(viewNode);
+      viewNodes.push(viewNode);
       this._createView(webscene, config, viewNode);
     });
+
+    viewNodes.forEach(viewNode => {
+      viewContainerNode.appendChild(viewNode);
+    });
+
   }
 
   //--------------------------------------------------------------------------
