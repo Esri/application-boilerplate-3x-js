@@ -23,9 +23,9 @@ import {
 
 type Direction = "ltr" | "rtl";
 
-class Boilerplate {
+type PromiseName = "webmap" | "webscene" | "groupInfo" | "groupItems";
 
-  // todo: support multiple webscenes, webmaps, groups.
+class Boilerplate {
 
   //--------------------------------------------------------------------------
   //
@@ -175,6 +175,30 @@ class Boilerplate {
           application: applicationConfig
         });
 
+        // todo
+        // const { webmap, webscene, group } = this.config;
+        // const promiseItems = {};
+        // const isWebMapEnabled = this.settings.webmap.fetch && webmap;
+        // const isWebSceneEnabled = this.settings.webscene.fetch && webscene;
+        // const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
+        // const isGroupItemsEnabled = this.settings.group.fetchItems && group;
+
+        // if (isWebMapEnabled) {
+        //   this._addItemPromises(promiseItems, webmap, "webmap");
+        // }
+
+        // if (isWebSceneEnabled) {
+        //   this._addItemPromises(promiseItems, webscene, "webscene");
+        // }
+
+        // if (isGroupInfoEnabled) {
+        //   this._addItemPromises(promiseItems, group, "groupInfo");
+        // }
+
+        // if (isGroupItemsEnabled) {
+        //   this._addItemPromises(promiseItems, group, "groupItems");
+        // }
+
         const webMapId = this.config.webmap;
         const queryWebMapItem = webMapId && this.settings.webmap.fetch ?
           this._queryItem(webMapId) :
@@ -194,6 +218,7 @@ class Boilerplate {
           this.queryGroupItems(groupId, this.settings.group.itemParams, portal) :
           promiseUtils.resolve();
 
+        // todo: support multiple webmaps/webscenes/groups
         return promiseUtils.eachAlways([
           queryWebMapItem,
           queryWebSceneItem,
@@ -235,6 +260,17 @@ class Boilerplate {
   //  Private Methods
   //
   //--------------------------------------------------------------------------
+
+  private _addItemPromises(promises: object, values: string | string[], promiseName: PromiseName): void {
+    if (typeof values === "string") {
+      promises[`${promiseName}0`] = this._queryItem(values);
+    }
+    if (Array.isArray(values)) {
+      values.forEach((id, index) => {
+        promises[`${promiseName}${index}`] = this._queryItem(id);
+      });
+    }
+  }
 
   private _getUnits(portal: Portal): string {
     const user = portal.user;

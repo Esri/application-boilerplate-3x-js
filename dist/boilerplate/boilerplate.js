@@ -10,7 +10,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Boilerplate = (function () {
-        // todo: support multiple webscenes, webmaps, groups.
         //--------------------------------------------------------------------------
         //
         //  Lifecycle
@@ -122,6 +121,25 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         local: localStorage,
                         application: applicationConfig
                     });
+                    // todo
+                    // const { webmap, webscene, group } = this.config;
+                    // const promiseItems = {};
+                    // const isWebMapEnabled = this.settings.webmap.fetch && webmap;
+                    // const isWebSceneEnabled = this.settings.webscene.fetch && webscene;
+                    // const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
+                    // const isGroupItemsEnabled = this.settings.group.fetchItems && group;
+                    // if (isWebMapEnabled) {
+                    //   this._addItemPromises(promiseItems, webmap, "webmap");
+                    // }
+                    // if (isWebSceneEnabled) {
+                    //   this._addItemPromises(promiseItems, webscene, "webscene");
+                    // }
+                    // if (isGroupInfoEnabled) {
+                    //   this._addItemPromises(promiseItems, group, "groupInfo");
+                    // }
+                    // if (isGroupItemsEnabled) {
+                    //   this._addItemPromises(promiseItems, group, "groupItems");
+                    // }
                     var webMapId = _this.config.webmap;
                     var queryWebMapItem = webMapId && _this.settings.webmap.fetch ?
                         _this._queryItem(webMapId) :
@@ -137,6 +155,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     var queryGroupItems = _this.settings.group.fetchItems && groupId ?
                         _this.queryGroupItems(groupId, _this.settings.group.itemParams, portal) :
                         promiseUtils.resolve();
+                    // todo: support multiple webmaps/webscenes/groups
                     return promiseUtils.eachAlways([
                         queryWebMapItem,
                         queryWebSceneItem,
@@ -169,6 +188,17 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         //  Private Methods
         //
         //--------------------------------------------------------------------------
+        Boilerplate.prototype._addItemPromises = function (promises, values, promiseName) {
+            var _this = this;
+            if (typeof values === "string") {
+                promises[promiseName + "0"] = this._queryItem(values);
+            }
+            if (Array.isArray(values)) {
+                values.forEach(function (id, index) {
+                    promises["" + promiseName + index] = _this._queryItem(id);
+                });
+            }
+        };
         Boilerplate.prototype._getUnits = function (portal) {
             var user = portal.user;
             var userRegion = user && user.region;
