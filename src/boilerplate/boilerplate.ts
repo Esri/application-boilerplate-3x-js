@@ -100,7 +100,7 @@ class Boilerplate {
   //
   //--------------------------------------------------------------------------
 
-  queryGroupItems(groupId: string, itemParams: any, portal: Portal) {
+  queryGroupItems(groupId: string, itemParams: any, portal: Portal): IPromise<any> {
 
     if (!portal) {
       portal = this.portal;
@@ -162,10 +162,18 @@ class Boilerplate {
           null;
         this.results.localStorage = localStorage;
 
-        const applicationItem = applicationResponse ? applicationResponse.value as BoilerplateApplicationResult : null;
-        const applicationItemData = applicationItem ? applicationItem.itemData : null;
-        const applicationConfig = applicationItem ? applicationItemData.values : null;
-        const applicationInfo = applicationItem ? applicationItem.itemInfo : null;
+        const applicationItem = applicationResponse ?
+          applicationResponse.value as BoilerplateApplicationResult :
+          null;
+        const applicationItemData = applicationItem ?
+          applicationItem.itemData :
+          null;
+        const applicationConfig = applicationItem ?
+          applicationItemData.values :
+          null;
+        const applicationInfo = applicationItem ?
+          applicationItem.itemInfo :
+          null;
         this.results.application = applicationResponse;
 
         const portal = portalResponse ? portalResponse.value : null;
@@ -229,20 +237,28 @@ class Boilerplate {
         }
 
         const promises: BoilerplateItemPromises = {
-          webmap: webmapPromises.length ? promiseUtils.eachAlways(webmapPromises) : promiseUtils.resolve(),
-          webscene: webscenePromises.length ? promiseUtils.eachAlways(webscenePromises) : promiseUtils.resolve(),
-          groupInfo: groupInfoPromises.length ? promiseUtils.eachAlways(groupInfoPromises) : promiseUtils.resolve(),
-          groupItems: groupItemsPromises.length ? promiseUtils.eachAlways(groupItemsPromises) : promiseUtils.resolve()
+          webmap: webmapPromises.length ?
+            promiseUtils.eachAlways(webmapPromises) :
+            promiseUtils.resolve(),
+          webscene: webscenePromises.length ?
+            promiseUtils.eachAlways(webscenePromises) :
+            promiseUtils.resolve(),
+          groupInfo: groupInfoPromises.length ?
+            promiseUtils.eachAlways(groupInfoPromises) :
+            promiseUtils.resolve(),
+          groupItems: groupItemsPromises.length ?
+            promiseUtils.eachAlways(groupItemsPromises) :
+            promiseUtils.resolve()
         };
 
         return promiseUtils.eachAlways(promises).always(itemArgs => {
-          // todo: mixin sourceUrl with proxyUrl
-          // const appProxies = applicationInfo.appProxies;
-
           const webmapResponses = itemArgs.webmap.value;
           const websceneResponses = itemArgs.webscene.value;
           const groupInfoResponses = itemArgs.groupInfo.value;
           const groupItemsResponses = itemArgs.groupItems.value;
+
+          // todo: mixin sourceUrl with proxyUrl
+          // const appProxies = applicationInfo.appProxies;
 
           const itemInfo = applicationItem ? applicationItem.itemInfo : null;
           this._overwriteItems(webmapResponses, itemInfo);
@@ -374,7 +390,7 @@ class Boilerplate {
     item.extent = applicationExtent ? applicationExtent : item.extent;
   }
 
-  private _setGeometryService(config: ApplicationConfig, ptl: Portal) {
+  private _setGeometryService(config: ApplicationConfig, ptl: Portal): void {
     const portal = ptl as any; // todo: fix next api release. helperServices are not on portal currently.
     const configHelperServices = config.helperServices;
     const portalHelperServices = portal && portal.helperServices;
@@ -387,7 +403,11 @@ class Boilerplate {
     esriConfig.geometryServiceUrl = geometryUrl;
   }
 
-  private _getDefaultId(id: string, defaultId: string): string {
+  private _getDefaultId(id: string | string[], defaultId: string): string | string[] {
+    if (typeof id !== "string") {
+      return id;
+    }
+
     const defaultUrlParam = "default";
     const useDefaultId = (!id || id === defaultUrlParam) && defaultId;
     if (useDefaultId) {

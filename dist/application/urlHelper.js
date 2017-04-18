@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point) {
+define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/core/watchUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, watchUtils, Extent, Point) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -137,11 +137,9 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
             var symbolSize = "32px"; // todo: fix typings in next JS API release.
             var defaultMarkerSymbol = {
-                url: "./symbols/mapPin.png",
-                width: "36px",
-                height: "19px",
-                xoffset: "9px",
-                yoffset: "18px" // todo: fix typings in next JS API release.
+                url: require.toUrl("./symbols/marker.png"),
+                width: "32px",
+                height: "32px",
             };
             var symbolOptions = icon_url ? {
                 url: icon_url,
@@ -210,7 +208,9 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             var searchVM = new SearchViewModel({
                 view: view
             });
-            return searchVM.search(query);
+            return searchVM.search(query).then(function () {
+                watchUtils.whenFalseOnce(view, "popup.visible", function () { return searchVM.destroy(); });
+            });
         });
     }
     exports.find = find;

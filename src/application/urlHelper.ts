@@ -4,6 +4,7 @@ import Graphic = require("esri/Graphic");
 
 import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
+import watchUtils = require("esri/core/watchUtils");
 
 import Extent = require("esri/geometry/Extent");
 import Point = require("esri/geometry/Point");
@@ -66,7 +67,7 @@ export function getComponents(components: string): string[] {
 }
 
 export function getCamera(viewpointString: string): Camera {
-  // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
+  // ?viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
   const viewpointArray = viewpointString && viewpointString.split(";");
 
   if (!viewpointArray || !viewpointArray.length) {
@@ -87,8 +88,10 @@ export function getCamera(viewpointString: string): Camera {
 }
 
 export function getPoint(center: string): Point {
-  //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
-  //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
+  // ?center=-13044705.25,4036227.41,102113&level=12
+  // ?center=-13044705.25;4036227.41;102113&level=12
+  // ?center=-117.1825,34.0552&level=12
+  // ?center=-117.1825;34.0552&level=12
   if (!center) {
     return null;
   }
@@ -122,8 +125,10 @@ export function getZoom(level: string): number {
 }
 
 export function getExtent(extent: string): Extent {
-  //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-  //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
+  // ?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100
+  // ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+  // ?extent=-117.2672,33.9927,-117.0746,34.1064
+  // ?extent=-117.2672;33.9927;-117.0746;34.1064
   if (!extent) {
     return null;
   }
@@ -158,11 +163,11 @@ export function getExtent(extent: string): Extent {
 }
 
 export function getGraphic(marker: string): IPromise<Graphic> {
-  // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
-  // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-  // ?marker=-13044705.25,4036227.41,102100,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-  // ?marker=-117,34,,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-  // ?marker=-117,34,,,,My%20location&level=10
+  // ?marker=-117;34;4326;My Title;http://www.daisysacres.com/images/daisy_icon.gif;My location&level=10
+  // ?marker=-117,34,4326,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+  // ?marker=-13044705.25,4036227.41,102100,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+  // ?marker=-117,34,,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+  // ?marker=-117,34,,,,My location&level=10
   // ?marker=-117,34&level=10
   // ?marker=10406557.402,6590748.134,2526
 
@@ -193,11 +198,9 @@ export function getGraphic(marker: string): IPromise<Graphic> {
     const symbolSize = "32px" as any as number; // todo: fix typings in next JS API release.
 
     const defaultMarkerSymbol = {
-      url: "./symbols/mapPin.png",
-      width: "36px" as any as number, // todo: fix typings in next JS API release.
-      height: "19px" as any as number, // todo: fix typings in next JS API release.
-      xoffset: "9px" as any as number, // todo: fix typings in next JS API release.
-      yoffset: "18px" as any as number // todo: fix typings in next JS API release.
+      url: require.toUrl("./symbols/marker.png"),
+      width: "32px" as any as number, // todo: fix typings in next JS API release.
+      height: "32px" as any as number, // todo: fix typings in next JS API release.
     };
 
     const symbolOptions = icon_url ? {
@@ -216,8 +219,8 @@ export function getGraphic(marker: string): IPromise<Graphic> {
     const hasPopupDetails = content || label;
     const popupTemplate = hasPopupDetails ?
       new PopupTemplate({
-        "title": label || null,
-        "content": content || null
+        "title": content || null,
+        "content": label || null
       }) : null;
 
     const graphic = new Graphic({
@@ -264,7 +267,7 @@ export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPr
 }
 
 export function find(query: string, view: MapView | SceneView): IPromise<{}> {
-  // ?webmap=7e2b9be8a9c94e45b7f87857d8d168d6&find=redlands,%20ca
+  // ?find=redlands, ca
   if (!query || !view) {
     return promiseUtils.reject();
   }
@@ -273,7 +276,9 @@ export function find(query: string, view: MapView | SceneView): IPromise<{}> {
     const searchVM = new SearchViewModel({
       view: view
     });
-    return searchVM.search(query);
+    return searchVM.search(query).then(() => {
+      watchUtils.whenFalseOnce(view, "popup.visible", () => searchVM.destroy());
+    });
   });
 }
 

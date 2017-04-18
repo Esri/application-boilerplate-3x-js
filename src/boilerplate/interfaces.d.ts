@@ -18,7 +18,7 @@ export interface ApplicationConfig {
   embed?: boolean;
   extent?: string;
   find?: string;
-  group?: string;
+  group?: string | string[];
   helperServices?: {
     geometry?: {
       url: string;
@@ -41,8 +41,8 @@ export interface ApplicationConfig {
   proxyUrl?: string;
   title?: string;
   viewpoint?: string;
-  webmap?: string;
-  webscene?: string;
+  webmap?: string | string[];
+  webscene?: string | string[];
 }
 
 export interface BoilerplateSettings {

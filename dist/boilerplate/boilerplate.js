@@ -106,10 +106,18 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         _this._getLocalConfig(appId) :
                         null;
                     _this.results.localStorage = localStorage;
-                    var applicationItem = applicationResponse ? applicationResponse.value : null;
-                    var applicationItemData = applicationItem ? applicationItem.itemData : null;
-                    var applicationConfig = applicationItem ? applicationItemData.values : null;
-                    var applicationInfo = applicationItem ? applicationItem.itemInfo : null;
+                    var applicationItem = applicationResponse ?
+                        applicationResponse.value :
+                        null;
+                    var applicationItemData = applicationItem ?
+                        applicationItem.itemData :
+                        null;
+                    var applicationConfig = applicationItem ?
+                        applicationItemData.values :
+                        null;
+                    var applicationInfo = applicationItem ?
+                        applicationItem.itemInfo :
+                        null;
                     _this.results.application = applicationResponse;
                     var portal = portalResponse ? portalResponse.value : null;
                     _this.portal = portal;
@@ -160,18 +168,26 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         });
                     }
                     var promises = {
-                        webmap: webmapPromises.length ? promiseUtils.eachAlways(webmapPromises) : promiseUtils.resolve(),
-                        webscene: webscenePromises.length ? promiseUtils.eachAlways(webscenePromises) : promiseUtils.resolve(),
-                        groupInfo: groupInfoPromises.length ? promiseUtils.eachAlways(groupInfoPromises) : promiseUtils.resolve(),
-                        groupItems: groupItemsPromises.length ? promiseUtils.eachAlways(groupItemsPromises) : promiseUtils.resolve()
+                        webmap: webmapPromises.length ?
+                            promiseUtils.eachAlways(webmapPromises) :
+                            promiseUtils.resolve(),
+                        webscene: webscenePromises.length ?
+                            promiseUtils.eachAlways(webscenePromises) :
+                            promiseUtils.resolve(),
+                        groupInfo: groupInfoPromises.length ?
+                            promiseUtils.eachAlways(groupInfoPromises) :
+                            promiseUtils.resolve(),
+                        groupItems: groupItemsPromises.length ?
+                            promiseUtils.eachAlways(groupItemsPromises) :
+                            promiseUtils.resolve()
                     };
                     return promiseUtils.eachAlways(promises).always(function (itemArgs) {
-                        // todo: mixin sourceUrl with proxyUrl
-                        // const appProxies = applicationInfo.appProxies;
                         var webmapResponses = itemArgs.webmap.value;
                         var websceneResponses = itemArgs.webscene.value;
                         var groupInfoResponses = itemArgs.groupInfo.value;
                         var groupItemsResponses = itemArgs.groupItems.value;
+                        // todo: mixin sourceUrl with proxyUrl
+                        // const appProxies = applicationInfo.appProxies;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;
                         _this._overwriteItems(webmapResponses, itemInfo);
                         _this._overwriteItems(websceneResponses, itemInfo);
@@ -296,6 +312,9 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             esriConfig.geometryServiceUrl = geometryUrl;
         };
         Boilerplate.prototype._getDefaultId = function (id, defaultId) {
+            if (typeof id !== "string") {
+                return id;
+            }
             var defaultUrlParam = "default";
             var useDefaultId = (!id || id === defaultUrlParam) && defaultId;
             if (useDefaultId) {
