@@ -18,7 +18,7 @@ import {
   getItemTitle,
   createWebMapFromItem,
   createWebSceneFromItem
-} from "application/itemHelper";
+} from "boilerplate/support/itemUtils";
 
 import {
   setPageLocale,
@@ -33,7 +33,7 @@ import {
   getBasemap,
   getGraphic,
   find
-} from "application/urlHelper";
+} from "boilerplate/support/urlUtils";
 
 import {
   ApplicationConfig,

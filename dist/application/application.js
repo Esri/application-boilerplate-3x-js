@@ -1,4 +1,4 @@
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "application/itemHelper", "application/domHelper", "application/urlHelper"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemHelper_1, domHelper_1, urlHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "boilerplate/support/itemUtils", "application/domHelper", "boilerplate/support/urlUtils"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemUtils_1, domHelper_1, urlUtils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -37,7 +37,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 return;
             }
             if (!config.title) {
-                config.title = itemHelper_1.getItemTitle(webSceneItem || webMapItem || groupInfoItem);
+                config.title = itemUtils_1.getItemTitle(webSceneItem || webMapItem || groupInfoItem);
             }
             domHelper_1.setPageLocale(boilerplate.locale);
             domHelper_1.setPageDirection(boilerplate.direction);
@@ -46,7 +46,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             if (webMapItem) {
                 this._createView(webMapItem, config, settings).then(function (view) {
                     if (config.find) {
-                        urlHelper_1.find(config.find, view);
+                        urlUtils_1.find(config.find, view);
                     }
                     domHelper_1.removePageLoading();
                 }).otherwise(function (error) {
@@ -56,7 +56,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             else if (webSceneItem) {
                 this._createView(webSceneItem, config, settings).then(function (view) {
                     if (config.find) {
-                        urlHelper_1.find(config.find, view);
+                        urlUtils_1.find(config.find, view);
                     }
                     domHelper_1.removePageLoading();
                 }).otherwise(function (error) {
@@ -82,7 +82,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         Application.prototype._setBasemap = function (config, map) {
             var basemapUrl = config.basemapUrl, basemapReferenceUrl = config.basemapReferenceUrl;
             if (basemapUrl) {
-                urlHelper_1.getBasemap(basemapUrl, basemapReferenceUrl).then(function (basemap) {
+                urlUtils_1.getBasemap(basemapUrl, basemapReferenceUrl).then(function (basemap) {
                     map.basemap = basemap;
                 });
             }
@@ -90,7 +90,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         Application.prototype._addMarker = function (config, view) {
             var marker = config.marker;
             if (marker) {
-                urlHelper_1.getGraphic(marker).then(function (graphic) {
+                urlUtils_1.getGraphic(marker).then(function (graphic) {
                     view.graphics.add(graphic);
                     if (view instanceof MapView) {
                         view.goTo(graphic);
@@ -108,12 +108,12 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             if (!isWebMap && !isWebScene) {
                 return promiseUtils.reject();
             }
-            var createItem = isWebMap ? itemHelper_1.createWebMapFromItem(item) : itemHelper_1.createWebSceneFromItem(item);
+            var createItem = isWebMap ? itemUtils_1.createWebMapFromItem(item) : itemUtils_1.createWebSceneFromItem(item);
             var containerId = isWebMap ? settings.webmap.containerId : settings.webscene.containerId;
             var viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
             return createItem.then(function (map) {
                 _this._setBasemap(config, map);
-                var viewProperties = urlHelper_1.getViewProperties(config);
+                var viewProperties = urlUtils_1.getViewProperties(config);
                 viewProperties.container = containerId;
                 viewProperties.map = map;
                 return requireUtils.when(require, viewTypePath).then(function (ViewType) {

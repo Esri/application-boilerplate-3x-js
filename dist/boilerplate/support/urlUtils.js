@@ -266,4 +266,4 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         return __assign({ position: cameraPosition }, tiltAndHeadingProperties);
     }
 });
-//# sourceMappingURL=urlHelper.js.map
+//# sourceMappingURL=urlUtils.js.map

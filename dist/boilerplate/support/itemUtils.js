@@ -31,4 +31,4 @@ define(["require", "exports", "esri/core/requireUtils"], function (require, expo
     }
     exports.getItemTitle = getItemTitle;
 });
-//# sourceMappingURL=itemHelper.js.map
+//# sourceMappingURL=itemUtils.js.map
