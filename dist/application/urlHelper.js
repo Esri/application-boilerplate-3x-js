@@ -15,9 +15,9 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     //
     //--------------------------------------------------------------------------
     function getViewProperties(config) {
-        var camera = config.camera, center = config.center, components = config.components, extent = config.extent, level = config.level;
+        var center = config.center, components = config.components, extent = config.extent, level = config.level, viewpoint = config.viewpoint;
         var ui = components ? { ui: { components: getComponents(components) } } : null;
-        var cameraProps = camera ? { camera: getCamera(camera) } : null;
+        var cameraProps = viewpoint ? { camera: getCamera(viewpoint) } : null;
         var centerProps = center ? { center: getPoint(center) } : null;
         var zoomProps = level ? { zoom: getZoom(level) } : null;
         var extentProps = extent ? { extent: getExtent(extent) } : null;
@@ -33,7 +33,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getComponents = getComponents;
     function getCamera(viewpointString) {
-        // &viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
+        // ?viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
         var viewpointArray = viewpointString && viewpointString.split(";");
         if (!viewpointArray || !viewpointArray.length) {
             return;
@@ -50,8 +50,10 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getCamera = getCamera;
     function getPoint(center) {
-        //?center=-13044705.25,4036227.41,102113&level=12 or ?center=-13044705.25;4036227.41;102113&level=12
-        //?center=-117.1825,34.0552&level=12 or ?center=-117.1825;34.0552&level=12
+        // ?center=-13044705.25,4036227.41,102113&level=12
+        // ?center=-13044705.25;4036227.41;102113&level=12
+        // ?center=-117.1825,34.0552&level=12
+        // ?center=-117.1825;34.0552&level=12
         if (!center) {
             return null;
         }
@@ -80,8 +82,10 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getZoom = getZoom;
     function getExtent(extent) {
-        //?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100 or ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
-        //?extent=-117.2672,33.9927,-117.0746,34.1064 or ?extent=-117.2672;33.9927;-117.0746;34.1064
+        // ?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100
+        // ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+        // ?extent=-117.2672,33.9927,-117.0746,34.1064
+        // ?extent=-117.2672;33.9927;-117.0746;34.1064
         if (!extent) {
             return null;
         }
@@ -108,11 +112,11 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getExtent = getExtent;
     function getGraphic(marker) {
-        // ?marker=-117;34;4326;My%20Title;http%3A//www.daisysacres.com/images/daisy_icon.gif;My%20location&level=10
-        // ?marker=-117,34,4326,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-        // ?marker=-13044705.25,4036227.41,102100,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-        // ?marker=-117,34,,My%20Title,http%3A//www.daisysacres.com/images/daisy_icon.gif,My%20location&level=10
-        // ?marker=-117,34,,,,My%20location&level=10
+        // ?marker=-117;34;4326;My Title;http://www.daisysacres.com/images/daisy_icon.gif;My location&level=10
+        // ?marker=-117,34,4326,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-13044705.25,4036227.41,102100,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-117,34,,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-117,34,,,,My location&level=10
         // ?marker=-117,34&level=10
         // ?marker=10406557.402,6590748.134,2526
         if (!marker) {
@@ -157,8 +161,8 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             var hasPopupDetails = content || label;
             var popupTemplate = hasPopupDetails ?
                 new PopupTemplate({
-                    "title": label || null,
-                    "content": content || null
+                    "title": content || null,
+                    "content": label || null
                 }) : null;
             var graphic = new Graphic({
                 geometry: point,
@@ -200,7 +204,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getBasemap = getBasemap;
     function find(query, view) {
-        // ?webmap=7e2b9be8a9c94e45b7f87857d8d168d6&find=redlands,%20ca
+        // ?find=redlands, ca
         if (!query || !view) {
             return promiseUtils.reject();
         }

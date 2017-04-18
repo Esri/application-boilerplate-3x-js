@@ -39,9 +39,9 @@ interface CameraProperties {
 //--------------------------------------------------------------------------
 
 export function getViewProperties(config: ApplicationConfig): any {
-  const { camera, center, components, extent, level } = config;
+  const { center, components, extent, level, viewpoint } = config;
   const ui = components ? { ui: { components: getComponents(components) } } : null;
-  const cameraProps = camera ? { camera: getCamera(camera) } : null;
+  const cameraProps = viewpoint ? { camera: getCamera(viewpoint) } : null;
   const centerProps = center ? { center: getPoint(center) } : null;
   const zoomProps = level ? { zoom: getZoom(level) } : null;
   const extentProps = extent ? { extent: getExtent(extent) } : null;
