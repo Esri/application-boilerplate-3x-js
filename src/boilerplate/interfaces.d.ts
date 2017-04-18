@@ -66,12 +66,10 @@ export interface BoilerplateSettings {
   urlParams?: string[];
   webmap?: {
     default?: string;
-    containerId?: string;
     fetch?: boolean;
   },
   webscene?: {
     default?: string;
-    containerId?: string;
     fetch?: boolean;
   }
 }

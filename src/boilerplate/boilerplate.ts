@@ -252,10 +252,10 @@ class Boilerplate {
         };
 
         return promiseUtils.eachAlways(promises).always(itemArgs => {
-          const webmapResponses = itemArgs.webmap.value;
-          const websceneResponses = itemArgs.webscene.value;
-          const groupInfoResponses = itemArgs.groupInfo.value;
-          const groupItemsResponses = itemArgs.groupItems.value;
+          const webmapResponses = itemArgs.webmap.value || [];
+          const websceneResponses = itemArgs.webscene.value || [];
+          const groupInfoResponses = itemArgs.groupInfo.value || [];
+          const groupItemsResponses = itemArgs.groupItems.value || [];
 
           // todo: mixin sourceUrl with proxyUrl
           // const appProxies = applicationInfo.appProxies;

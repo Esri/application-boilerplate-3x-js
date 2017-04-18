@@ -182,10 +182,10 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                             promiseUtils.resolve()
                     };
                     return promiseUtils.eachAlways(promises).always(function (itemArgs) {
-                        var webmapResponses = itemArgs.webmap.value;
-                        var websceneResponses = itemArgs.webscene.value;
-                        var groupInfoResponses = itemArgs.groupInfo.value;
-                        var groupItemsResponses = itemArgs.groupItems.value;
+                        var webmapResponses = itemArgs.webmap.value || [];
+                        var websceneResponses = itemArgs.webscene.value || [];
+                        var groupInfoResponses = itemArgs.groupInfo.value || [];
+                        var groupItemsResponses = itemArgs.groupItems.value || [];
                         // todo: mixin sourceUrl with proxyUrl
                         // const appProxies = applicationInfo.appProxies;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;

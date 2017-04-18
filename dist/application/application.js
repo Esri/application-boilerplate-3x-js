@@ -1,4 +1,4 @@
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "boilerplate/support/itemUtils", "application/domHelper", "boilerplate/support/urlUtils"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemUtils_1, domHelper_1, urlUtils_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "boilerplate/support/itemUtils", "boilerplate/support/urlUtils", "application/domHelper"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemUtils_1, urlUtils_1, domHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -20,59 +20,42 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
         //
         //--------------------------------------------------------------------------
         Application.prototype.init = function (boilerplate) {
+            var _this = this;
             if (!boilerplate) {
                 domHelper_1.addPageError(i18n.error, "app:: Boilerplate is not defined");
                 return;
             }
+            domHelper_1.setPageLocale(boilerplate.locale);
+            domHelper_1.setPageDirection(boilerplate.direction);
             this.boilerplate = boilerplate;
             var config = boilerplate.config, results = boilerplate.results, settings = boilerplate.settings;
-            var webMapItem = results.webMapItems && results.webMapItems[0] && results.webMapItems[0].value;
-            var webSceneItem = results.webSceneItems && results.webSceneItems[0] && results.webSceneItems[0].value;
-            var groupItemsValue = results.groupItems && results.groupItems[0] && results.groupItems[0].value;
-            var groupInfoValue = results.groupInfos && results.groupInfos[0] && results.groupInfos[0].value;
-            var groupItems = groupItemsValue && groupItemsValue.results;
-            var groupInfoItem = groupInfoValue && groupInfoValue.results && groupInfoValue.results[0];
-            if (!webMapItem && !webSceneItem && !groupInfoItem) {
+            var webMapItems = results.webMapItems, webSceneItems = results.webSceneItems;
+            var validWebMaps = webMapItems.map(function (response) {
+                return response.value;
+            });
+            var validWebScenes = webSceneItems.map(function (response) {
+                return response.value;
+            });
+            var firstItem = validWebMaps[0] || validWebScenes[0];
+            if (!firstItem) {
                 domHelper_1.addPageError(i18n.error, "app:: Could not load an item to display");
                 return;
             }
             if (!config.title) {
-                config.title = itemUtils_1.getItemTitle(webSceneItem || webMapItem || groupInfoItem);
+                config.title = itemUtils_1.getItemTitle(firstItem);
             }
-            domHelper_1.setPageLocale(boilerplate.locale);
-            domHelper_1.setPageDirection(boilerplate.direction);
             domHelper_1.setPageTitle(config.title);
-            // todo: support multiple webscenes, webmaps, groups.
-            if (webMapItem) {
-                this._createView(webMapItem, config, settings).then(function (view) {
-                    if (config.find) {
-                        urlUtils_1.find(config.find, view);
-                    }
-                    domHelper_1.removePageLoading();
-                }).otherwise(function (error) {
-                    domHelper_1.addPageError(i18n.error, error.message);
-                });
-            }
-            else if (webSceneItem) {
-                this._createView(webSceneItem, config, settings).then(function (view) {
-                    if (config.find) {
-                        urlUtils_1.find(config.find, view);
-                    }
-                    domHelper_1.removePageLoading();
-                }).otherwise(function (error) {
-                    domHelper_1.addPageError(i18n.error, error.message);
-                });
-            }
-            else if (groupItems) {
-                var galleryHTML = this._createGroupGallery(groupInfoItem, groupItems);
-                if (!galleryHTML) {
-                    domHelper_1.addPageError(i18n.error, "app:: group data does not exist.");
-                }
-                else {
-                    document.body.innerHTML = galleryHTML;
-                    domHelper_1.removePageLoading();
-                }
-            }
+            var viewContainerNode = document.getElementById("viewContainer");
+            validWebMaps.forEach(function (webmap) {
+                var viewNode = document.createElement("div");
+                viewContainerNode.appendChild(viewNode);
+                _this._setupItem(webmap, config, viewNode);
+            });
+            validWebScenes.forEach(function (webscene) {
+                var viewNode = document.createElement("div");
+                viewContainerNode.appendChild(viewNode);
+                _this._setupItem(webscene, config, viewNode);
+            });
         };
         //--------------------------------------------------------------------------
         //
@@ -101,7 +84,17 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 });
             }
         };
-        Application.prototype._createView = function (item, config, settings) {
+        Application.prototype._setupItem = function (item, config, node) {
+            this._createView(item, config, node).then(function (view) {
+                if (config.find) {
+                    urlUtils_1.find(config.find, view);
+                }
+                domHelper_1.removePageLoading();
+            }).otherwise(function (error) {
+                domHelper_1.addPageError(i18n.error, error.message);
+            });
+        };
+        Application.prototype._createView = function (item, config, node) {
             var _this = this;
             var isWebMap = item.type === "Web Map";
             var isWebScene = item.type === "Web Scene";
@@ -109,12 +102,11 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 return promiseUtils.reject();
             }
             var createItem = isWebMap ? itemUtils_1.createWebMapFromItem(item) : itemUtils_1.createWebSceneFromItem(item);
-            var containerId = isWebMap ? settings.webmap.containerId : settings.webscene.containerId;
             var viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
             return createItem.then(function (map) {
                 _this._setBasemap(config, map);
                 var viewProperties = urlUtils_1.getViewProperties(config);
-                viewProperties.container = containerId;
+                viewProperties.container = node;
                 viewProperties.map = map;
                 return requireUtils.when(require, viewTypePath).then(function (ViewType) {
                     var view = new ViewType(viewProperties);
@@ -124,16 +116,6 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                     return view;
                 });
             });
-        };
-        Application.prototype._createGroupGallery = function (groupInfoItem, groupItems) {
-            if (!groupInfoItem || !groupItems) {
-                return;
-            }
-            var listItems = groupItems.map(function (item) {
-                return "<li>" + item.title + "</li>";
-            });
-            var listHTML = listItems.join("");
-            return "<h1>" + groupInfoItem.title + "</h1><ol>" + listHTML + "</ol>";
         };
         return Application;
     }());

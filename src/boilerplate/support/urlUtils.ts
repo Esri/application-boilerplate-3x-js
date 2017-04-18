@@ -14,7 +14,7 @@ import SceneView = require("esri/views/SceneView");
 
 import {
   ApplicationConfig
-} from "boilerplate/interfaces";
+} from "../interfaces";
 
 interface ViewProperties {
   extent?: Extent;

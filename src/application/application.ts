@@ -21,19 +21,19 @@ import {
 } from "boilerplate/support/itemUtils";
 
 import {
+  getViewProperties,
+  getBasemap,
+  getGraphic,
+  find
+} from "boilerplate/support/urlUtils";
+
+import {
   setPageLocale,
   setPageDirection,
   setPageTitle,
   removePageLoading,
   addPageError
 } from "application/domHelper";
-
-import {
-  getViewProperties,
-  getBasemap,
-  getGraphic,
-  find
-} from "boilerplate/support/urlUtils";
 
 import {
   ApplicationConfig,
@@ -66,62 +66,46 @@ class Application {
       return;
     }
 
+    setPageLocale(boilerplate.locale);
+    setPageDirection(boilerplate.direction);
+
     this.boilerplate = boilerplate;
 
     const { config, results, settings } = boilerplate;
-    const webMapItem = results.webMapItems && results.webMapItems[0] && results.webMapItems[0].value;
-    const webSceneItem = results.webSceneItems && results.webSceneItems[0] && results.webSceneItems[0].value;
-    const groupItemsValue = results.groupItems && results.groupItems[0] && results.groupItems[0].value;
-    const groupInfoValue = results.groupInfos && results.groupInfos[0] && results.groupInfos[0].value;
-    const groupItems = groupItemsValue && groupItemsValue.results;
-    const groupInfoItem = groupInfoValue && groupInfoValue.results && groupInfoValue.results[0];
+    const { webMapItems, webSceneItems } = results;
 
-    if (!webMapItem && !webSceneItem && !groupInfoItem) {
+    const validWebMaps = webMapItems.map(response => {
+      return response.value;
+    });
+
+    const validWebScenes = webSceneItems.map(response => {
+      return response.value;
+    });
+
+    const firstItem = validWebMaps[0] || validWebScenes[0];
+    if (!firstItem) {
       addPageError(i18n.error, "app:: Could not load an item to display");
       return;
     }
 
     if (!config.title) {
-      config.title = getItemTitle(webSceneItem || webMapItem || groupInfoItem);
+      config.title = getItemTitle(firstItem);
     }
-
-    setPageLocale(boilerplate.locale);
-    setPageDirection(boilerplate.direction);
     setPageTitle(config.title);
 
-    // todo: support multiple webscenes, webmaps, groups.
-    if (webMapItem) {
-      this._createView(webMapItem, config, settings).then(view => {
-        if (config.find) {
-          find(config.find, view);
-        }
-        removePageLoading();
-      }).otherwise(error => {
-        addPageError(i18n.error, error.message);
-      });
-    }
-    else if (webSceneItem) {
-      this._createView(webSceneItem, config, settings).then(view => {
-        if (config.find) {
-          find(config.find, view);
-        }
-        removePageLoading();
-      }).otherwise(error => {
-        addPageError(i18n.error, error.message);
-      });
-    }
-    else if (groupItems) {
-      const galleryHTML = this._createGroupGallery(groupInfoItem, groupItems);
-      if (!galleryHTML) {
-        addPageError(i18n.error, "app:: group data does not exist.");
-      }
-      else {
-        document.body.innerHTML = galleryHTML;
-        removePageLoading();
-      }
-    }
+    const viewContainerNode = document.getElementById("viewContainer");
 
+    validWebMaps.forEach(webmap => {
+      const viewNode = document.createElement("div");
+      viewContainerNode.appendChild(viewNode);
+      this._setupItem(webmap, config, viewNode);
+    });
 
+    validWebScenes.forEach(webscene => {
+      const viewNode = document.createElement("div");
+      viewContainerNode.appendChild(viewNode);
+      this._setupItem(webscene, config, viewNode);
+    });
 
   }
 
@@ -155,7 +139,18 @@ class Application {
     }
   }
 
-  private _createView(item: PortalItem, config: ApplicationConfig, settings: BoilerplateSettings): IPromise<MapView | SceneView> {
+  private _setupItem(item: PortalItem, config: ApplicationConfig, node: HTMLElement) {
+    this._createView(item, config, node).then(view => {
+      if (config.find) {
+        find(config.find, view);
+      }
+      removePageLoading();
+    }).otherwise(error => {
+      addPageError(i18n.error, error.message);
+    });
+  }
+
+  private _createView(item: PortalItem, config: ApplicationConfig, node: HTMLElement): IPromise<MapView | SceneView> {
     const isWebMap = item.type === "Web Map";
     const isWebScene = item.type === "Web Scene";
 
@@ -164,14 +159,13 @@ class Application {
     }
 
     const createItem = isWebMap ? createWebMapFromItem(item) : createWebSceneFromItem(item) as IPromise<WebMap | WebScene>;
-    const containerId = isWebMap ? settings.webmap.containerId : settings.webscene.containerId;
     const viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
 
     return createItem.then((map) => {
       this._setBasemap(config, map);
 
       const viewProperties = getViewProperties(config);
-      viewProperties.container = containerId;
+      viewProperties.container = node;
       viewProperties.map = map;
 
       return requireUtils.when(require, viewTypePath).then(ViewType => {
@@ -184,19 +178,7 @@ class Application {
     });
   }
 
-  private _createGroupGallery(groupInfoItem: PortalItem, groupItems: PortalItem[]): string {
-    if (!groupInfoItem || !groupItems) {
-      return;
-    }
 
-    const listItems = groupItems.map(item => {
-      return `<li>${item.title}</li>`;
-    });
-
-    const listHTML = listItems.join("");
-
-    return `<h1>${groupInfoItem.title}</h1><ol>${listHTML}</ol>`;
-  }
 }
 
 export default Application;
