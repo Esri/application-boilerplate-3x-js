@@ -11,19 +11,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <!-- End Responsive -->
-  <!-- Use protocol relative urls that way if the browser is viewing the page via HTTPS the js/css file will be requested using the HTTPS protocol -->
+  <link rel="stylesheet" href="styles/application.css">
+  <link rel="stylesheet" href="styles/bundle.css">
   <link rel="stylesheet" href="https://jsdev.arcgis.com/4.4/esri/css/main.css">
-  <!-- Load any application specific styles -->
-  <link rel="stylesheet" href="./styles/application.css">
-  <link rel="stylesheet" href="./styles/bundle.css">
+  <script type="text/javascript" src="./config/dojo.js"></script>
+  <script type="text/javascript" src="https://jsdev.arcgis.com/4.4/"></script>
 </head>
 
 <body class="boilerplate--loading">
-
   <div id="viewContainer" class="boilerplate__view-container"></div>
-
-  <script type="text/javascript" src="./config/dojo.js"></script>
-  <script type="text/javascript" src="https://jsdev.arcgis.com/4.4/"></script>
   <script type="text/javascript">
     require([
       "dojo/text!config/application.json",

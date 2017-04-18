@@ -39,13 +39,11 @@
     "webscene"
   ],
   "webmap": {
-    "default": "",
-    "containerId": "viewContainer",
+    "default": "1970c1995b8f44749f4b9b6e81b5ba45",
     "fetch": true
   },
   "webscene": {
     "default": "073b9499717c484297a40402a21a28cd",
-    "containerId": "viewContainer",
     "fetch": true
   }
 }
