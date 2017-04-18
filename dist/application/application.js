@@ -1,11 +1,3 @@
-var __assign = (this && this.__assign) || Object.assign || function(t) {
-    for (var s, i = 1, n = arguments.length; i < n; i++) {
-        s = arguments[i];
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-            t[p] = s[p];
-    }
-    return t;
-};
 define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/views/MapView", "application/itemHelper", "application/domHelper", "application/urlHelper"], function (require, exports, i18n, requireUtils, promiseUtils, MapView, itemHelper_1, domHelper_1, urlHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -34,10 +26,10 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             }
             this.boilerplate = boilerplate;
             var config = boilerplate.config, results = boilerplate.results, settings = boilerplate.settings;
-            var webMapItem = results.webMapItem.value;
-            var webSceneItem = results.webSceneItem.value;
-            var groupItemsValue = results.groupItems.value;
-            var groupInfoValue = results.groupInfo.value;
+            var webMapItem = results.webMapItems && results.webMapItems[0] && results.webMapItems[0].value;
+            var webSceneItem = results.webSceneItems && results.webSceneItems[0] && results.webSceneItems[0].value;
+            var groupItemsValue = results.groupItems && results.groupItems[0] && results.groupItems[0].value;
+            var groupInfoValue = results.groupInfos && results.groupInfos[0] && results.groupInfos[0].value;
             var groupItems = groupItemsValue && groupItemsValue.results;
             var groupInfoItem = groupInfoValue && groupInfoValue.results && groupInfoValue.results[0];
             if (!webMapItem && !webSceneItem && !groupInfoItem) {
@@ -109,18 +101,6 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
                 });
             }
         };
-        Application.prototype._getViewProperties = function (config, containerId, map) {
-            var camera = config.camera, center = config.center, components = config.components, extent = config.extent, level = config.level;
-            var ui = components ? { components: urlHelper_1.getComponents(components) } : {};
-            var urlViewProperties = {
-                ui: ui,
-                camera: urlHelper_1.getCamera(camera),
-                center: urlHelper_1.getPoint(center),
-                zoom: urlHelper_1.getZoom(level),
-                extent: urlHelper_1.getExtent(extent)
-            };
-            return __assign({ map: map, container: containerId }, urlViewProperties);
-        };
         Application.prototype._createView = function (item, config, settings) {
             var _this = this;
             var isWebMap = item.type === "Web Map";
@@ -133,7 +113,9 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             var viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
             return createItem.then(function (map) {
                 _this._setBasemap(config, map);
-                var viewProperties = _this._getViewProperties(config, containerId, map);
+                var viewProperties = urlHelper_1.getViewProperties(config);
+                viewProperties.container = containerId;
+                viewProperties.map = map;
                 return requireUtils.when(require, viewTypePath).then(function (ViewType) {
                     var view = new ViewType(viewProperties);
                     view.then(function () {

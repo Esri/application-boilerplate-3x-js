@@ -17,13 +17,19 @@ import {
   ApplicationConfig,
   ApplicationConfigs,
   BoilerplateApplicationResult,
+  BoilerplateResult,
   BoilerplateResults,
   BoilerplateSettings
 } from "boilerplate/interfaces";
 
 type Direction = "ltr" | "rtl";
 
-type PromiseName = "webmap" | "webscene" | "groupInfo" | "groupItems";
+interface BoilerplateItemPromises {
+  webmap?: IPromise<any>;
+  webscene?: IPromise<any>;
+  groupInfo?: IPromise<any>;
+  groupItems?: IPromise<any>;
+}
 
 class Boilerplate {
 
@@ -164,7 +170,6 @@ class Boilerplate {
 
         const portal = portalResponse ? portalResponse.value : null;
         this.portal = portal;
-        this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.environment.webTierSecurity);
 
         this.units = this._getUnits(portal);
 
@@ -175,79 +180,78 @@ class Boilerplate {
           application: applicationConfig
         });
 
-        // todo
-        // const { webmap, webscene, group } = this.config;
-        // const promiseItems = {};
-        // const isWebMapEnabled = this.settings.webmap.fetch && webmap;
-        // const isWebSceneEnabled = this.settings.webscene.fetch && webscene;
-        // const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
-        // const isGroupItemsEnabled = this.settings.group.fetchItems && group;
+        this._setupCORS(portal.authorizedCrossOriginDomains, this.settings.environment.webTierSecurity);
+        this._setGeometryService(this.config, portal);
 
-        // if (isWebMapEnabled) {
-        //   this._addItemPromises(promiseItems, webmap, "webmap");
-        // }
+        this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.webmap.default);
+        this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.webscene.default);
+        this.config.group = this._getDefaultId(this.config.group, this.settings.group.default);
 
-        // if (isWebSceneEnabled) {
-        //   this._addItemPromises(promiseItems, webscene, "webscene");
-        // }
+        const { webmap, webscene, group } = this.config;
 
-        // if (isGroupInfoEnabled) {
-        //   this._addItemPromises(promiseItems, group, "groupInfo");
-        // }
+        const webmapPromises = [];
+        const webscenePromises = [];
+        const groupInfoPromises = [];
+        const groupItemsPromises = [];
 
-        // if (isGroupItemsEnabled) {
-        //   this._addItemPromises(promiseItems, group, "groupItems");
-        // }
+        const isWebMapEnabled = this.settings.webmap.fetch && webmap;
+        const isWebSceneEnabled = this.settings.webscene.fetch && webscene;
+        const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
+        const isGroupItemsEnabled = this.settings.group.fetchItems && group;
+        const itemParams = this.settings.group.itemParams;
 
-        const webMapId = this.config.webmap;
-        const queryWebMapItem = webMapId && this.settings.webmap.fetch ?
-          this._queryItem(webMapId) :
-          promiseUtils.resolve();
+        if (isWebMapEnabled) {
+          const webmaps = this._getPropertyArray(webmap);
+          webmaps.forEach(id => {
+            webmapPromises.push(this._queryItem(id));
+          });
+        }
 
-        const webSceneId = this.config.webscene;
-        const queryWebSceneItem = webSceneId && this.settings.webscene.fetch ?
-          this._queryItem(webSceneId) :
-          promiseUtils.resolve();
+        if (isWebSceneEnabled) {
+          const webscenes = this._getPropertyArray(webscene);
+          webscenes.forEach(id => {
+            webscenePromises.push(this._queryItem(id));
+          });
+        }
 
-        const groupId = this.config.group;
-        const queryGroupInfo = this.settings.group.fetchInfo && groupId ?
-          this._queryGroupInfo(groupId, portal) :
-          promiseUtils.resolve();
+        if (isGroupInfoEnabled) {
+          const groups = this._getPropertyArray(group);
+          groups.forEach(id => {
+            groupInfoPromises.push(this._queryGroupInfo(id, portal));
+          });
+        }
 
-        const queryGroupItems = this.settings.group.fetchItems && groupId ?
-          this.queryGroupItems(groupId, this.settings.group.itemParams, portal) :
-          promiseUtils.resolve();
+        if (isGroupItemsEnabled) {
+          const groups = this._getPropertyArray(group);
+          groups.forEach(id => {
+            groupItemsPromises.push(this.queryGroupItems(id, itemParams, portal));
+          });
+        }
 
-        // todo: support multiple webmaps/webscenes/groups
-        return promiseUtils.eachAlways([
-          queryWebMapItem,
-          queryWebSceneItem,
-          queryGroupInfo,
-          queryGroupItems
-        ]).always(itemArgs => {
-          const [webMapResponse, webSceneResponse, groupInfoResponse, groupItemsResponse] = itemArgs;
+        const promises: BoilerplateItemPromises = {
+          webmap: webmapPromises.length ? promiseUtils.eachAlways(webmapPromises) : promiseUtils.resolve(),
+          webscene: webscenePromises.length ? promiseUtils.eachAlways(webscenePromises) : promiseUtils.resolve(),
+          groupInfo: groupInfoPromises.length ? promiseUtils.eachAlways(groupInfoPromises) : promiseUtils.resolve(),
+          groupItems: groupItemsPromises.length ? promiseUtils.eachAlways(groupItemsPromises) : promiseUtils.resolve()
+        };
 
-          const webSceneItem = webSceneResponse ? webSceneResponse.value : null;
-          const webMapItem = webMapResponse ? webMapResponse.value : null;
-
+        return promiseUtils.eachAlways(promises).always(itemArgs => {
           // todo: mixin sourceUrl with proxyUrl
           // const appProxies = applicationInfo.appProxies;
 
-          this.results.webMapItem = webMapResponse;
-          this.results.webSceneItem = webSceneResponse;
-          this.results.groupItems = groupItemsResponse;
-          this.results.groupInfo = groupInfoResponse;
+          const webmapResponses = itemArgs.webmap.value;
+          const websceneResponses = itemArgs.webscene.value;
+          const groupInfoResponses = itemArgs.groupInfo.value;
+          const groupItemsResponses = itemArgs.groupItems.value;
 
           const itemInfo = applicationItem ? applicationItem.itemInfo : null;
+          this._overwriteItems(webmapResponses, itemInfo);
+          this._overwriteItems(websceneResponses, itemInfo);
 
-          this._overwriteItemExtent(webSceneItem, itemInfo);
-          this._overwriteItemExtent(webMapItem, itemInfo);
-
-          this._setGeometryService(this.config, this.portal);
-
-          this.config.webmap = this._getDefaultId(this.config.webmap, this.settings.webmap.default);
-          this.config.webscene = this._getDefaultId(this.config.webscene, this.settings.webscene.default);
-          this.config.group = this._getDefaultId(this.config.group, this.settings.group.default);
+          this.results.webMapItems = webmapResponses;
+          this.results.webSceneItems = websceneResponses;
+          this.results.groupInfos = groupInfoResponses;
+          this.results.groupItems = groupItemsResponses;
 
           return this;
         });
@@ -261,15 +265,15 @@ class Boilerplate {
   //
   //--------------------------------------------------------------------------
 
-  private _addItemPromises(promises: object, values: string | string[], promiseName: PromiseName): void {
-    if (typeof values === "string") {
-      promises[`${promiseName}0`] = this._queryItem(values);
+  private _getPropertyArray(property: string | string[]): string[] {
+    if (typeof property === "string") {
+      return property.split(",");
     }
-    if (Array.isArray(values)) {
-      values.forEach((id, index) => {
-        promises[`${promiseName}${index}`] = this._queryItem(id);
-      });
+    if (Array.isArray(property)) {
+      return property;
     }
+
+    return [];
   }
 
   private _getUnits(portal: Portal): string {
@@ -345,6 +349,19 @@ class Boilerplate {
 
   private _queryPortal(): IPromise<Portal> {
     return new Portal().load();
+  }
+
+  private _overwriteItems(responses: BoilerplateResult[], applicationItem: PortalItem): void {
+    if (!responses) {
+      return;
+    }
+
+    responses.forEach(response => {
+      const { value } = response;
+      if (value) {
+        this._overwriteItemExtent(value, applicationItem);
+      }
+    });
   }
 
   private _overwriteItemExtent(item: PortalItem, applicationItem: PortalItem): void {

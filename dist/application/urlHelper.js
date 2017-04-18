@@ -14,6 +14,17 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     //  Public Methods
     //
     //--------------------------------------------------------------------------
+    function getViewProperties(config) {
+        var camera = config.camera, center = config.center, components = config.components, extent = config.extent, level = config.level;
+        var ui = components ? { ui: { components: getComponents(components) } } : null;
+        var cameraProps = camera ? { camera: getCamera(camera) } : null;
+        var centerProps = center ? { center: getPoint(center) } : null;
+        var zoomProps = level ? { zoom: getZoom(level) } : null;
+        var extentProps = extent ? { extent: getExtent(extent) } : null;
+        var urlViewProperties = __assign({}, ui, cameraProps, centerProps, zoomProps, extentProps);
+        return __assign({}, urlViewProperties);
+    }
+    exports.getViewProperties = getViewProperties;
     function getComponents(components) {
         if (!components) {
             return;

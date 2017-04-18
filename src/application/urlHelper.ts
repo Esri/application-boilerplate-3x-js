@@ -11,6 +11,10 @@ import Point = require("esri/geometry/Point");
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
 
+import {
+  ApplicationConfig
+} from "boilerplate/interfaces";
+
 interface ViewProperties {
   extent?: Extent;
   camera?: Camera;
@@ -32,6 +36,27 @@ interface CameraProperties {
 //  Public Methods
 //
 //--------------------------------------------------------------------------
+
+export function getViewProperties(config: ApplicationConfig): any {
+  const { camera, center, components, extent, level } = config;
+  const ui = components ? { ui: { components: getComponents(components) } } : null;
+  const cameraProps = camera ? { camera: getCamera(camera) } : null;
+  const centerProps = center ? { center: getPoint(center) } : null;
+  const zoomProps = level ? { zoom: getZoom(level) } : null;
+  const extentProps = extent ? { extent: getExtent(extent) } : null;
+
+  const urlViewProperties = {
+    ...ui,
+    ...cameraProps,
+    ...centerProps,
+    ...zoomProps,
+    ...extentProps
+  };
+
+  return {
+    ...urlViewProperties
+  };
+}
 
 export function getComponents(components: string): string[] {
   if (!components) {

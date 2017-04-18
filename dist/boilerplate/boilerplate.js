@@ -113,7 +113,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                     _this.results.application = applicationResponse;
                     var portal = portalResponse ? portalResponse.value : null;
                     _this.portal = portal;
-                    _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.environment.webTierSecurity);
                     _this.units = _this._getUnits(portal);
                     _this.config = _this._mixinAllConfigs({
                         config: _this.config,
@@ -121,63 +120,65 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         local: localStorage,
                         application: applicationConfig
                     });
-                    // todo
-                    // const { webmap, webscene, group } = this.config;
-                    // const promiseItems = {};
-                    // const isWebMapEnabled = this.settings.webmap.fetch && webmap;
-                    // const isWebSceneEnabled = this.settings.webscene.fetch && webscene;
-                    // const isGroupInfoEnabled = this.settings.group.fetchInfo && group;
-                    // const isGroupItemsEnabled = this.settings.group.fetchItems && group;
-                    // if (isWebMapEnabled) {
-                    //   this._addItemPromises(promiseItems, webmap, "webmap");
-                    // }
-                    // if (isWebSceneEnabled) {
-                    //   this._addItemPromises(promiseItems, webscene, "webscene");
-                    // }
-                    // if (isGroupInfoEnabled) {
-                    //   this._addItemPromises(promiseItems, group, "groupInfo");
-                    // }
-                    // if (isGroupItemsEnabled) {
-                    //   this._addItemPromises(promiseItems, group, "groupItems");
-                    // }
-                    var webMapId = _this.config.webmap;
-                    var queryWebMapItem = webMapId && _this.settings.webmap.fetch ?
-                        _this._queryItem(webMapId) :
-                        promiseUtils.resolve();
-                    var webSceneId = _this.config.webscene;
-                    var queryWebSceneItem = webSceneId && _this.settings.webscene.fetch ?
-                        _this._queryItem(webSceneId) :
-                        promiseUtils.resolve();
-                    var groupId = _this.config.group;
-                    var queryGroupInfo = _this.settings.group.fetchInfo && groupId ?
-                        _this._queryGroupInfo(groupId, portal) :
-                        promiseUtils.resolve();
-                    var queryGroupItems = _this.settings.group.fetchItems && groupId ?
-                        _this.queryGroupItems(groupId, _this.settings.group.itemParams, portal) :
-                        promiseUtils.resolve();
-                    // todo: support multiple webmaps/webscenes/groups
-                    return promiseUtils.eachAlways([
-                        queryWebMapItem,
-                        queryWebSceneItem,
-                        queryGroupInfo,
-                        queryGroupItems
-                    ]).always(function (itemArgs) {
-                        var webMapResponse = itemArgs[0], webSceneResponse = itemArgs[1], groupInfoResponse = itemArgs[2], groupItemsResponse = itemArgs[3];
-                        var webSceneItem = webSceneResponse ? webSceneResponse.value : null;
-                        var webMapItem = webMapResponse ? webMapResponse.value : null;
+                    _this._setupCORS(portal.authorizedCrossOriginDomains, _this.settings.environment.webTierSecurity);
+                    _this._setGeometryService(_this.config, portal);
+                    _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.webmap.default);
+                    _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.webscene.default);
+                    _this.config.group = _this._getDefaultId(_this.config.group, _this.settings.group.default);
+                    var _a = _this.config, webmap = _a.webmap, webscene = _a.webscene, group = _a.group;
+                    var webmapPromises = [];
+                    var webscenePromises = [];
+                    var groupInfoPromises = [];
+                    var groupItemsPromises = [];
+                    var isWebMapEnabled = _this.settings.webmap.fetch && webmap;
+                    var isWebSceneEnabled = _this.settings.webscene.fetch && webscene;
+                    var isGroupInfoEnabled = _this.settings.group.fetchInfo && group;
+                    var isGroupItemsEnabled = _this.settings.group.fetchItems && group;
+                    var itemParams = _this.settings.group.itemParams;
+                    if (isWebMapEnabled) {
+                        var webmaps = _this._getPropertyArray(webmap);
+                        webmaps.forEach(function (id) {
+                            webmapPromises.push(_this._queryItem(id));
+                        });
+                    }
+                    if (isWebSceneEnabled) {
+                        var webscenes = _this._getPropertyArray(webscene);
+                        webscenes.forEach(function (id) {
+                            webscenePromises.push(_this._queryItem(id));
+                        });
+                    }
+                    if (isGroupInfoEnabled) {
+                        var groups = _this._getPropertyArray(group);
+                        groups.forEach(function (id) {
+                            groupInfoPromises.push(_this._queryGroupInfo(id, portal));
+                        });
+                    }
+                    if (isGroupItemsEnabled) {
+                        var groups = _this._getPropertyArray(group);
+                        groups.forEach(function (id) {
+                            groupItemsPromises.push(_this.queryGroupItems(id, itemParams, portal));
+                        });
+                    }
+                    var promises = {
+                        webmap: webmapPromises.length ? promiseUtils.eachAlways(webmapPromises) : promiseUtils.resolve(),
+                        webscene: webscenePromises.length ? promiseUtils.eachAlways(webscenePromises) : promiseUtils.resolve(),
+                        groupInfo: groupInfoPromises.length ? promiseUtils.eachAlways(groupInfoPromises) : promiseUtils.resolve(),
+                        groupItems: groupItemsPromises.length ? promiseUtils.eachAlways(groupItemsPromises) : promiseUtils.resolve()
+                    };
+                    return promiseUtils.eachAlways(promises).always(function (itemArgs) {
                         // todo: mixin sourceUrl with proxyUrl
                         // const appProxies = applicationInfo.appProxies;
-                        _this.results.webMapItem = webMapResponse;
-                        _this.results.webSceneItem = webSceneResponse;
-                        _this.results.groupItems = groupItemsResponse;
-                        _this.results.groupInfo = groupInfoResponse;
+                        var webmapResponses = itemArgs.webmap.value;
+                        var websceneResponses = itemArgs.webscene.value;
+                        var groupInfoResponses = itemArgs.groupInfo.value;
+                        var groupItemsResponses = itemArgs.groupItems.value;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;
-                        _this._overwriteItemExtent(webSceneItem, itemInfo);
-                        _this._overwriteItemExtent(webMapItem, itemInfo);
-                        _this._setGeometryService(_this.config, _this.portal);
-                        _this.config.webmap = _this._getDefaultId(_this.config.webmap, _this.settings.webmap.default);
-                        _this.config.webscene = _this._getDefaultId(_this.config.webscene, _this.settings.webscene.default);
-                        _this.config.group = _this._getDefaultId(_this.config.group, _this.settings.group.default);
+                        _this._overwriteItems(webmapResponses, itemInfo);
+                        _this._overwriteItems(websceneResponses, itemInfo);
+                        _this.results.webMapItems = webmapResponses;
+                        _this.results.webSceneItems = websceneResponses;
+                        _this.results.groupInfos = groupInfoResponses;
+                        _this.results.groupItems = groupItemsResponses;
                         return _this;
                     });
                 });
@@ -188,16 +189,14 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         //  Private Methods
         //
         //--------------------------------------------------------------------------
-        Boilerplate.prototype._addItemPromises = function (promises, values, promiseName) {
-            var _this = this;
-            if (typeof values === "string") {
-                promises[promiseName + "0"] = this._queryItem(values);
+        Boilerplate.prototype._getPropertyArray = function (property) {
+            if (typeof property === "string") {
+                return property.split(",");
             }
-            if (Array.isArray(values)) {
-                values.forEach(function (id, index) {
-                    promises["" + promiseName + index] = _this._queryItem(id);
-                });
+            if (Array.isArray(property)) {
+                return property;
             }
+            return [];
         };
         Boilerplate.prototype._getUnits = function (portal) {
             var user = portal.user;
@@ -264,6 +263,18 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         };
         Boilerplate.prototype._queryPortal = function () {
             return new Portal().load();
+        };
+        Boilerplate.prototype._overwriteItems = function (responses, applicationItem) {
+            var _this = this;
+            if (!responses) {
+                return;
+            }
+            responses.forEach(function (response) {
+                var value = response.value;
+                if (value) {
+                    _this._overwriteItemExtent(value, applicationItem);
+                }
+            });
         };
         Boilerplate.prototype._overwriteItemExtent = function (item, applicationItem) {
             if (!item || !applicationItem) {

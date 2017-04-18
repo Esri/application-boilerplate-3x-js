@@ -90,8 +90,8 @@ export interface BoilerplateApplicationResult {
 
 export interface BoilerplateResults {
   application?: BoilerplateResult;
-  groupInfo?: BoilerplateResult;
-  groupItems?: BoilerplateResult;
+  groupInfos?: BoilerplateResult[];
+  groupItems?: BoilerplateResult[];
   localStorage?: {
     [propName: string]: any;
   },
@@ -99,6 +99,6 @@ export interface BoilerplateResults {
   urlParams?: {
     [propName: string]: any;
   },
-  webMapItem?: BoilerplateResult;
-  webSceneItem?: BoilerplateResult;
+  webMapItems?: BoilerplateResult[];
+  webSceneItems?: BoilerplateResult[];
 }

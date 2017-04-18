@@ -29,11 +29,7 @@ import {
 } from "application/domHelper";
 
 import {
-  getComponents,
-  getCamera,
-  getPoint,
-  getExtent,
-  getZoom,
+  getViewProperties,
   getBasemap,
   getGraphic,
   find
@@ -73,10 +69,10 @@ class Application {
     this.boilerplate = boilerplate;
 
     const { config, results, settings } = boilerplate;
-    const webMapItem = results.webMapItem.value;
-    const webSceneItem = results.webSceneItem.value;
-    const groupItemsValue = results.groupItems.value;
-    const groupInfoValue = results.groupInfo.value;
+    const webMapItem = results.webMapItems && results.webMapItems[0] && results.webMapItems[0].value;
+    const webSceneItem = results.webSceneItems && results.webSceneItems[0] && results.webSceneItems[0].value;
+    const groupItemsValue = results.groupItems && results.groupItems[0] && results.groupItems[0].value;
+    const groupInfoValue = results.groupInfos && results.groupInfos[0] && results.groupInfos[0].value;
     const groupItems = groupItemsValue && groupItemsValue.results;
     const groupInfoItem = groupInfoValue && groupInfoValue.results && groupInfoValue.results[0];
 
@@ -159,25 +155,6 @@ class Application {
     }
   }
 
-  private _getViewProperties(config: ApplicationConfig, containerId: string, map: WebMap | WebScene) {
-    const { camera, center, components, extent, level } = config;
-    const ui = components ? { components: getComponents(components) } : {};
-
-    const urlViewProperties = {
-      ui,
-      camera: getCamera(camera),
-      center: getPoint(center),
-      zoom: getZoom(level),
-      extent: getExtent(extent)
-    };
-
-    return {
-      map,
-      container: containerId,
-      ...urlViewProperties
-    };
-  }
-
   private _createView(item: PortalItem, config: ApplicationConfig, settings: BoilerplateSettings): IPromise<MapView | SceneView> {
     const isWebMap = item.type === "Web Map";
     const isWebScene = item.type === "Web Scene";
@@ -193,7 +170,9 @@ class Application {
     return createItem.then((map) => {
       this._setBasemap(config, map);
 
-      const viewProperties = this._getViewProperties(config, containerId, map);
+      const viewProperties = getViewProperties(config);
+      viewProperties.container = containerId;
+      viewProperties.map = map;
 
       return requireUtils.when(require, viewTypePath).then(ViewType => {
         const view = new ViewType(viewProperties);
