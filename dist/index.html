@@ -20,13 +20,7 @@
 
 <body class="boilerplate--loading">
 
-  <!-- todo: use error from calcite theme 0-->
-  <div class="boilerplate-loading-indicator">
-    <div class="boilerplate-loading-message" id="loading_message"></div>
-  </div>
-
-  <!-- todo: figure these out -->
-  <div id="viewContainer" class="boilerplate-view"></div>
+  <div id="viewContainer" class="boilerplate__view-container"></div>
 
   <script type="text/javascript" src="./config/dojo.js"></script>
   <script type="text/javascript" src="https://jsdev.arcgis.com/4.4/"></script>
@@ -40,11 +34,9 @@
       boilerplateConfig,
       entryPoint
     ) {
-      entryPoint.init(applicationConfig, boilerplateConfig);
-    });
-
+        entryPoint.init(applicationConfig, boilerplateConfig);
+      });
   </script>
 </body>
 
 </html>
-

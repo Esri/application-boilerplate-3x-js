@@ -1,48 +1,38 @@
-.boilerplate-view {
+.boilerplate__view-container {
   padding: 0;
   margin: 0;
   width: 100%;
   height: 100%;
   display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
 }
 
-.boilerplate-view .esri-view {
+.boilerplate__view-container .esri-view {
   width: 100%;
   height: 100%;
 }
 
-.boilerplate-loading-indicator {
-  display: none;
-  height: 100%;
-  width: 100%;
-  z-index: 500;
-  position: absolute;
-  top: 0;
-  left: 0;
-  overflow: hidden;
-  background-color: #fff;
+.boilerplate__error {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 80%;
 }
 
-.boilerplate--loading .boilerplate-loading-indicator {
+.boilerplate--loading {
+  text-align: center;
   display: block;
+  background-color: #fff;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
   background-position: center center;
   background-repeat: no-repeat;
   background-image: url(assets/loader-ie9.gif);
 }
 
-.boilerplate--error .boilerplate-loading-indicator {
-  display: block;
-}
-
-.boilerplate-loading-message {
-  background-position: top center;
-  background-repeat: no-repeat;
-  padding-top: 60px;
-  width: 100%;
-  position: absolute;
-  z-index: 2;
-  top: 40%;
-  left: 0;
-  text-align: center;
+.boilerplate--loading * {
+  display: none;
 }
 

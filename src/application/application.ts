@@ -33,7 +33,7 @@ import {
   setPageTitle,
   removePageLoading,
   addPageError
-} from "application/domHelper";
+} from "boilerplate/support/domHelper";
 
 import {
   ApplicationConfig,
@@ -62,7 +62,10 @@ class Application {
   public init(boilerplate: Boilerplate): void {
 
     if (!boilerplate) {
-      addPageError(i18n.error, "app:: Boilerplate is not defined");
+      addPageError({
+        title: i18n.error,
+        message: "app:: Boilerplate is not defined"
+      });
       return;
     }
 
@@ -83,14 +86,18 @@ class Application {
     });
 
     const firstItem = validWebMaps[0] || validWebScenes[0];
+
     if (!firstItem) {
-      addPageError(i18n.error, "app:: Could not load an item to display");
+      addPageError({
+        title: i18n.error,
+        message: "app:: Could not load an item to display"
+      });
       return;
     }
 
-    if (!config.title) {
-      config.title = getItemTitle(firstItem);
-    }
+    removePageLoading();
+
+    config.title = !config.title ? getItemTitle(firstItem) : "";
     setPageTitle(config.title);
 
     const viewContainerNode = document.getElementById("viewContainer");
@@ -98,15 +105,14 @@ class Application {
     validWebMaps.forEach(webmap => {
       const viewNode = document.createElement("div");
       viewContainerNode.appendChild(viewNode);
-      this._setupItem(webmap, config, viewNode);
+      this._createView(webmap, config, viewNode);
     });
 
     validWebScenes.forEach(webscene => {
       const viewNode = document.createElement("div");
       viewContainerNode.appendChild(viewNode);
-      this._setupItem(webscene, config, viewNode);
+      this._createView(webscene, config, viewNode);
     });
-
   }
 
   //--------------------------------------------------------------------------
@@ -117,36 +123,31 @@ class Application {
 
   private _setBasemap(config: ApplicationConfig, map: WebMap | WebScene): void {
     const { basemapUrl, basemapReferenceUrl } = config;
-    if (basemapUrl) {
-      getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
-        map.basemap = basemap;
-      });
+
+    if (!basemapUrl) {
+      return;
     }
+
+    getBasemap(basemapUrl, basemapReferenceUrl).then(basemap => {
+      map.basemap = basemap;
+    });
   }
 
   private _addMarker(config: ApplicationConfig, view: MapView | SceneView): void {
     const { marker } = config;
-    if (marker) {
-      getGraphic(marker).then(graphic => {
-        view.graphics.add(graphic);
-        if (view instanceof MapView) { // todo: will fix in next API release.
-          view.goTo(graphic);
-        }
-        else {
-          view.goTo(graphic);
-        }
-      });
-    }
-  }
 
-  private _setupItem(item: PortalItem, config: ApplicationConfig, node: HTMLElement) {
-    this._createView(item, config, node).then(view => {
-      if (config.find) {
-        find(config.find, view);
+    if (!marker) {
+      return;
+    }
+
+    getGraphic(marker).then(graphic => {
+      view.graphics.add(graphic);
+      if (view instanceof MapView) { // todo: Typings will be fixed in next release.
+        view.goTo(graphic);
       }
-      removePageLoading();
-    }).otherwise(error => {
-      addPageError(i18n.error, error.message);
+      else {
+        view.goTo(graphic);
+      }
     });
   }
 
@@ -172,12 +173,16 @@ class Application {
         const view = new ViewType(viewProperties);
         view.then(() => {
           this._addMarker(config, view);
+
+          if (config.find) {
+            find(config.find, view);
+          }
+
         });
         return view;
       });
     });
   }
-
 
 }
 

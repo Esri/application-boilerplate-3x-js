@@ -2,9 +2,14 @@ define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var CSS = {
-        loading: "boilerplate--loading",
-        error: "boilerplate--error",
-        errorIcon: "esri-icon-notice-round"
+        // calcite
+        isActive: "is-active",
+        alert: "alert",
+        modifier: "modifier-class",
+        errorIcon: "icon-ui-error2",
+        // boilerplate
+        error: "boilerplate__error",
+        loading: "boilerplate--loading"
     };
     //--------------------------------------------------------------------------
     //
@@ -28,13 +33,12 @@ define(["require", "exports"], function (require, exports) {
         document.body.classList.remove(CSS.loading);
     }
     exports.removePageLoading = removePageLoading;
-    function addPageError(title, message) {
+    function addPageError(args) {
         removePageLoading();
-        document.body.classList.add(CSS.error);
-        var node = document.getElementById("loading_message");
-        if (node) {
-            node.innerHTML = "<h1><span class=\"" + CSS.errorIcon + "\"></span> " + title + "</h1><p>" + message + "</p>";
-        }
+        var errorNode = document.createElement("div");
+        errorNode.className = CSS.error;
+        errorNode.innerHTML = "\n    <div class=\"" + CSS.alert + " " + CSS.modifier + " " + CSS.isActive + "\">\n      <h2><span class=\"" + CSS.errorIcon + "\"></span> " + args.title + "</h2>\n      <p>" + args.message + "</p>\n    </div>\n  ";
+        document.body.insertBefore(errorNode, document.body.firstChild);
     }
     exports.addPageError = addPageError;
 });
