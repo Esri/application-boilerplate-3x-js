@@ -5,8 +5,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
     var Application = (function () {
         function Application() {
             // todo: make this simplfied with options.
-            // todo: have calcite imported via npm or something?
-            // todo: have calcite SASS compile?
+            // todo: use sass
             // todo: setup grunt watcher?
             // todo: documentation
             // todo: have JC review?

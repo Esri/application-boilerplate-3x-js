@@ -8,4 +8,4 @@ define(["require", "exports", "application/Application", "boilerplate/Boilerplat
     }
     exports.init = init;
 });
-//# sourceMappingURL=entryPoint.js.map
+//# sourceMappingURL=entry.js.map

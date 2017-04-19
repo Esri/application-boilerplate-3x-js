@@ -13,7 +13,6 @@
   <!-- End Responsive -->
   <link rel=icon href=calcite/img/favicon.ico sizes="32x32" type="image/vnd.microsoft.icon">
   <link rel="stylesheet" href="styles/application.css">
-  <link rel="stylesheet" href="calcite/css/calcite-web.min.css">
   <link rel="stylesheet" href="https://jsdev.arcgis.com/4.4/esri/css/main.css">
   <script type="text/javascript" src="./config/dojo.js"></script>
   <script type="text/javascript" src="https://jsdev.arcgis.com/4.4/"></script>
@@ -25,13 +24,13 @@
     require([
       "dojo/text!config/application.json",
       "dojo/text!config/boilerplate.json",
-      "application/entryPoint.js"
+      "application/entry.js"
     ], function (
       applicationConfig,
       boilerplateConfig,
-      entryPoint
+      entry
     ) {
-        entryPoint.init(applicationConfig, boilerplateConfig);
+        entry.init(applicationConfig, boilerplateConfig);
       });
   </script>
 </body>

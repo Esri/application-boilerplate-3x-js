@@ -259,7 +259,7 @@ class Boilerplate {
           const groupInfoResponses = itemArgs.groupInfo.value || [];
           const groupItemsResponses = itemArgs.groupItems.value || [];
 
-          console.log(applicationItem);
+          //console.log(applicationItem);
           // todo: mixin sourceUrl with proxyUrl
           // const appProxies = applicationInfo.appProxies;
 

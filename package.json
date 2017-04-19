@@ -2,7 +2,7 @@
   "name": "arcgis-boilerplate-ts",
   "version": "0.0.1",
   "description": "TypeScript boilerplate for building ArcGIS JS API 4.x Applications",
-  "main": "entrypoint.js",
+  "main": "entry.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Esri/application-boilerplate-js.git"
@@ -14,10 +14,9 @@
   ],
   "devDependencies": {
     "@types/arcgis-js-api": "^4.3.0",
+    "calcite-web": "github:esri/calcite-web#v1.0.0-rc.3",
     "dojo-typings": "^1.11.6",
     "typescript": "^2.2.1"
   },
-  "dependencies": {
-    "express": "^4.15.2"
-  }
+  "dependencies": {}
 }
