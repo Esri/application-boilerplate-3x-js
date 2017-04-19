@@ -4,7 +4,12 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
     var Application = (function () {
         function Application() {
-            //todo: make this simplfied with options.
+            // todo: make this simplfied with options.
+            // todo: have calcite imported via npm or something?
+            // todo: have calcite SASS compile?
+            // todo: setup grunt watcher?
+            // todo: documentation
+            // todo: have JC review?
             //--------------------------------------------------------------------------
             //
             //  Properties
@@ -25,7 +30,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             if (!boilerplate) {
                 domHelper_1.addPageError({
                     title: i18n.error,
-                    message: "app:: Boilerplate is not defined"
+                    message: "Boilerplate is not defined"
                 });
                 return;
             }
@@ -44,7 +49,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "esri/co
             if (!firstItem) {
                 domHelper_1.addPageError({
                     title: i18n.error,
-                    message: "app:: Could not load an item to display"
+                    message: "Could not load an item to display"
                 });
                 return;
             }

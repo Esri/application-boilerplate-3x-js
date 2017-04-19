@@ -189,6 +189,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         var websceneResponses = itemArgs.webscene.value || [];
                         var groupInfoResponses = itemArgs.groupInfo.value || [];
                         var groupItemsResponses = itemArgs.groupItems.value || [];
+                        console.log(applicationItem);
                         // todo: mixin sourceUrl with proxyUrl
                         // const appProxies = applicationInfo.appProxies;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;
