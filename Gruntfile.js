@@ -38,6 +38,9 @@ module.exports = function (grunt) {
       default: {
         src: ["src/**/*.ts"],
         tsconfig: './tsconfig.json'
+      },
+      options: {
+        fast: 'never'
       }
     },
     sass: {

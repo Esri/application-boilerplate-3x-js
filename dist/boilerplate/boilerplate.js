@@ -10,20 +10,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Boilerplate = (function () {
-        //--------------------------------------------------------------------------
-        //
-        //  Lifecycle
-        //
-        //--------------------------------------------------------------------------
         function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
-            //--------------------------------------------------------------------------
-            //
-            //  Properties
-            //
-            //--------------------------------------------------------------------------
-            //----------------------------------
-            //  settings
-            //----------------------------------
             this.settings = {
                 environment: {},
                 webscene: {},
@@ -32,38 +19,15 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                 portal: {},
                 urlParams: []
             };
-            //----------------------------------
-            //  config
-            //----------------------------------
             this.config = null;
-            //----------------------------------
-            //  results
-            //----------------------------------
             this.results = {};
-            //----------------------------------
-            //  portal
-            //----------------------------------
             this.portal = null;
-            //----------------------------------
-            //  direction
-            //----------------------------------
             this.direction = null;
-            //----------------------------------
-            //  locale
-            //----------------------------------
             this.locale = kernel.locale;
-            //----------------------------------
-            //  units
-            //----------------------------------
             this.units = null;
             this.settings = __assign({}, boilerplateConfigJSON);
             this.config = applicationConfigJSON;
         }
-        //--------------------------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //--------------------------------------------------------------------------
         Boilerplate.prototype.queryGroupItems = function (groupId, itemParams, portal) {
             if (!portal) {
                 portal = this.portal;
@@ -189,9 +153,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         var websceneResponses = itemArgs.webscene.value || [];
                         var groupInfoResponses = itemArgs.groupInfo.value || [];
                         var groupItemsResponses = itemArgs.groupItems.value || [];
-                        //console.log(applicationItem);
-                        // todo: mixin sourceUrl with proxyUrl
-                        // const appProxies = applicationInfo.appProxies;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;
                         _this._overwriteItems(webmapResponses, itemInfo);
                         _this._overwriteItems(websceneResponses, itemInfo);
@@ -204,11 +165,6 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                 });
             });
         };
-        //--------------------------------------------------------------------------
-        //
-        //  Private Methods
-        //
-        //--------------------------------------------------------------------------
         Boilerplate.prototype._getPropertyArray = function (property) {
             if (typeof property === "string") {
                 return property.split(",");
@@ -304,7 +260,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             item.extent = applicationExtent ? applicationExtent : item.extent;
         };
         Boilerplate.prototype._setGeometryService = function (config, ptl) {
-            var portal = ptl; // todo: fix next api release. helperServices are not on portal currently.
+            var portal = ptl;
             var configHelperServices = config.helperServices;
             var portalHelperServices = portal && portal.helperServices;
             var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;
@@ -317,7 +273,8 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         };
         Boilerplate.prototype._getDefaultId = function (id, defaultId) {
             var defaultUrlParam = "default";
-            var useDefaultId = (!id || id === defaultUrlParam) && defaultId;
+            var trimmedId = id ? id.trim() : "";
+            var useDefaultId = (!trimmedId || trimmedId === defaultUrlParam) && defaultId;
             if (useDefaultId) {
                 return defaultId;
             }

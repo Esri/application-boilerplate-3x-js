@@ -39,8 +39,6 @@ import {
 
 class Application {
 
-  // todo: use sass
-  // todo: setup grunt watcher?
   // todo: documentation
   // todo: have JC review?
 

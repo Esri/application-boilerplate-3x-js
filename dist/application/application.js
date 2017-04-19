@@ -9,33 +9,10 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerplate/support/itemUtils", "boilerplate/support/domHelper"], function (require, exports, i18n, itemUtils_1, domHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
     var Application = (function () {
         function Application() {
-            // todo: use sass
-            // todo: setup grunt watcher?
-            // todo: documentation
-            // todo: have JC review?
-            //--------------------------------------------------------------------------
-            //
-            //  Properties
-            //
-            //--------------------------------------------------------------------------
-            //----------------------------------
-            //  boilerplate
-            //----------------------------------
             this.boilerplate = null;
-            //--------------------------------------------------------------------------
-            //
-            //  Private Methods
-            //
-            //--------------------------------------------------------------------------
         }
-        //--------------------------------------------------------------------------
-        //
-        //  Public Methods
-        //
-        //--------------------------------------------------------------------------
         Application.prototype.init = function (boilerplate) {
             if (!boilerplate) {
                 domHelper_1.addPageError({
@@ -48,6 +25,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
             domHelper_1.setPageDirection(boilerplate.direction);
             this.boilerplate = boilerplate;
             var config = boilerplate.config, results = boilerplate.results, settings = boilerplate.settings;
+            var find = config.find, marker = config.marker;
             var webMapItems = results.webMapItems, webSceneItems = results.webSceneItems;
             var validWebMapItems = webMapItems.map(function (response) {
                 return response.value;
@@ -75,8 +53,8 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
                 itemUtils_1.createMap(webMapItem)
                     .then(function (map) { return itemUtils_1.setBasemap(map, config)
                     .then(function (map) { return itemUtils_1.createView(map, viewProperties)
-                    .then(function (view) { return itemUtils_1.setFindLocation(config.find, view)
-                    .then(function () { return itemUtils_1.setGraphic(config.marker, view); }); }); }); });
+                    .then(function (view) { return itemUtils_1.setFindLocation(find, view)
+                    .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
             });
             validWebSceneItems.forEach(function (webSceneItem) {
                 var viewNode = document.createElement("div");
@@ -85,8 +63,8 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
                 itemUtils_1.createMap(webSceneItem)
                     .then(function (map) { return itemUtils_1.setBasemap(map, config)
                     .then(function (map) { return itemUtils_1.createView(map, viewProperties)
-                    .then(function (view) { return itemUtils_1.setFindLocation(config.find, view)
-                    .then(function () { return itemUtils_1.setGraphic(config.marker, view); }); }); }); });
+                    .then(function (view) { return itemUtils_1.setFindLocation(find, view)
+                    .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
             });
             viewNodes.forEach(function (viewNode) {
                 viewContainerNode.appendChild(viewNode);
