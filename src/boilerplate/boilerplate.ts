@@ -408,7 +408,8 @@ class Boilerplate {
 
   private _getDefaultId(id: string, defaultId: string): string {
     const defaultUrlParam = "default";
-    const useDefaultId = (!id || id === defaultUrlParam) && defaultId;
+    const trimmedId = id ? id.trim() : "";
+    const useDefaultId = (!trimmedId || trimmedId === defaultUrlParam) && defaultId;
     if (useDefaultId) {
       return defaultId;
     }

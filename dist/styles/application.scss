@@ -12,6 +12,10 @@
   .esri-view {
     width: 100%;
     height: 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #fff;
+    background-image: url(../../node_modules/calcite-web/dist/img/loader-ie9.gif);
   }
 }
 
@@ -24,10 +28,10 @@
 .boilerplate--loading {
   text-align: center;
   display: block;
-  background-color: #fff;
   height: 100%;
   width: 100%;
   overflow: hidden;
+  background-color: #fff;
   background-position: center center;
   background-repeat: no-repeat;
   background-image: url(../../node_modules/calcite-web/dist/img/loader-ie9.gif);

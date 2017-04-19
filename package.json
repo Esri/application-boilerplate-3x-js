@@ -12,12 +12,19 @@
     "ArcGIS",
     "TypeScript"
   ],
-  "devDependencies": {
-    "@types/arcgis-js-api": "^4.3.0",
+  "dependencies": {
+    "autoprefixer": "^6.3.6",
     "calcite-web": "github:esri/calcite-web#v1.0.0-rc.3",
+    "grunt": "^1.0.1",
+    "grunt-postcss": "^0.8.0",
     "grunt-sass": "^2.0.0",
-    "dojo-typings": "^1.11.6",
+    "grunt-ts": "^6.0.0-beta.15",
+    "postcss-normalize-charset": "^1.1.0",
     "typescript": "^2.2.1"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "@types/arcgis-js-api": "^4.3.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "dojo-typings": "^1.11.6"
+  }
 }

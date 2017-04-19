@@ -79,7 +79,6 @@ class Application {
     const { find, marker } = config;
     const { webMapItems, webSceneItems } = results;
 
-
     const validWebMapItems = webMapItems.map(response => {
       return response.value;
     });
