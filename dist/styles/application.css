@@ -31,7 +31,7 @@
   overflow: hidden;
   background-position: center center;
   background-repeat: no-repeat;
-  background-image: url(../calcite/img/loader-ie9.gif);
+  background-image: url(../../node_modules/calcite-web/dist/img/loader-ie9.gif);
 }
 
 .boilerplate--loading * {

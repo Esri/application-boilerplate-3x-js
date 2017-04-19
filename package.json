@@ -15,6 +15,7 @@
   "devDependencies": {
     "@types/arcgis-js-api": "^4.3.0",
     "calcite-web": "github:esri/calcite-web#v1.0.0-rc.3",
+    "grunt-sass": "^2.0.0",
     "dojo-typings": "^1.11.6",
     "typescript": "^2.2.1"
   },
