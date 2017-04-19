@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/core/watchUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, watchUtils, Extent, Point) {
+define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     //--------------------------------------------------------------------------
@@ -14,17 +14,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     //  Public Methods
     //
     //--------------------------------------------------------------------------
-    function getViewProperties(config) {
-        var center = config.center, components = config.components, extent = config.extent, level = config.level, viewpoint = config.viewpoint;
-        var ui = components ? { ui: { components: getComponents(components) } } : null;
-        var cameraProps = viewpoint ? { camera: getCamera(viewpoint) } : null;
-        var centerProps = center ? { center: getPoint(center) } : null;
-        var zoomProps = level ? { zoom: getZoom(level) } : null;
-        var extentProps = extent ? { extent: getExtent(extent) } : null;
-        var urlViewProperties = __assign({}, ui, cameraProps, centerProps, zoomProps, extentProps);
-        return __assign({}, urlViewProperties);
-    }
-    exports.getViewProperties = getViewProperties;
     function getComponents(components) {
         if (!components) {
             return;
@@ -120,7 +109,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         // ?marker=-117,34&level=10
         // ?marker=10406557.402,6590748.134,2526
         if (!marker) {
-            return promiseUtils.reject();
+            return promiseUtils.resolve();
         }
         var markerArray = _splitURLString(marker);
         var markerLength = markerArray.length;
@@ -176,7 +165,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     function getBasemap(basemapUrl, basemapReferenceUrl) {
         // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
         if (!basemapUrl) {
-            return promiseUtils.reject();
+            return promiseUtils.resolve();
         }
         return requireUtils.when(require, ["esri/layers/Layer", "esri/Basemap"]).then(function (modules) {
             var Layer = modules[0], Basemap = modules[1];
@@ -203,21 +192,6 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         });
     }
     exports.getBasemap = getBasemap;
-    function find(query, view) {
-        // ?find=redlands, ca
-        if (!query || !view) {
-            return promiseUtils.reject();
-        }
-        return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(function (SearchViewModel) {
-            var searchVM = new SearchViewModel({
-                view: view
-            });
-            return searchVM.search(query).then(function () {
-                watchUtils.whenFalseOnce(view, "popup.visible", function () { return searchVM.destroy(); });
-            });
-        });
-    }
-    exports.find = find;
     //--------------------------------------------------------------------------
     //
     //  Private Methods

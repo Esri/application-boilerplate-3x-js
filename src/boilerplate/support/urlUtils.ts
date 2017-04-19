@@ -4,27 +4,12 @@ import Graphic = require("esri/Graphic");
 
 import promiseUtils = require("esri/core/promiseUtils");
 import requireUtils = require("esri/core/requireUtils");
-import watchUtils = require("esri/core/watchUtils");
 
 import Extent = require("esri/geometry/Extent");
 import Point = require("esri/geometry/Point");
 
 import MapView = require("esri/views/MapView");
 import SceneView = require("esri/views/SceneView");
-
-import {
-  ApplicationConfig
-} from "../interfaces";
-
-interface ViewProperties {
-  extent?: Extent;
-  camera?: Camera;
-  center?: Point;
-  ui?: {
-    components?: string[];
-  },
-  zoom?: number;
-}
 
 interface CameraProperties {
   heading?: number;
@@ -37,27 +22,6 @@ interface CameraProperties {
 //  Public Methods
 //
 //--------------------------------------------------------------------------
-
-export function getViewProperties(config: ApplicationConfig): any {
-  const { center, components, extent, level, viewpoint } = config;
-  const ui = components ? { ui: { components: getComponents(components) } } : null;
-  const cameraProps = viewpoint ? { camera: getCamera(viewpoint) } : null;
-  const centerProps = center ? { center: getPoint(center) } : null;
-  const zoomProps = level ? { zoom: getZoom(level) } : null;
-  const extentProps = extent ? { extent: getExtent(extent) } : null;
-
-  const urlViewProperties = {
-    ...ui,
-    ...cameraProps,
-    ...centerProps,
-    ...zoomProps,
-    ...extentProps
-  };
-
-  return {
-    ...urlViewProperties
-  };
-}
 
 export function getComponents(components: string): string[] {
   if (!components) {
@@ -172,7 +136,7 @@ export function getGraphic(marker: string): IPromise<Graphic> {
   // ?marker=10406557.402,6590748.134,2526
 
   if (!marker) {
-    return promiseUtils.reject();
+    return promiseUtils.resolve();
   }
 
   const markerArray = _splitURLString(marker);
@@ -235,7 +199,7 @@ export function getGraphic(marker: string): IPromise<Graphic> {
 export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPromise<Basemap> {
   // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
   if (!basemapUrl) {
-    return promiseUtils.reject();
+    return promiseUtils.resolve();
   }
 
   return requireUtils.when(require, ["esri/layers/Layer", "esri/Basemap"]).then(modules => {
@@ -262,22 +226,6 @@ export function getBasemap(basemapUrl: string, basemapReferenceUrl: string): IPr
         referenceLayers: referenceLayer.value ? [referenceLayer.value] : []
       };
       return new Basemap(basemapOptions).load();;
-    });
-  });
-}
-
-export function find(query: string, view: MapView | SceneView): IPromise<{}> {
-  // ?find=redlands, ca
-  if (!query || !view) {
-    return promiseUtils.reject();
-  }
-
-  return requireUtils.when(require, "esri/widgets/Search/SearchViewModel").then(SearchViewModel => {
-    const searchVM = new SearchViewModel({
-      view: view
-    });
-    return searchVM.search(query).then(() => {
-      watchUtils.whenFalseOnce(view, "popup.visible", () => searchVM.destroy());
     });
   });
 }
