@@ -76,7 +76,9 @@ class Application {
     this.boilerplate = boilerplate;
 
     const { config, results, settings } = boilerplate;
+    const { find, marker } = config;
     const { webMapItems, webSceneItems } = results;
+
 
     const validWebMapItems = webMapItems.map(response => {
       return response.value;
@@ -118,8 +120,8 @@ class Application {
       createMap(webMapItem)
         .then(map => setBasemap(map, config)
           .then(map => createView(map, viewProperties)
-            .then(view => setFindLocation(config.find, view)
-              .then(() => setGraphic(config.marker, view)))));
+            .then(view => setFindLocation(find, view)
+              .then(() => setGraphic(marker, view)))));
     });
 
     validWebSceneItems.forEach(webSceneItem => {
@@ -135,8 +137,8 @@ class Application {
       createMap(webSceneItem)
         .then(map => setBasemap(map, config)
           .then(map => createView(map, viewProperties)
-            .then(view => setFindLocation(config.find, view)
-              .then(() => setGraphic(config.marker, view)))));
+            .then(view => setFindLocation(find, view)
+              .then(() => setGraphic(marker, view)))));
     });
 
     viewNodes.forEach(viewNode => {
