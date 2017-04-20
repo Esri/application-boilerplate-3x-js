@@ -82,6 +82,8 @@ class Application {
       return response.value;
     });
 
+    const validItems = validWebMapItems.concat(validWebSceneItems);
+
     const firstItem = validWebMapItems[0] || validWebSceneItems[0];
 
     if (!firstItem) {
@@ -96,47 +98,22 @@ class Application {
     setPageTitle(config.title);
 
     const viewContainerNode = document.getElementById("viewContainer");
-
-    const viewNodes = [];
-
     const defaultViewProperties = getViewProperties(config);
 
-    validWebMapItems.forEach(webMapItem => {
+    validItems.forEach(item => {
       const viewNode = document.createElement("div");
-
-      viewNodes.push(viewNode);
-
-      const viewProperties = {
-        container: viewNode,
-        ...defaultViewProperties
-      };
-
-      createMap(webMapItem)
-        .then(map => setBasemap(map, config)
-          .then(map => createView(map, viewProperties)
-            .then(view => setFindLocation(find, view)
-              .then(() => setGraphic(marker, view)))));
-    });
-
-    validWebSceneItems.forEach(webSceneItem => {
-      const viewNode = document.createElement("div");
-
-      viewNodes.push(viewNode);
-
-      const viewProperties = {
-        container: viewNode,
-        ...defaultViewProperties
-      };
-
-      createMap(webSceneItem)
-        .then(map => setBasemap(map, config)
-          .then(map => createView(map, viewProperties)
-            .then(view => setFindLocation(find, view)
-              .then(() => setGraphic(marker, view)))));
-    });
-
-    viewNodes.forEach(viewNode => {
       viewContainerNode.appendChild(viewNode);
+
+      const viewProperties = {
+        container: viewNode,
+        ...defaultViewProperties
+      };
+
+      createMap(item)
+        .then(map => setBasemap(map, config)
+          .then(map => createView(map, viewProperties)
+            .then(view => setFindLocation(find, view)
+              .then(() => setGraphic(marker, view)))));
     });
 
     removePageLoading();

@@ -33,6 +33,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
             var validWebSceneItems = webSceneItems.map(function (response) {
                 return response.value;
             });
+            var validItems = validWebMapItems.concat(validWebSceneItems);
             var firstItem = validWebMapItems[0] || validWebSceneItems[0];
             if (!firstItem) {
                 domHelper_1.addPageError({
@@ -44,30 +45,16 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
             config.title = !config.title ? itemUtils_1.getItemTitle(firstItem) : "";
             domHelper_1.setPageTitle(config.title);
             var viewContainerNode = document.getElementById("viewContainer");
-            var viewNodes = [];
             var defaultViewProperties = itemUtils_1.getViewProperties(config);
-            validWebMapItems.forEach(function (webMapItem) {
+            validItems.forEach(function (item) {
                 var viewNode = document.createElement("div");
-                viewNodes.push(viewNode);
-                var viewProperties = __assign({ container: viewNode }, defaultViewProperties);
-                itemUtils_1.createMap(webMapItem)
-                    .then(function (map) { return itemUtils_1.setBasemap(map, config)
-                    .then(function (map) { return itemUtils_1.createView(map, viewProperties)
-                    .then(function (view) { return itemUtils_1.setFindLocation(find, view)
-                    .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
-            });
-            validWebSceneItems.forEach(function (webSceneItem) {
-                var viewNode = document.createElement("div");
-                viewNodes.push(viewNode);
-                var viewProperties = __assign({ container: viewNode }, defaultViewProperties);
-                itemUtils_1.createMap(webSceneItem)
-                    .then(function (map) { return itemUtils_1.setBasemap(map, config)
-                    .then(function (map) { return itemUtils_1.createView(map, viewProperties)
-                    .then(function (view) { return itemUtils_1.setFindLocation(find, view)
-                    .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
-            });
-            viewNodes.forEach(function (viewNode) {
                 viewContainerNode.appendChild(viewNode);
+                var viewProperties = __assign({ container: viewNode }, defaultViewProperties);
+                itemUtils_1.createMap(item)
+                    .then(function (map) { return itemUtils_1.setBasemap(map, config)
+                    .then(function (map) { return itemUtils_1.createView(map, viewProperties)
+                    .then(function (view) { return itemUtils_1.setFindLocation(find, view)
+                    .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
             });
             domHelper_1.removePageLoading();
         };
