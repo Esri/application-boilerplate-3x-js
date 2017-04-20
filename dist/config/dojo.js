@@ -5,12 +5,12 @@ dojoConfig = {
     {
       name: "application",
       location: package_path + "/application",
-      main: "entry"
+      main: "Application"
     },
     {
       name: "boilerplate",
       location: package_path + "/boilerplate",
-      main: "boilerplate"
+      main: "Boilerplate"
     },
     {
       name: "config",
