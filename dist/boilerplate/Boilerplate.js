@@ -78,6 +78,8 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             if (!portal) {
                 portal = this.portal;
             }
+            var defaultGroup = this.settings.group.default;
+            groupId = this._getDefaultId(groupId, defaultGroup);
             var paramOptions = __assign({ query: "group:\"" + groupId + "\" AND -type:\"Code Attachment\"", sortField: "modified", sortOrder: "desc", num: 9, start: 1 }, itemParams);
             var params = new PortalQueryParams(paramOptions);
             return portal.queryItems(params);

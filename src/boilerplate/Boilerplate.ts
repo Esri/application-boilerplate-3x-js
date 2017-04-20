@@ -124,6 +124,9 @@ class Boilerplate {
       portal = this.portal;
     }
 
+    const defaultGroup = this.settings.group.default;
+    groupId = this._getDefaultId(groupId, defaultGroup);
+
     const paramOptions = {
       query: `group:"${groupId}" AND -type:"Code Attachment"`,
       sortField: "modified",
