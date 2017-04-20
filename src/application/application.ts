@@ -39,9 +39,6 @@ import {
 
 class Application {
 
-  // todo: documentation
-  // todo: have JC review?
-
   //--------------------------------------------------------------------------
   //
   //  Properties

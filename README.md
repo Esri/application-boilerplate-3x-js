@@ -6,7 +6,7 @@ We hope it helps :)
 
 ## Purpose
 
-The purpose of the `Boilerplate.js` is to handle fetching and managing ArcGIS Online information used in configurable applications such as:
+The purpose of this Boilerplate is to handle fetching and managing ArcGIS Online information used in configurable applications such as:
 
 - Portal information
 - User information
@@ -29,75 +29,39 @@ This bare-bones app includes all the code you need to build an ArcGIS Online con
 
 # Preview examples
 
-- [WebScene](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
-- [WebMap](http://esri.github.io/application-boilerplate-js/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
-- [Group](http://esri.github.io/application-boilerplate-js/?group=908dd46e749d4565a17d2b646ace7b1a)
-
-[![App](https://raw.github.com/Esri/application-boilerplate-js/4master/images/thumb.png)](http://esri.github.io/application-boilerplate-js/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
+- [WebScene](http://esri.github.io/application-boilerplate-js/dist/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
+- [WebMap](http://esri.github.io/application-boilerplate-js/dist/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
+- [Group](http://esri.github.io/application-boilerplate-js/dist/?group=908dd46e749d4565a17d2b646ace7b1a)
 
 # Settings & Configuration
 
-## Configuration Options
+## Application Configuration
 
-This is the configuration options for the application. `config.json`
+`/dist/config/application.json`
 
 |property|description|type|default|
 |---|---|---|---|
-|appid|Application ID for querying application configuration|String|""|
-|group|Group ID for querying a portal group|String|""|
-|webscene|WebScene ID for querying a webscene|String|"19faa71a3bf6468cae35b4fce9393a7d"|
-|webmap|WebMap ID for querying a webmap|String|""|
-|title|Title of the application|String|""|
-|portalUrl|URL to the ArcGIS Portal|String|"https://www.arcgis.com"|
-|oauthappid|oAuth authentication ID|String|""|
-|proxyUrl|Enter the url to the proxy if needed by the application. See the [Using the proxy page](http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) help topic for details.|String|""|
-|units|Application measurement units|String|""|
+|appid|Application ID for querying application configuration|string|""|
+|group|Group ID for querying a portal group|string or string[]|""|
+|webscene|WebScene ID for querying a webscene|string or string[]|"19faa71a3bf6468cae35b4fce9393a7d"|
+|webmap|WebMap ID for querying a webmap|string or string[]|""|
+|title|Title of the application|string|""|
+|portalUrl|URL to the ArcGIS Portal|string|"https://www.arcgis.com"|
+|oauthappid|oAuth authentication ID|string|""|
+|proxyUrl|Enter the url to the proxy if needed by the application. See the [Using the proxy page](http://developers.arcgis.com/en/javascript/jshelp/ags_proxy.html) help topic for details.|string|""|
+|units|Application measurement units|string|""|
 |helperServices|Object containing URLs to various helper services|Object|See below|
 
-### Sample
+## Boilerplate Configuration
 
-```js
-{
-  "appid": "",
-  "group": "",
-  "webscene": "19faa71a3bf6468cae35b4fce9393a7d",
-  "webmap": "",
-  "title": "",
-  "portalUrl": "https://www.arcgis.com",
-  "oauthappid": "",
-  "proxyUrl": "",
-  "units": "",
-  "helperServices": {
-    "geometry": {
-      "url": null
-    },
-    "printTask": {
-      "url": null
-    },
-    "elevationSync": {
-      "url": null
-    },
-    "geocode": [{
-      "url": null
-    }]
-  }
-}
-```
-
-## Boilerplate Settings
-
-These are the configuration options for the Boilerplate. `settings.json`
+`/dist/config/boilerplate.json`
 
 |property|description|type|default|
 |---|---|---|---|
 |webscene|WebScene related settings|Object|See below|
 |webscene.fetch|When true the application will query for a webscene|Boolean|true|
-|webscene.useLocal|Use a local hosted web scene instead of a web scene on ArcGIS or portal|Boolean|false|
-|webscene.localFile|WebScene file to use for the local web scene|String|"boilerplate/demoWebScene.json"|
 |webmap|WebMap related settings|Object|See below|
 |webmap.fetch|When true the application will query for a webmap|Boolean|false|
-|webmap.useLocal|Use a local hosted web map instead of a web map on ArcGIS or portal|Boolean|false|
-|webmap.localFile|WebMap file to use for the local web map|String|"boilerplate/demoWebMap.json"|
 |group|Group related settings|Object|See below|
 |group.fetchInfo|When true the application will query for a group's information|Boolean|false|
 |group.fetchItems|When true the application will query for a group's items|Boolean|false|
@@ -108,53 +72,15 @@ These are the configuration options for the Boilerplate. `settings.json`
 |webTierSecurity|Support sending credentials with AJAX requests to specific domains. This will allow editing of feature services secured with web-tier authentication|Boolean|false|
 |esriEnvironment|Most users will not need to modify this value. For Esri hosting environments only. Will automatically create a `portalUrl` and `proxyUrl` for the application. Only set this is to true if the app is going to be stored on Esri's hosting servers. If you are using your own custom hosted portal, set the `portalUrl` in `config.json` instead of setting this to true.|   Boolean|false|
 
-### Sample
-```js
-{
-  "webscene": {
-    "fetch": true,
-    "useLocal": false,
-    "localFile": "boilerplate/demoWebScene.json"
-  },
-  "webmap": {
-    "fetch": false,
-    "useLocal": false,
-    "localFile": "boilerplate/demoWebMap.json"
-  },
-  "group": {
-    "fetchInfo": false,
-    "fetchItems": false,
-    "itemParams": {
-      "query": "group:\"{groupid}\" AND -type:\"Code Attachment\"",
-      "sortField": "modified",
-      "sortOrder": "desc",
-      "num": 9,
-      "start": 0
-    }
-  },
-  "portal": {
-    "fetch": true
-  },
-  "urlParams": [
-    "appid",
-    "group",
-    "oauthappid",
-    "webmap",
-    "webscene",
-    "embed",
-    "center",
-    "extent",
-    "level",
-    "marker",
-    "components",
-    "viewpoint"
-  ],
-  "webTierSecurity": false,
-  "esriEnvironment": false
-}
-```
+## Dojo Configuration
+
+`/dist/config/dojo.js`
+
+todo
 
 # Folders and Files
+
+todo
 
 The template consists of the following folders and files:
 
@@ -191,41 +117,30 @@ This is the API for the boilerplate class. `Boilerplate.js`
 
 ## Constructor
 
-`new BoilerPlate(options)`
+`new BoilerPlate(ApplicationConfig, BoilerplateConfig)`
 
 ## Constructor Options
 
-See [boilerplate settings](#boilerplate-settings) for more information.
-
-|property|type
-|---|---|---|
-|webscene|Object|
-|webmap|Object|
-|group|Object|
-|portal|Object|
-|urlParams|String[]|
-|webTierSecurity|Boolean|
-|esriEnvironment|Boolean|
+See [application configuration](#application-configuration) and [boilerplate configuration](#boilerplate-configuration) for more information.
 
 ## Properties
 
 |property|description|type|readonly
 |---|---|---|---|
-|settings|Boilerplate settings|Object|true|
-|config|Config created|Object|true|
-|results|Boilerplate query results|Object|true|
+|config|Config created|ApplicationConfiguration|true|
+|direction|Language direction|string|true|
+|locale|Locale string|string|true|
 |portal|`Portal` created by Boilerplate|`esri/portal/Portal`|true|
-|direction|Language direction|String|true|
-|units|Appropriate units of measurement|String|true|
-|userPrivileges|Boilerplate user privileges|Object|true|
-
-## Events
-
-None
+|results|Boilerplate query results|BoilerplateResults|true|
+|units|Appropriate units of measurement|string|true|
 
 ## Methods
 
-### queryGroupItems
+### load()
+
+todo
+
+### queryGroupItems()
 
 Query a group by parameters. `Boilerplate.queryGroupItems(options)`.
 
@@ -245,6 +160,8 @@ Query a group by parameters. `Boilerplate.queryGroupItems(options)`.
 
 ## Getting Started
 
+todo
+
 Review the following ArcGIS.com help topics for details on Templates:
 
 - [Writing your first application](https://developers.arcgis.com/en/javascript/jstutorials/intro_firstmap_amd.html)
@@ -263,6 +180,8 @@ Review the following ArcGIS.com help topics for details on Templates:
 
 ## Deploying
 
+todo
+
 1. To deploy this application, download the template from Portal/ArcGIS Online and unzip it.
 2. Copy the unzipped folder containing the web app template files, such as index.html, to your web server. You can rename the folder to change the URL through which users will access the application. By default the URL to the app will be `http://<Your Web Server>/<app folder name>/index.html`
 3. Change the portalUrl, found in config.json inside the config folder for the application, to the portalUrl for ArcGIS Online or Portal. For ArcGIS Online users, keep the default value of www.arcgis.com or specify the name of your organization.
@@ -276,11 +195,15 @@ Review the following ArcGIS.com help topics for details on Templates:
 
 ## Requirements
 
+todo
+
 * Text or HTML editor.
 * A little background with JavaScript.
 * Experience with the [ArcGIS JavaScript API](http://www.esri.com/) would help.
 
 ## Resources
+
+todo
 
 * [Community](https://developers.arcgis.com/en/javascript/jshelp/community.html)
 * [ArcGIS for JavaScript API Resource Center](https://js.arcgis.com)
@@ -296,6 +219,8 @@ Find a bug or want to request a new feature?  Please let us know by submitting a
 Esri welcomes contributions from anyone and everyone. Please see our [guidelines for contributing](https://github.com/esri/contributing).
 
 ## Licensing
+
+todo
 
 Copyright 2013 Esri
 
@@ -313,5 +238,3 @@ limitations under the License.
 
 A copy of the license is available in the repository's [license.txt](https://raw.github.com/Esri/application-boilerplate-js/master/license.txt) file.
 
-[](Esri Tags: ArcGIS ArcGIS Online Web Application boilerplate template widget dijit Esri JavaScript application)
-[](Esri Language: JavaScript)
