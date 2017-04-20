@@ -22,15 +22,21 @@
   <div id="viewContainer" class="boilerplate__view-container"></div>
   <script type="text/javascript">
     require([
-      "dojo/text!config/application.json",
       "dojo/text!config/boilerplate.json",
-      "application/entry.js"
+      "dojo/text!config/application.json",
+      "boilerplate/Boilerplate",
+      "application/Application"
     ], function (
-      applicationConfig,
       boilerplateConfig,
-      entry
+      applicationConfig,
+      Boilerplate,
+      Application
     ) {
-        entry.init(applicationConfig, boilerplateConfig);
+        new Boilerplate.default(applicationConfig, boilerplateConfig)
+          .load()
+          .then(function (boilerplate) {
+            new Application.default().init(boilerplate);
+          });
       });
   </script>
 </body>

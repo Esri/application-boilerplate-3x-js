@@ -9,24 +9,34 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/promiseUtils", "esri/identity/IdentityManager", "esri/identity/OAuthInfo", "esri/portal/Portal", "esri/portal/PortalItem", "esri/portal/PortalQueryParams"], function (require, exports, kernel, esriConfig, promiseUtils, IdentityManager, OAuthInfo, Portal, PortalItem, PortalQueryParams) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var defaultConfig = {
+        portalUrl: "https://www.arcgis.com"
+    };
+    var defaultSettings = {
+        environment: {},
+        group: {},
+        portal: {},
+        urlParams: [],
+        webmap: {},
+        webscene: {}
+    };
     var Boilerplate = (function () {
-        function Boilerplate(applicationConfigJSON, boilerplateConfigJSON) {
-            this.settings = {
-                environment: {},
-                webscene: {},
-                webmap: {},
-                group: {},
-                portal: {},
-                urlParams: []
-            };
-            this.config = null;
+        function Boilerplate(applicationConfig, boilerplateConfig) {
+            this.settings = defaultSettings;
+            this.config = defaultConfig;
             this.results = {};
             this.portal = null;
             this.direction = null;
             this.locale = kernel.locale;
             this.units = null;
-            this.settings = __assign({}, boilerplateConfigJSON);
-            this.config = applicationConfigJSON;
+            if (typeof applicationConfig === "string") {
+                applicationConfig = JSON.parse(applicationConfig);
+            }
+            if (typeof boilerplateConfig === "string") {
+                boilerplateConfig = JSON.parse(boilerplateConfig);
+            }
+            this.settings = __assign({}, defaultSettings, boilerplateConfig);
+            this.config = __assign({}, defaultConfig, applicationConfig);
         }
         Boilerplate.prototype.queryGroupItems = function (groupId, itemParams, portal) {
             if (!portal) {

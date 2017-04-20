@@ -31,6 +31,19 @@ interface BoilerplateItemPromises {
   groupItems?: IPromise<any>;
 }
 
+const defaultConfig = {
+  portalUrl: "https://www.arcgis.com"
+}
+
+const defaultSettings = {
+  environment: {},
+  group: {},
+  portal: {},
+  urlParams: [],
+  webmap: {},
+  webscene: {}
+};
+
 class Boilerplate {
 
   //--------------------------------------------------------------------------
@@ -39,11 +52,23 @@ class Boilerplate {
   //
   //--------------------------------------------------------------------------
 
-  constructor(applicationConfigJSON, boilerplateConfigJSON) {
-    this.settings = {
-      ...boilerplateConfigJSON
+  constructor(applicationConfig: any, boilerplateConfig: any) {
+    if (typeof applicationConfig === "string") {
+      applicationConfig = JSON.parse(applicationConfig);
     }
-    this.config = applicationConfigJSON;
+
+    if (typeof boilerplateConfig === "string") {
+      boilerplateConfig = JSON.parse(boilerplateConfig);
+    }
+
+    this.settings = {
+      ...defaultSettings,
+      ...boilerplateConfig
+    }
+    this.config = {
+      ...defaultConfig,
+      ...applicationConfig
+    };
   }
 
   //--------------------------------------------------------------------------
@@ -55,19 +80,12 @@ class Boilerplate {
   //----------------------------------
   //  settings
   //----------------------------------
-  settings: BoilerplateSettings = {
-    environment: {},
-    webscene: {},
-    webmap: {},
-    group: {},
-    portal: {},
-    urlParams: []
-  };
+  settings: BoilerplateSettings = defaultSettings;
 
   //----------------------------------
   //  config
   //----------------------------------
-  config: ApplicationConfig = null;
+  config: ApplicationConfig = defaultConfig;
 
   //----------------------------------
   //  results
