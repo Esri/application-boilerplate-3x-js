@@ -32,7 +32,7 @@ define(["require", "exports", "esri/core/requireUtils", "esri/core/promiseUtils"
     exports.createMap = createMap;
     function createView(map, viewProperties) {
         var isWebMap = map.declaredClass === "esri.WebMap";
-        var isWebScene = map.declaredClass === "esri.isWebScene";
+        var isWebScene = map.declaredClass === "esri.WebScene";
         if (!isWebMap && !isWebScene) {
             return promiseUtils.reject();
         }

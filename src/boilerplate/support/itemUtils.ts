@@ -64,7 +64,7 @@ export function createMap(item: PortalItem): IPromise<WebMap | WebScene> {
 
 export function createView(map: WebMap | WebScene, viewProperties: any): IPromise<MapView | SceneView> {
   const isWebMap = map.declaredClass === "esri.WebMap";
-  const isWebScene = map.declaredClass === "esri.isWebScene";
+  const isWebScene = map.declaredClass === "esri.WebScene";
 
   if (!isWebMap && !isWebScene) {
     return promiseUtils.reject();
@@ -73,6 +73,7 @@ export function createView(map: WebMap | WebScene, viewProperties: any): IPromis
   const viewTypePath = isWebMap ? "esri/views/MapView" : "esri/views/SceneView";
 
   viewProperties.map = map;
+
   return requireUtils.when(require, viewTypePath).then(ViewType => {
     return new ViewType(viewProperties);
   });
