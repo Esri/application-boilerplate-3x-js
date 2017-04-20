@@ -21,13 +21,44 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
         webscene: {}
     };
     var Boilerplate = (function () {
+        //--------------------------------------------------------------------------
+        //
+        //  Lifecycle
+        //
+        //--------------------------------------------------------------------------
         function Boilerplate(applicationConfig, boilerplateConfig) {
+            //--------------------------------------------------------------------------
+            //
+            //  Properties
+            //
+            //--------------------------------------------------------------------------
+            //----------------------------------
+            //  settings
+            //----------------------------------
             this.settings = defaultSettings;
+            //----------------------------------
+            //  config
+            //----------------------------------
             this.config = defaultConfig;
+            //----------------------------------
+            //  results
+            //----------------------------------
             this.results = {};
+            //----------------------------------
+            //  portal
+            //----------------------------------
             this.portal = null;
+            //----------------------------------
+            //  direction
+            //----------------------------------
             this.direction = null;
+            //----------------------------------
+            //  locale
+            //----------------------------------
             this.locale = kernel.locale;
+            //----------------------------------
+            //  units
+            //----------------------------------
             this.units = null;
             if (typeof applicationConfig === "string") {
                 applicationConfig = JSON.parse(applicationConfig);
@@ -38,6 +69,11 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             this.settings = __assign({}, defaultSettings, boilerplateConfig);
             this.config = __assign({}, defaultConfig, applicationConfig);
         }
+        //--------------------------------------------------------------------------
+        //
+        //  Public Methods
+        //
+        //--------------------------------------------------------------------------
         Boilerplate.prototype.queryGroupItems = function (groupId, itemParams, portal) {
             if (!portal) {
                 portal = this.portal;
@@ -163,6 +199,9 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                         var websceneResponses = itemArgs.webscene.value || [];
                         var groupInfoResponses = itemArgs.groupInfo.value || [];
                         var groupItemsResponses = itemArgs.groupItems.value || [];
+                        //console.log(applicationItem);
+                        // todo: mixin sourceUrl with proxyUrl
+                        // const appProxies = applicationInfo.appProxies;
                         var itemInfo = applicationItem ? applicationItem.itemInfo : null;
                         _this._overwriteItems(webmapResponses, itemInfo);
                         _this._overwriteItems(websceneResponses, itemInfo);
@@ -175,6 +214,11 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
                 });
             });
         };
+        //--------------------------------------------------------------------------
+        //
+        //  Private Methods
+        //
+        //--------------------------------------------------------------------------
         Boilerplate.prototype._getPropertyArray = function (property) {
             if (typeof property === "string") {
                 return property.split(",");
@@ -270,7 +314,7 @@ define(["require", "exports", "dojo/_base/kernel", "esri/config", "esri/core/pro
             item.extent = applicationExtent ? applicationExtent : item.extent;
         };
         Boilerplate.prototype._setGeometryService = function (config, ptl) {
-            var portal = ptl;
+            var portal = ptl; // todo: fix next api release. helperServices are not on portal currently.
             var configHelperServices = config.helperServices;
             var portalHelperServices = portal && portal.helperServices;
             var configGeometryUrl = configHelperServices && configHelperServices.geometry && configHelperServices.geometry.url;

@@ -25,17 +25,17 @@
       "dojo/text!config/boilerplate.json",
       "dojo/text!config/application.json",
       "boilerplate/Boilerplate",
-      "application/Application"
+      "example/MapAndScene"
     ], function (
       boilerplateConfig,
       applicationConfig,
       Boilerplate,
-      Application
+      MapAndSceneExample
     ) {
         new Boilerplate.default(applicationConfig, boilerplateConfig)
           .load()
           .then(function (boilerplate) {
-            new Application.default().init(boilerplate);
+            new MapAndSceneExample.default().init(boilerplate);
           });
       });
   </script>

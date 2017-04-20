@@ -9,6 +9,11 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/core/requireUtils", "esri/geometry/Extent", "esri/geometry/Point"], function (require, exports, Camera, promiseUtils, requireUtils, Extent, Point) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    //--------------------------------------------------------------------------
+    //
+    //  Public Methods
+    //
+    //--------------------------------------------------------------------------
     function getComponents(components) {
         if (!components) {
             return;
@@ -17,6 +22,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getComponents = getComponents;
     function getCamera(viewpointString) {
+        // ?viewpoint=cam:-122.69174973,45.53565982,358.434;117.195,59.777
         var viewpointArray = viewpointString && viewpointString.split(";");
         if (!viewpointArray || !viewpointArray.length) {
             return;
@@ -33,6 +39,10 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getCamera = getCamera;
     function getPoint(center) {
+        // ?center=-13044705.25,4036227.41,102113&level=12
+        // ?center=-13044705.25;4036227.41;102113&level=12
+        // ?center=-117.1825,34.0552&level=12
+        // ?center=-117.1825;34.0552&level=12
         if (!center) {
             return null;
         }
@@ -61,6 +71,10 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getZoom = getZoom;
     function getExtent(extent) {
+        // ?extent=-13054125.21,4029134.71,-13032684.63,4041785.04,102100
+        // ?extent=-13054125.21;4029134.71;-13032684.63;4041785.04;102100
+        // ?extent=-117.2672,33.9927,-117.0746,34.1064
+        // ?extent=-117.2672;33.9927;-117.0746;34.1064
         if (!extent) {
             return null;
         }
@@ -87,6 +101,13 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getExtent = getExtent;
     function getGraphic(marker) {
+        // ?marker=-117;34;4326;My Title;http://www.daisysacres.com/images/daisy_icon.gif;My location&level=10
+        // ?marker=-117,34,4326,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-13044705.25,4036227.41,102100,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-117,34,,My Title,http://www.daisysacres.com/images/daisy_icon.gif,My location&level=10
+        // ?marker=-117,34,,,,My location&level=10
+        // ?marker=-117,34&level=10
+        // ?marker=10406557.402,6590748.134,2526
         if (!marker) {
             return promiseUtils.resolve();
         }
@@ -107,7 +128,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
             var icon_url = markerArray[4];
             var label = markerArray[5];
             var wkid = markerArray[2] ? parseInt(markerArray[2], 10) : 4326;
-            var symbolSize = "32px";
+            var symbolSize = "32px"; // todo: fix typings in next JS API release.
             var defaultMarkerSymbol = {
                 url: require.toUrl("./symbols/marker.png"),
                 width: "32px",
@@ -142,6 +163,7 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
     }
     exports.getGraphic = getGraphic;
     function getBasemap(basemapUrl, basemapReferenceUrl) {
+        // ?basemapUrl=https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer&basemapReferenceUrl=http://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer
         if (!basemapUrl) {
             return promiseUtils.resolve();
         }
@@ -170,6 +192,11 @@ define(["require", "exports", "esri/Camera", "esri/core/promiseUtils", "esri/cor
         });
     }
     exports.getBasemap = getBasemap;
+    //--------------------------------------------------------------------------
+    //
+    //  Private Methods
+    //
+    //--------------------------------------------------------------------------
     function _splitURLString(value) {
         if (!value) {
             return null;

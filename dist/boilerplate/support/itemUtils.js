@@ -9,6 +9,11 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
 define(["require", "exports", "esri/core/requireUtils", "esri/core/promiseUtils", "esri/core/watchUtils", "./urlUtils"], function (require, exports, requireUtils, promiseUtils, watchUtils, urlUtils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    //--------------------------------------------------------------------------
+    //
+    //  Public Methods
+    //
+    //--------------------------------------------------------------------------
     function getViewProperties(config) {
         var center = config.center, components = config.components, extent = config.extent, level = config.level, viewpoint = config.viewpoint;
         var ui = components ? { ui: { components: urlUtils_1.getComponents(components) } } : null;
@@ -84,12 +89,13 @@ define(["require", "exports", "esri/core/requireUtils", "esri/core/promiseUtils"
         }
         return urlUtils_1.getGraphic(marker).then(function (graphic) {
             view.graphics.add(graphic);
-            var view2 = view;
+            var view2 = view; // todo: Typings will be fixed in next release.
             return view2.goTo(graphic);
         });
     }
     exports.setGraphic = setGraphic;
     function setFindLocation(query, view) {
+        // ?find=redlands, ca
         if (!query || !view) {
             return promiseUtils.resolve();
         }

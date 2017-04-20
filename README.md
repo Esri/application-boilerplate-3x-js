@@ -29,8 +29,10 @@ This bare-bones app includes all the code you need to build an ArcGIS Online con
 
 # Preview examples
 
-- [WebScene](http://esri.github.io/application-boilerplate-js/dist/?webscene=51c67be4a5ea4da6948a40210ddfab1a)
-- [WebMap](http://esri.github.io/application-boilerplate-js/dist/?webmap=f5b13dbed07c46cdb783cf361833aa6b)
+- [WebScene](http://esri.github.io/application-boilerplate-js/dist/MapAndSceneExample.html?webscene=51c67be4a5ea4da6948a40210ddfab1a)
+- [WebMap](http://esri.github.io/application-boilerplate-js/dist/MapAndSceneExample.html?webmap=f5b13dbed07c46cdb783cf361833aa6b)
+- [WebMap & WebScene](http://esri.github.io/application-boilerplate-js/dist/MapAndSceneExample.html?webmap=default&webscene=default)
+- [3 Webmaps](http://esri.github.io/application-boilerplate-js/dist/MapAndSceneExample.html?webmap=default,default,default)
 - [Group](http://esri.github.io/application-boilerplate-js/dist/?group=908dd46e749d4565a17d2b646ace7b1a)
 
 # Settings & Configuration

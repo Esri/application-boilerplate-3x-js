@@ -3,17 +3,7 @@ declare const i18n: any;
 
 import Boilerplate from 'boilerplate/Boilerplate';
 
-import {
-  removePageLoading
-} from "boilerplate/support/domHelper";
-
-class Application {
-
-  //--------------------------------------------------------------------------
-  //
-  //  Lifecycle
-  //
-  //--------------------------------------------------------------------------
+class GroupExample {
 
   //--------------------------------------------------------------------------
   //
@@ -33,16 +23,9 @@ class Application {
   //--------------------------------------------------------------------------
 
   public init(boilerplate: Boilerplate): void {
-    console.log(boilerplate);
-    removePageLoading();
+    // todo
   }
-
-  //--------------------------------------------------------------------------
-  //
-  //  Private Methods
-  //
-  //--------------------------------------------------------------------------
 
 }
 
-export default Application;
+export default GroupExample;

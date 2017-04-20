@@ -2,13 +2,20 @@ define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var CSS = {
+        // calcite
         isActive: "is-active",
         alert: "alert",
         modifier: "modifier-class",
         errorIcon: "icon-ui-error2",
+        // boilerplate
         error: "boilerplate__error",
         loading: "boilerplate--loading"
     };
+    //--------------------------------------------------------------------------
+    //
+    //  Public Methods
+    //
+    //--------------------------------------------------------------------------
     function setPageLocale(locale) {
         document.documentElement.lang = locale;
     }

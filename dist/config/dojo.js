@@ -15,6 +15,10 @@ dojoConfig = {
     {
       name: "config",
       location: package_path + "/config"
+    },
+    {
+      name: "example",
+      location: package_path + "/examples"
     }
   ]
 };
