@@ -6,7 +6,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerplate/support/itemUtils", "boilerplate/support/domHelper"], function (require, exports, i18n, itemUtils_1, domHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerplate/support/itemUtils", "./ApplicationState", "boilerplate/support/domHelper"], function (require, exports, i18n, itemUtils_1, ApplicationState_1, domHelper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -29,7 +29,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
         //--------------------------------------------------------------------------
         MapAndSceneExample.prototype.init = function (boilerplate) {
             if (!boilerplate) {
-                domHelper_1.addPageError({
+                ApplicationState_1.addPageError({
                     title: i18n.error,
                     message: "Boilerplate is not defined"
                 });
@@ -50,7 +50,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
             var validItems = validWebMapItems.concat(validWebSceneItems);
             var firstItem = validWebMapItems[0] || validWebSceneItems[0];
             if (!firstItem) {
-                domHelper_1.addPageError({
+                ApplicationState_1.addPageError({
                     title: i18n.error,
                     message: "Could not load an item to display"
                 });
@@ -70,7 +70,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
                     .then(function (view) { return itemUtils_1.setFindLocation(find, view)
                     .then(function () { return itemUtils_1.setGraphic(marker, view); }); }); }); });
             });
-            domHelper_1.removePageLoading();
+            ApplicationState_1.removePageLoading();
         };
         return MapAndSceneExample;
     }());

@@ -1,4 +1,4 @@
-define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerplate/support/domHelper"], function (require, exports, i18n, domHelper_1) {
+define(["require", "exports", "dojo/i18n!application/nls/resources.js", "./ApplicationState"], function (require, exports, i18n, ApplicationState_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /// <amd-dependency path="dojo/i18n!application/nls/resources.js" name="i18n" />
@@ -31,7 +31,7 @@ define(["require", "exports", "dojo/i18n!application/nls/resources.js", "boilerp
         //--------------------------------------------------------------------------
         Application.prototype.init = function (boilerplate) {
             console.log(boilerplate);
-            domHelper_1.removePageLoading();
+            ApplicationState_1.removePageLoading();
         };
         return Application;
     }());
