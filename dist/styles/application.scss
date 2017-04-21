@@ -1,0 +1,40 @@
+.boilerplate__view-container {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  .esri-view {
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-color: #fff;
+    background-image: url(../assets/loader-ie9.gif);
+  }
+}
+
+.boilerplate__error {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 80%;
+}
+
+.boilerplate--loading {
+  text-align: center;
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: #fff;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-image: url(../assets/loader-ie9.gif);
+  * {
+    display: none;
+  }
+}
+

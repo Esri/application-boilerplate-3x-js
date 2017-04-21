@@ -1,0 +1,49 @@
+{
+  "environment": {
+    "isEsri": false,
+    "webTierSecurity": false
+  },
+  "localStorage": {
+    "fetch": true
+  },
+  "group": {
+    "default": "908dd46e749d4565a17d2b646ace7b1a",
+    "fetchInfo": true,
+    "fetchItems": true,
+    "itemParams": {
+      "sortField": "modified",
+      "sortOrder": "desc",
+      "num": 9,
+      "start": 0
+    }
+  },
+  "portal": {
+    "fetch": true
+  },
+  "urlParams": [
+    "appid",
+    "basemapUrl",
+    "basemapReferenceUrl",
+    "center",
+    "components",
+    "embed",
+    "extent",
+    "find",
+    "group",
+    "level",
+    "marker",
+    "oauthappid",
+    "portalUrl",
+    "viewpoint",
+    "webmap",
+    "webscene"
+  ],
+  "webmap": {
+    "default": "1970c1995b8f44749f4b9b6e81b5ba45",
+    "fetch": true
+  },
+  "webscene": {
+    "default": "073b9499717c484297a40402a21a28cd",
+    "fetch": true
+  }
+}

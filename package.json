@@ -1,0 +1,29 @@
+{
+  "name": "arcgis-boilerplate-ts",
+  "version": "0.0.1",
+  "description": "TypeScript boilerplate for building ArcGIS JS API 4.x Applications",
+  "main": "entry.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Esri/application-boilerplate-js.git"
+  },
+  "keywords": [
+    "Esri",
+    "ArcGIS",
+    "TypeScript"
+  ],
+  "dependencies": {
+    "autoprefixer": "^6.3.6",
+    "grunt": "^1.0.1",
+    "grunt-postcss": "^0.8.0",
+    "grunt-sass": "^2.0.0",
+    "grunt-ts": "^6.0.0-beta.15",
+    "postcss-normalize-charset": "^1.1.0",
+    "typescript": "^2.2.1"
+  },
+  "devDependencies": {
+    "@types/arcgis-js-api": "^4.3.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "dojo-typings": "^1.11.6"
+  }
+}
