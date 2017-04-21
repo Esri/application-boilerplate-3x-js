@@ -15,7 +15,10 @@ import {
 
 import {
   addPageError,
-  removePageLoading,
+  removePageLoading
+} from "./ApplicationState";
+
+import {
   setPageLocale,
   setPageDirection,
   setPageTitle

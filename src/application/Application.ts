@@ -5,7 +5,7 @@ import Boilerplate from 'boilerplate/Boilerplate';
 
 import {
   removePageLoading
-} from "boilerplate/support/domHelper";
+} from "./ApplicationState";
 
 class Application {
 
