@@ -14,7 +14,6 @@
   ],
   "dependencies": {
     "autoprefixer": "^6.3.6",
-    "calcite-web": "github:esri/calcite-web#v1.0.0-rc.3",
     "grunt": "^1.0.1",
     "grunt-postcss": "^0.8.0",
     "grunt-sass": "^2.0.0",

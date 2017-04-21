@@ -1,6 +1,3 @@
-$font-path: "../../node_modules/calcite-web/dist/fonts";
-@import "../../node_modules/calcite-web/dist/sass/calcite-web";
-
 .boilerplate__view-container {
   padding: 0;
   margin: 0;
@@ -16,7 +13,7 @@ $font-path: "../../node_modules/calcite-web/dist/fonts";
     background-position: center center;
     background-repeat: no-repeat;
     background-color: #fff;
-    background-image: url(../../node_modules/calcite-web/dist/img/loader-ie9.gif);
+    background-image: url(../assets/loader-ie9.gif);
   }
 }
 
@@ -35,7 +32,7 @@ $font-path: "../../node_modules/calcite-web/dist/fonts";
   background-color: #fff;
   background-position: center center;
   background-repeat: no-repeat;
-  background-image: url(../../node_modules/calcite-web/dist/img/loader-ie9.gif);
+  background-image: url(../assets/loader-ie9.gif);
   * {
     display: none;
   }
