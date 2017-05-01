@@ -1,4 +1,4 @@
-# 4.x API Examples Coming Soon!
+# Looking for 4.x? See the [ArcGIS JS API Base Class](https://github.com/Esri/application-base-js)
 
 # application-boilerplate-js
 
