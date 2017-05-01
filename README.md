@@ -1,4 +1,4 @@
-# [4.x API Boilerplate is here](https://github.com/Esri/application-boilerplate-4x-js)
+# 4.x API Examples Coming Soon!
 
 # application-boilerplate-js
 
