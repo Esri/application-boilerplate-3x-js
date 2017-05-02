@@ -250,8 +250,8 @@ define([
         if (appLocation !== -1) {
           // hosted or portal
           instance = location.pathname.substr(0, appLocation); //get the portal instance name
-          this.config.sharinghost = location.protocol + "//" + location.host + instance;
-          this.config.proxyurl = location.protocol + "//" + location.host + instance + "/sharing/proxy";
+          this.config.sharinghost = "https://" + location.host + instance;
+          this.config.proxyurl = "https://" + location.host + instance + "/sharing/proxy";
         }
       }
       arcgisUtils.arcgisUrl = this.config.sharinghost + "/sharing/rest/content/items";
