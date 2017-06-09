@@ -14,9 +14,9 @@ This bare-bones app includes all the code you need to build an ArcGIS Online tem
 *	Using settings from your ArcGIS Online organization or configured application.
 *	Enabling your application to sign-in to ArcGIS Online using [OAuth 2.0](http://oauth.net/2/).
 
-[View it live](http://esri.github.io/application-boilerplate-js/application_boilerplate/)
+[View it live](http://esri.github.io/application-boilerplate-js/application-boilerplate-3x-js/)
 
-![App](https://raw.github.com/Esri/application-boilerplate-js/master/application_boilerplate/images/thumb.png)
+![App](https://raw.github.com/Esri/application-boilerplate-js/master/application-boilerplate-3x-js/images/thumb.png)
 
 ## Getting Started
 
