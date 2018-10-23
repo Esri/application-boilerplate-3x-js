@@ -20,9 +20,11 @@ body:lang(ja) {
   width: 100%;
   height: 100%;
 }
+
 .esriRTL label {
   /*Example of a rule that will be applied if the app is viewed in a browser with a RTL locale like Hebrew or Arabic.*/
 }
+
 .loading-indicator {
   /* Loading status */
   display: none;
@@ -35,22 +37,23 @@ body:lang(ja) {
   overflow: hidden;
   background: #fff;
 }
+
 .app-loading .loading-indicator,
 .app-error .loading-indicator {
   /* Show this class when loading or error */
   display: block;
 }
+
 .app-loading .loading-indicator {
   /* Loading image */
   background-position: center center;
   background-image: url(../images/loading.gif);
   background-repeat: no-repeat;
 }
+
 .app-error .loading-message {
   /* Error status */
   background-position: top center;
-  background-image: url(../images/error.png);
-  background-repeat: no-repeat;
   padding-top: 60px;
   width: 100%;
   position: absolute;
@@ -58,4 +61,6 @@ body:lang(ja) {
   top: 40%;
   left: 0;
   text-align: center;
+  max-width: 95%;
+  margin: 0 auto;
 }

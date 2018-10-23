@@ -119,7 +119,8 @@ define([
       // default value is arcgis.com.
       this._initializeApplication();
       // check if signed in. Once we know if we're signed in, we can get appConfig, orgConfig and create a portal if needed.
-      this._checkSignIn().always(lang.hitch(this, function () {
+      this._checkSignIn().always(lang.hitch(this, function (response) {
+        this.config.signInResponse = response;
         // execute these tasks async
         all({
           // get localization
@@ -144,6 +145,15 @@ define([
           }).then(lang.hitch(this, function () {
             // mixin all new settings from item, group info and group items.
             this._mixinAll();
+            // If app is private and logged in user doesn't have essential apps let them know.
+
+            if (this.config.itemInfo.item.access === "public") {
+              if (response && response.code && response.code === "IdentityManagerBase.1") {
+                var licenseMessage = "<h1>" + this.i18nConfig.i18n.map.licenseError.title + "</h1><p>" + this.i18nConfig.i18n.map.licenseError.message + "</p>";
+                deferred.reject(new Error(licenseMessage));
+              }
+            }
+
             // We have all we need, let's set up a few things
             this._completeApplication();
             deferred.resolve(this.config);
@@ -158,13 +168,13 @@ define([
       // existing web map extent with the application item extent when set.
       if (this.config.appid && this.config.application_extent && this.config.application_extent.length > 0 && this.config.itemInfo && this.config.itemInfo.item && this.config.itemInfo.item.extent) {
         this.config.itemInfo.item.extent = [
-              [
-                  parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
-              ],
-              [
-                  parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
-              ]
-          ];
+          [
+            parseFloat(this.config.application_extent[0][0]), parseFloat(this.config.application_extent[0][1])
+          ],
+          [
+            parseFloat(this.config.application_extent[1][0]), parseFloat(this.config.application_extent[1][1])
+          ]
+        ];
       }
       // Set the geometry helper service to be the app default.
       if (this.config.helperServices && this.config.helperServices.geometry && this.config.helperServices.geometry.url) {
@@ -200,14 +210,14 @@ define([
           if (item) {
             if (typeof item === "string") {
               switch (item.toLowerCase()) {
-              case "true":
-                obj[items[i]] = true;
-                break;
-              case "false":
-                obj[items[i]] = false;
-                break;
-              default:
-                obj[items[i]] = item;
+                case "true":
+                  obj[items[i]] = true;
+                  break;
+                case "false":
+                  obj[items[i]] = false;
+                  break;
+                default:
+                  obj[items[i]] = item;
               }
             } else {
               obj[items[i]] = item;
@@ -273,12 +283,20 @@ define([
         });
         IdentityManager.registerOAuthInfos([oAuthInfo]);
       }
-      // check sign-in status
-      signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
-      // resolve regardless of signed in or not.
-      signedIn.promise.always(function () {
-        deferred.resolve();
-      });
+      // check app access or signed-in status
+      if (this.config.oauthappid && this.templateConfig.esriEnvironment) {
+        signedIn = IdentityManager.checkAppAccess(this.config.sharinghost + "/sharing", this.config.oauthappid);
+        signedIn.always(function (response) {
+          deferred.resolve(response);
+        });
+      } else {
+        signedIn = IdentityManager.checkSignInStatus(this.config.sharinghost + "/sharing");
+        // resolve regardless of signed in or not.
+        signedIn.promise.always(function (response) {
+          deferred.resolve(response);
+        });
+      }
+
       return deferred.promise;
     },
     _queryLocalization: function () {
