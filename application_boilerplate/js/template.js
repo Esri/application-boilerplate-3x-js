@@ -146,7 +146,7 @@ define([
             this._mixinAll();
             // If app is private and logged in user doesn't have essential apps let them know.
 
-            if (this.config.itemInfo.item.access === "public") {
+            if (this.config.itemInfo.item.access !== "public") {
               if (response && response.code && response.code === "IdentityManagerBase.1") {
                 var licenseMessage = "<h1>" + this.i18nConfig.i18n.map.licenseError.title + "</h1><p>" + this.i18nConfig.i18n.map.licenseError.message + "</p>";
                 deferred.reject(new Error(licenseMessage));
