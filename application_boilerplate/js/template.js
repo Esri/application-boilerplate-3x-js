@@ -120,7 +120,6 @@ define([
       this._initializeApplication();
       // check if signed in. Once we know if we're signed in, we can get appConfig, orgConfig and create a portal if needed.
       this._checkSignIn().always(lang.hitch(this, function (response) {
-        this.config.signInResponse = response;
         // execute these tasks async
         all({
           // get localization
