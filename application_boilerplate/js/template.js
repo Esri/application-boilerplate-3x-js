@@ -145,8 +145,7 @@ define([
             // mixin all new settings from item, group info and group items.
             this._mixinAll();
             // If app is private and logged in user doesn't have essential apps let them know.
-            if ((this.config.appResponse && this.config.appResponse.item.access !== "public") ||  // check app item
-              (this.config.itemInfo && this.config.itemInfo.item.access !== "public")) {          // check webmap if present
+            if ((this.config.appResponse && this.config.appResponse.item.access !== "public")) { // check app item
               if (response && response.code && response.code === "IdentityManagerBase.1") {
                 var licenseMessage = "<h1>" + this.i18nConfig.i18n.map.licenseError.title + "</h1><p>" + this.i18nConfig.i18n.map.licenseError.message + "</p>";
                 deferred.reject(new Error(licenseMessage));
